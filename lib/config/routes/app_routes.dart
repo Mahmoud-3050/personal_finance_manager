@@ -9,4 +9,6 @@ abstract class AppRoutes {
   static const String transactions = '/transactions';
   static const String categories = '/categories';
   static const String reports = '/reports';
+  static const String backup = '/backup';
+  static const String cloudCopies = '/backup/copies';
 }

@@ -88,6 +88,13 @@ class DashboardPage extends StatelessWidget {
                           style: TextStyles.of(size: 14),
                         ),
                       ),
+                      OutlinedButton(
+                        onPressed: () => context.push(AppRoutes.backup),
+                        child: Text(
+                          Strings.backup,
+                          style: TextStyles.of(size: 14),
+                        ),
+                      ),
                     ],
                   ),
                 ),

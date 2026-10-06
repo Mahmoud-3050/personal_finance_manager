@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api/dio_consumer.dart';
+import 'core/services/network/netwok_info.dart';
 import 'core/services/local_storage/impl/access_token_storage.dart';
 import 'core/services/local_storage/impl/device_token_storage.dart';
 import 'core/services/local_storage/impl/user_type_storage.dart';
@@ -29,8 +30,8 @@ abstract class ServiceLocator {
     _injectDioConsumer();
     injectDeviceTypeSingleton(Platform.isIOS ? .ios : .android);
     injectDeviceIdSingleton(await getDeviceId());
+    instance.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl());
   }
-
 
   static void _injectDio() {
     instance.registerLazySingleton<Dio>(() => Dio());

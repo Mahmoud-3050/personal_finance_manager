@@ -4,6 +4,20 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/di/feature_scope.dart';
 import '../../features/accounts/accounts_injection.dart';
+import '../../features/backup/backup_injection.dart';
+import '../../features/backup/presentation/controller/export_book/export_book_cubit.dart';
+import '../../features/backup/presentation/controller/get_backup_status/get_backup_status_cubit.dart';
+import '../../features/backup/presentation/controller/list_cloud_copies/list_cloud_copies_cubit.dart';
+import '../../features/backup/presentation/controller/import_book/import_book_cubit.dart';
+import '../../features/backup/presentation/controller/preview_import/preview_import_cubit.dart';
+import '../../features/backup/presentation/controller/restore_cloud_copy/restore_cloud_copy_cubit.dart';
+import '../../features/backup/presentation/controller/run_automatic_backup/run_automatic_backup_cubit.dart';
+import '../../features/backup/presentation/controller/run_manual_backup/run_manual_backup_cubit.dart';
+import '../../features/backup/presentation/controller/set_backup_schedule/set_backup_schedule_cubit.dart';
+import '../../features/backup/presentation/controller/sign_in_for_backup/sign_in_for_backup_cubit.dart';
+import '../../features/backup/presentation/pages/backup_status_page.dart';
+import '../../features/backup/presentation/pages/cloud_copies_page.dart';
+import '../../features/backup/presentation/widgets/automatic_backup_host.dart';
 import '../../features/categories/categories_injection.dart';
 import '../../features/dashboard/dashboard_injection.dart';
 import '../../features/reports/reports_injection.dart';
@@ -63,6 +77,8 @@ class AppRouter {
               registerTransactions,
               registerDashboard,
               registerReports,
+              registerBackupDataLayer,
+              registerRunAutomaticBackup,
             ],
             child: MultiBlocProvider(
               providers: <BlocProvider<dynamic>>[
@@ -129,8 +145,12 @@ class AppRouter {
                   create: (_) =>
                       ServiceLocator.instance<SearchTransactionsCubit>(),
                 ),
+                BlocProvider<RunAutomaticBackupCubit>(
+                  create: (_) =>
+                      ServiceLocator.instance<RunAutomaticBackupCubit>(),
+                ),
               ],
-              child: child,
+              child: AutomaticBackupHost(child: child),
             ),
           );
         },
@@ -183,6 +203,66 @@ class AppRouter {
             path: AppRoutes.reports,
             builder: (BuildContext context, GoRouterState state) =>
                 const ReportPage(),
+          ),
+          ShellRoute(
+            builder: (BuildContext context, GoRouterState state, Widget child) {
+              return FeatureScope(
+                scopeName: 'backup',
+                registrations: backupRouteRegistrations,
+                child: MultiBlocProvider(
+                  providers: <BlocProvider<dynamic>>[
+                    BlocProvider<GetBackupStatusCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<GetBackupStatusCubit>()
+                            ..fGetBackupStatus(),
+                    ),
+                    BlocProvider<SignInForBackupCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<SignInForBackupCubit>(),
+                    ),
+                    BlocProvider<RunManualBackupCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<RunManualBackupCubit>(),
+                    ),
+                    BlocProvider<SetBackupScheduleCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<SetBackupScheduleCubit>(),
+                    ),
+                    BlocProvider<ListCloudCopiesCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<ListCloudCopiesCubit>(),
+                    ),
+                    BlocProvider<RestoreCloudCopyCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<RestoreCloudCopyCubit>(),
+                    ),
+                    BlocProvider<ExportBookCubit>(
+                      create: (_) => ServiceLocator.instance<ExportBookCubit>(),
+                    ),
+                    BlocProvider<ImportBookCubit>(
+                      create: (_) => ServiceLocator.instance<ImportBookCubit>(),
+                    ),
+                    BlocProvider<PreviewImportCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<PreviewImportCubit>(),
+                    ),
+                  ],
+                  child: child,
+                ),
+              );
+            },
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.backup,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const BackupStatusPage(),
+              ),
+              GoRoute(
+                path: AppRoutes.cloudCopies,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const CloudCopiesPage(),
+              ),
+            ],
           ),
         ],
       ),

@@ -798,4 +798,24 @@ abstract class Strings {
   static String get fenzoTransferAccountMissing =>
       'fenzo_transfer_account_missing'.tr;
   static String get fenzoOpeningDateBlocked => 'fenzo_opening_date_blocked'.tr;
+  static String get backup => 'backup'.tr;
+  static String get backupNow => 'backup_now'.tr;
+  static String get backupCopies => 'backup_copies'.tr;
+  static String get backupRestore => 'backup_restore'.tr;
+  static String get backupExport => 'backup_export'.tr;
+  static String get backupImport => 'backup_import'.tr;
+  static String get backupOff => 'backup_off'.tr;
+  static String get backupDaily => 'backup_daily'.tr;
+  static String get backupWeekly => 'backup_weekly'.tr;
+  static String get backupMonthly => 'backup_monthly'.tr;
+  static String get backupSucceeded => 'backup_succeeded'.tr;
+  static String get backupFailed => 'backup_failed'.tr;
+  static String get backupWaiting => 'backup_waiting'.tr;
+  static String get backupNone => 'backup_none'.tr;
+  static String get backupConfirmRestore => 'backup_confirm_restore'.tr;
+  static String get backupConfirmImport => 'backup_confirm_import'.tr;
+  static String get backupUnusable => 'backup_unusable'.tr;
+  static String get backupManual => 'backup_manual'.tr;
+  static String get backupAutomatic => 'backup_automatic'.tr;
+  static String get backupCloud => 'backup_cloud'.tr;
 }
