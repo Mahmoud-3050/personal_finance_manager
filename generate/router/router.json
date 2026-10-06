@@ -1,0 +1,16 @@
+[
+  {
+    "feature": "splash",
+    "screen": "SplashScreen",
+    "route": "splash"
+  },
+  {
+    "feature": "profile",
+    "screen": "StudentProfileScreen",
+    "route": "studentProfile",
+    "scopes": [
+      "getStudentProfile",
+      "updateStudentProfile"
+    ]
+  }
+]

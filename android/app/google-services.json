@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "221286834750",
+    "project_id": "finzo-manager",
+    "storage_bucket": "finzo-manager.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221286834750:android:bb046e985ebf4a0748676f",
+        "android_client_info": {
+          "package_name": "com.finzomanager.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAunQTxONCPmX_d1F8ZaVAn62JKNfy3RLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

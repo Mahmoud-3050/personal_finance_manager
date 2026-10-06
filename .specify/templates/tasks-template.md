@@ -13,6 +13,8 @@ description: "Task list template for feature implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
+**Shared code**: If `lib/core`, `lib/config`, or `lib/shared` already provides a type, tasks MUST reuse it. Do not create a second `Failure`, `UseCase`, `ApiCallState`, `FeatureScope`, router, theme, or string table.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)

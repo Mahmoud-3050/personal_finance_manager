@@ -36,7 +36,7 @@ The technical approach is one `ledger` feature in the existing Flutter app. Doma
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Gates below are `.specify/memory/constitution.md` version 2.1.0, the same text as `.cursor/rules/00-project-constitution.mdc`.
+Gates below are `.specify/memory/constitution.md` version 2.2.0, the same text as `.cursor/rules/00-project-constitution.mdc`.
 
 | Gate | Result |
 |---|---|
@@ -49,6 +49,7 @@ Gates below are `.specify/memory/constitution.md` version 2.1.0, the same text a
 | Tests for use cases, repository, and cubit success/error. `flutter analyze` clean | Pass. Required before the feature is done |
 | No service between cubit and use case, no `BaseCubit` / `BaseRepository` | Pass |
 | Local packages `either`, `themes`, `language`, `screen_util`, `field_validator` | Pass. Root `pubspec.yaml` path-depends on `packages/<name>`. Presentation uses those packages instead of pub.dev duplicates |
+| VI. Shared app codebase | Pass. Ledger reuses `lib/core`, `lib/config`, and `lib/shared`. It does not add a second `Failure`, `UseCase`, `ApiCallState`, `FeatureScope`, router, or string table. Local ledger data does not call Dio |
 | HTTP / Dio remote data source | Not applicable. The constitution allows local I/O in the data source. Phase 0 must work offline, so the ledger data source is local only |
 
 ## Project Structure

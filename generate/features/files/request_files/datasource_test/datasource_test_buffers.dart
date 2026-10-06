@@ -1,0 +1,180 @@
+import '../../../../utils/enums.dart';
+import '../../../models/names.dart';
+import '../../../models/request.dart';
+import '../../request_buffers.dart';
+
+class DatasourceTestRequestBuffers extends BaseRequestBuffers {
+  @override
+  StringBuffer generateImports({
+    String featureNameSnakeCase = '',
+    bool hasParams = false,
+    String requestNameSnakeCase = '',
+    bool isDataModel = false,
+  }) {
+    final StringBuffer buffer = StringBuffer();
+    buffer.writeln("import 'package:flutter_test/flutter_test.dart';");
+    buffer.writeln("import 'package:mockito/annotations.dart';");
+    buffer.writeln("import 'package:mockito/mockito.dart';");
+    buffer.writeln();
+    buffer.writeln("import 'package:base/injection_container.dart';");
+    buffer.writeln("import 'package:base/core/api/dio_consumer.dart';");
+    buffer.writeln("import 'package:base/core/error/exceptions.dart';");
+    buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
+    if (hasParams) {
+      buffer.writeln(
+        "import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';",
+      );
+    }
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/data/datasources/${featureNameSnakeCase}_remote_datasource_impl.dart';",
+    );
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/data/models/${requestNameSnakeCase}_model.dart';",
+    );
+    buffer.writeln();
+    buffer.writeln(
+      "import '${requestNameSnakeCase}_datasource_test.mocks.dart';",
+    );
+    return buffer;
+  }
+
+  @override
+  StringBuffer generateBody({
+    required Names featureNames,
+    required Request request,
+  }) {
+    final StringBuffer buffer = StringBuffer();
+    String responseClassName = request.names.classCase;
+    String featureClassName = featureNames.classCase;
+    bool hasParams = request.hasRequestParams;
+    String httpMethod = request.type.name.toLowerCase();
+    DartType? dataType = request.dartType;
+
+    buffer.writeln('@GenerateMocks([DioConsumer])');
+    buffer.writeln('void main() {');
+    buffer.writeln(
+      '  late ${featureClassName}RemoteDataSourceImpl dataSource;',
+    );
+    buffer.writeln('  late MockDioConsumer mockDioConsumer;');
+    buffer.writeln();
+    buffer.writeln('  setUp(() {');
+    buffer.writeln('    mockDioConsumer = MockDioConsumer();');
+    buffer.writeln('    ServiceLocator.instance.allowReassignment = true;');
+    buffer.writeln(
+      '    ServiceLocator.instance.registerSingleton<DioConsumer>(mockDioConsumer);',
+    );
+    buffer.writeln(
+      '    dataSource = ${featureClassName}RemoteDataSourceImpl();',
+    );
+    buffer.writeln('  });');
+    buffer.writeln();
+
+    if (hasParams) {
+      buffer.writeln('  final tParams = ${responseClassName}Params(');
+      request.writeParamsConstructorArgs(buffer: buffer, indent: '    ');
+      buffer.writeln('  );');
+      buffer.writeln();
+    }
+
+    String dataJson = 'null';
+    if (dataType != null) {
+      dataJson = dataType.isList
+          ? '[]'
+          : (dataType == .model ? '<String, dynamic>{}' : "''");
+    }
+
+    buffer.writeln('  final tJsonResponse = <String, dynamic>{');
+    buffer.writeln("    'status': 'success',");
+    buffer.writeln("    'message': 'Success',");
+    if (dataType != null) {
+      buffer.writeln("    'data': $dataJson,");
+    }
+    request.writePaginationTestJson(buffer: buffer, indent: '    ');
+    buffer.writeln('  };');
+    buffer.writeln();
+
+    String stubCall;
+    if (request.hasFileParams) {
+      stubCall =
+          "when(mockDioConsumer.$httpMethod(any, body: anyNamed('body'), formData: anyNamed('formData'), queryParameters: anyNamed('queryParameters'), cancelToken: anyNamed('cancelToken')))";
+    } else {
+      stubCall =
+          "when(mockDioConsumer.$httpMethod(any, body: anyNamed('body'), queryParameters: anyNamed('queryParameters'), cancelToken: anyNamed('cancelToken')))";
+    }
+
+    buffer.writeln("  group('${request.names.camelCase}', () {");
+    buffer.writeln(
+      "    test('should perform $httpMethod request and return ${responseClassName}Model when response status is success', () async {",
+    );
+    buffer.writeln('      $stubCall');
+    buffer.writeln('          .thenAnswer((_) async => tJsonResponse);');
+    buffer.writeln();
+    if (hasParams) {
+      buffer.writeln(
+        '      final result = await dataSource.${request.names.camelCase}(params: tParams);',
+      );
+    } else {
+      buffer.writeln(
+        '      final result = await dataSource.${request.names.camelCase}(params: const NoParams());',
+      );
+    }
+    buffer.writeln();
+    buffer.writeln('      expect(result, isA<${responseClassName}Model>());');
+    buffer.writeln('    });');
+    buffer.writeln();
+
+    buffer.writeln(
+      "    test('should throw ServerException when response status is failure', () async {",
+    );
+    buffer.writeln('      $stubCall');
+    buffer.writeln(
+      "          .thenAnswer((_) async => {'status': 'error', 'message': 'Failed'});",
+    );
+    buffer.writeln();
+    _writeDatasourceCallExpect(
+      buffer: buffer,
+      request: request,
+      hasParams: hasParams,
+      exceptionType: 'ServerException',
+    );
+    buffer.writeln('    });');
+    buffer.writeln();
+    buffer.writeln(
+      "    test('should throw ValidationException when response has form errors', () async {",
+    );
+    buffer.writeln('      $stubCall');
+    buffer.writeln(
+      "          .thenAnswer((_) async => {'status': 'error', 'message': 'Invalid', 'errors': <String, dynamic>{'email': <String>['taken']}});",
+    );
+    buffer.writeln();
+    _writeDatasourceCallExpect(
+      buffer: buffer,
+      request: request,
+      hasParams: hasParams,
+      exceptionType: 'ValidationException',
+    );
+    buffer.writeln('    });');
+    buffer.writeln('  });');
+    buffer.writeln('}');
+
+    return buffer;
+  }
+
+  void _writeDatasourceCallExpect({
+    required StringBuffer buffer,
+    required Request request,
+    required bool hasParams,
+    required String exceptionType,
+  }) {
+    buffer.writeln('      final call = dataSource.${request.names.camelCase};');
+    if (hasParams) {
+      buffer.writeln(
+        '      expect(() => call(params: tParams), throwsA(isA<$exceptionType>()));',
+      );
+    } else {
+      buffer.writeln(
+        '      expect(() => call(params: const NoParams()), throwsA(isA<$exceptionType>()));',
+      );
+    }
+  }
+}

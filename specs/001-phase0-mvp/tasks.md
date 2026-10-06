@@ -40,12 +40,12 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Create `Failure` and `AppException` (validation, not found, conflict) in `lib/core/error/failure.dart` and `lib/core/error/app_exception.dart`
-- [ ] T005 [P] Create `UseCase<Type, Params>` in `lib/core/usecase/usecase.dart`
-- [ ] T006 [P] Create the sealed `ApiCallState<T>` in `lib/core/presentation/api_call_state.dart`
-- [ ] T007 [P] Create `FeatureScope` that registers on enter and unregisters on dispose in `lib/core/presentation/feature_scope.dart`
-- [ ] T008 [P] Create `ServiceLocator.init()` with no ledger types in `lib/injection_container.dart`
-- [ ] T009 [P] Add the Arabic UI copy, including the seed category labels, in `lib/features/ledger/presentation/ledger_strings.dart`
+- [ ] T004 [P] Reuse `Failure`, `ValidationFailure`, and `AppException` from `lib/core/error/failures.dart` and `lib/core/error/exceptions.dart`. Do not add a second failure type
+- [ ] T005 [P] Reuse `UseCase`, `Params`, and `NoParams` from `lib/core/usecases/usecase.dart`. Do not add a second use-case base
+- [ ] T006 [P] Reuse the sealed `ApiCallState<T>` in `lib/core/presentation/api_call_state.dart`. Do not add a second state base class
+- [ ] T007 [P] Reuse `FeatureScope` in `lib/core/di/feature_scope.dart`. Do not add a second scope widget
+- [ ] T008 [P] Keep ledger types out of `ServiceLocator.init()` in `lib/injection_container.dart`
+- [ ] T009 [P] Add the Arabic UI copy, including the seed category labels, through `lib/config/language/strings.dart` and the `language` package. Do not add a second string table
 - [ ] T010 [P] Write failing Money tests (exact 12.50, reject a third decimal place, transaction amount > 0, opening balance may be negative or zero) in `test/features/ledger/domain/money_test.dart`
 - [ ] T011 [P] Write failing CalendarDate tests (today, Saturday–Friday week, calendar month, reject end before start) in `test/features/ledger/domain/calendar_date_test.dart`
 - [ ] T012 [P] Write failing calculator tests for opening-balance balances, transfer exclusion, and period shares in `test/features/ledger/domain/balance_calculator_test.dart` and `test/features/ledger/domain/report_calculator_test.dart`
@@ -58,10 +58,10 @@ description: "Task list for Phase 0 MVP personal money tracking"
 - [ ] T019 Declare `LedgerRepository` returning `Either<Failure, T>` in `lib/features/ledger/domain/repositories/ledger_repository.dart`
 - [ ] T020 [P] Define the Drift tables for accounts, categories, subcategories, and transactions in `lib/features/ledger/data/datasources/ledger_database.dart`
 - [ ] T021 [P] Map those rows to entities in `lib/features/ledger/data/models/account_model.dart`, `lib/features/ledger/data/models/category_model.dart`, and `lib/features/ledger/data/models/transaction_model.dart`
-- [ ] T022 Implement `LedgerLocalDataSource`, including the one-time Arabic category seed, in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` so `test/features/ledger/data/category_seed_test.dart` passes
-- [ ] T023 Map `AppException` to `Failure` in `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
+- [ ] T022 Implement `LedgerLocalDataSource`, including the one-time Arabic category seed, in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` so `test/features/ledger/data/category_seed_test.dart` passes. Open a file under the app documents directory with `path_provider`, not an in-memory database.
+- [ ] T023 Map `AppException` to `Failure` with `RepositoryGuard` from `lib/core/data/repository_guard.dart` in `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
 - [ ] T024 Register only the ledger data layer in `lib/features/ledger/ledger_injection.dart`
-- [ ] T025 Start the app in Arabic, right to left, with `go_router` and `FeatureScope`, and remove the counter demo, in `lib/main.dart` and `lib/features/ledger/presentation/navigation/ledger_router.dart`
+- [ ] T025 Register ledger routes in `lib/config/routes/app_router.dart` and `lib/config/routes/app_routes.dart`, wrap them with `FeatureScope` from `lib/core/di/feature_scope.dart`, and start the app through `initApp()` in `lib/init_app.dart` and `App` in `lib/app.dart`. Do not add a second router
 - [ ] T026 Replace the counter expectation in `test/widget_test.dart` with a smoke test that the Arabic shell builds
 - [ ] T027 Generate Drift code for `lib/features/ledger/data/datasources/ledger_database.dart` with `dart run build_runner build --delete-conflicting-outputs`
 
@@ -77,14 +77,14 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 1
 
-- [ ] T028 [P] [US1] Write failing account use-case tests in `test/features/ledger/domain/account_use_cases_test.dart`
-- [ ] T029 [P] [US1] Write failing account repository tests in `test/features/ledger/data/account_repository_test.dart`
+- [ ] T028 [P] [US1] Write failing account use-case tests in `test/features/ledger/domain/account_use_cases_test.dart`. Cover these cases: the type can change only when the account has no transactions, and labels that do not fit the new type are cleared; an opening date later than an existing transaction is rejected; deactivate sets the account inactive and removes it from total money; reactivate does not put it back into the total.
+- [ ] T029 [P] [US1] Write failing account repository tests in `test/features/ledger/data/account_repository_test.dart`. Close the file-backed database, reopen the same file, and assert the account is still there.
 - [ ] T030 [P] [US1] Write failing account cubit tests for success and error in `test/features/ledger/presentation/account_cubits_test.dart`
 - [ ] T031 [P] [US1] Write failing confirm-versus-cancel tests in `test/features/ledger/presentation/confirm_action_dialog_test.dart`
 
 ### Implementation for User Story 1
 
-- [ ] T032 [US1] Persist create, edit, include/exclude, deactivate, reactivate, and empty-account delete in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
+- [ ] T032 [US1] Persist create, edit, include/exclude, deactivate, reactivate, and empty-account delete in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`. The type can change only when the account has no transactions, and labels that do not fit the new type are cleared. An opening date later than an existing transaction is rejected. Deactivate sets the account inactive and removes it from total money. Reactivate does not put it back into the total.
 - [ ] T033 [US1] Create `SaveAccountUseCase`, `DeactivateAccountUseCase`, `ReactivateAccountUseCase`, `DeleteAccountUseCase`, and `GetAccountsUseCase`, each with its params, in `lib/features/ledger/domain/usecases/save_account_use_case.dart`, `lib/features/ledger/domain/usecases/deactivate_account_use_case.dart`, `lib/features/ledger/domain/usecases/reactivate_account_use_case.dart`, `lib/features/ledger/domain/usecases/delete_account_use_case.dart`, and `lib/features/ledger/domain/usecases/get_accounts_use_case.dart`
 - [ ] T034 [US1] Create one cubit and part-file state per account action, with `f` methods and `ApiCallState`, under `lib/features/ledger/presentation/controller/save_account/`, `lib/features/ledger/presentation/controller/deactivate_account/`, `lib/features/ledger/presentation/controller/reactivate_account/`, `lib/features/ledger/presentation/controller/delete_account/`, and `lib/features/ledger/presentation/controller/get_accounts/`
 - [ ] T035 [US1] Register the account use cases and cubits in `lib/features/ledger/ledger_injection.dart`
@@ -126,11 +126,11 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 **Goal**: A transfer decreases the source, increases the destination, and does not count as income or expense.
 
-**Independent Test**: With two included accounts, record a 1,000 EGP transfer. Both balances change by 1,000, total money is unchanged, and expenses do not increase. Cancelled delete leaves both balances in place. Covers the transfer section of `specs/001-phase0-mvp/contracts/transactions.md`.
+**Independent Test**: With two included accounts, record a 1,000 EGP transfer. Both balances change by 1,000, total money is unchanged, and expenses do not increase. Editing the amount or either account updates both balances and still does not count as income or expense. A same-account transfer is rejected. Cancelled delete leaves both balances in place. Covers the transfer section of `specs/001-phase0-mvp/contracts/transactions.md`.
 
 ### Tests for User Story 3
 
-- [ ] T049 [P] [US3] Write failing transfer use-case tests in `test/features/ledger/domain/transfer_use_case_test.dart`
+- [ ] T049 [P] [US3] Write failing transfer use-case tests in `test/features/ledger/domain/transfer_use_case_test.dart`, including an edit of the amount or either account, and a rejection when the source and destination are the same
 - [ ] T050 [P] [US3] Write failing transfer repository tests in `test/features/ledger/data/transfer_repository_test.dart`
 - [ ] T051 [P] [US3] Write failing transfer cubit tests for success and error in `test/features/ledger/presentation/transfer_cubit_test.dart`
 
@@ -138,9 +138,10 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 - [ ] T052 [US3] Persist one transfer row with source and destination in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
 - [ ] T053 [US3] Create `SaveTransferUseCase` in `lib/features/ledger/domain/usecases/save_transfer_use_case.dart`
-- [ ] T054 [US3] Create the transfer cubit and part-file state in `lib/features/ledger/presentation/controller/save_transfer/save_transfer_cubit.dart`
-- [ ] T055 [US3] Register the transfer use case and cubit in `lib/features/ledger/ledger_injection.dart`
-- [ ] T056 [US3] Add the transfer mode to `lib/features/ledger/presentation/pages/transaction_form_page.dart` and its route in `lib/features/ledger/presentation/navigation/ledger_router.dart`
+- [ ] T054 [US3] Extend `UpdateTransactionUseCase` in `lib/features/ledger/domain/usecases/update_transaction_use_case.dart`, and the transfer update in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`, so a transfer edit changes both balances and still does not count as income or expense. Reject a same-account transfer.
+- [ ] T055 [US3] Create the transfer cubit and part-file state in `lib/features/ledger/presentation/controller/save_transfer/save_transfer_cubit.dart`
+- [ ] T056 [US3] Register the transfer use case and cubit in `lib/features/ledger/ledger_injection.dart`
+- [ ] T057 [US3] Add the transfer mode, including opening an existing transfer for edit, to `lib/features/ledger/presentation/pages/transaction_form_page.dart` and its route in `lib/features/ledger/presentation/navigation/ledger_router.dart`
 
 **Checkpoint**: Transfers between the person’s own accounts do not inflate spending.
 
@@ -154,18 +155,18 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 4
 
-- [ ] T057 [P] [US4] Write failing category use-case tests in `test/features/ledger/domain/category_use_cases_test.dart`
-- [ ] T058 [P] [US4] Write failing category repository tests in `test/features/ledger/data/category_repository_test.dart`
-- [ ] T059 [P] [US4] Write failing category cubit tests for success and error in `test/features/ledger/presentation/category_cubits_test.dart`
+- [ ] T058 [P] [US4] Write failing category use-case tests in `test/features/ledger/domain/category_use_cases_test.dart`
+- [ ] T059 [P] [US4] Write failing category repository tests in `test/features/ledger/data/category_repository_test.dart`
+- [ ] T060 [P] [US4] Write failing category cubit tests for success and error in `test/features/ledger/presentation/category_cubits_test.dart`
 
 ### Implementation for User Story 4
 
-- [ ] T060 [US4] Persist category and subcategory add, rename, disable, and unused delete in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
-- [ ] T061 [US4] Create `SaveCategoryUseCase`, `DeactivateCategoryUseCase`, `DeleteCategoryUseCase`, and `GetCategoriesUseCase` in `lib/features/ledger/domain/usecases/save_category_use_case.dart`, `lib/features/ledger/domain/usecases/deactivate_category_use_case.dart`, `lib/features/ledger/domain/usecases/delete_category_use_case.dart`, and `lib/features/ledger/domain/usecases/get_categories_use_case.dart`
-- [ ] T062 [US4] Create cubits and part-file states under `lib/features/ledger/presentation/controller/save_category/`, `lib/features/ledger/presentation/controller/deactivate_category/`, `lib/features/ledger/presentation/controller/delete_category/`, and `lib/features/ledger/presentation/controller/get_categories/`
-- [ ] T063 [US4] Register the category use cases and cubits in `lib/features/ledger/ledger_injection.dart`
-- [ ] T064 [US4] Build category management in `lib/features/ledger/presentation/pages/category_list_page.dart`
-- [ ] T065 [US4] Add the category route in `lib/features/ledger/presentation/navigation/ledger_router.dart`
+- [ ] T061 [US4] Persist category and subcategory add, rename, disable, and unused delete in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
+- [ ] T062 [US4] Create `SaveCategoryUseCase`, `DeactivateCategoryUseCase`, `DeleteCategoryUseCase`, and `GetCategoriesUseCase` in `lib/features/ledger/domain/usecases/save_category_use_case.dart`, `lib/features/ledger/domain/usecases/deactivate_category_use_case.dart`, `lib/features/ledger/domain/usecases/delete_category_use_case.dart`, and `lib/features/ledger/domain/usecases/get_categories_use_case.dart`
+- [ ] T063 [US4] Create cubits and part-file states under `lib/features/ledger/presentation/controller/save_category/`, `lib/features/ledger/presentation/controller/deactivate_category/`, `lib/features/ledger/presentation/controller/delete_category/`, and `lib/features/ledger/presentation/controller/get_categories/`
+- [ ] T064 [US4] Register the category use cases and cubits in `lib/features/ledger/ledger_injection.dart`
+- [ ] T065 [US4] Build category management in `lib/features/ledger/presentation/pages/category_list_page.dart`
+- [ ] T066 [US4] Add the category route in `lib/features/ledger/presentation/navigation/ledger_router.dart`
 
 **Checkpoint**: Categories can be managed without breaking older transactions.
 
@@ -179,15 +180,15 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 5
 
-- [ ] T066 [P] [US5] Write failing dashboard use-case tests in `test/features/ledger/domain/get_dashboard_use_case_test.dart`
-- [ ] T067 [P] [US5] Write failing dashboard cubit tests for success and error in `test/features/ledger/presentation/get_dashboard_cubit_test.dart`
+- [ ] T067 [P] [US5] Write failing dashboard use-case tests in `test/features/ledger/domain/get_dashboard_use_case_test.dart`
+- [ ] T068 [P] [US5] Write failing dashboard cubit tests for success and error in `test/features/ledger/presentation/get_dashboard_cubit_test.dart`
 
 ### Implementation for User Story 5
 
-- [ ] T068 [US5] Create `GetDashboardUseCase` in `lib/features/ledger/domain/usecases/get_dashboard_use_case.dart`, reading through `lib/features/ledger/domain/services/report_calculator.dart` and `lib/features/ledger/domain/services/balance_calculator.dart`
-- [ ] T069 [US5] Create the dashboard cubit and part-file state in `lib/features/ledger/presentation/controller/get_dashboard/get_dashboard_cubit.dart`
-- [ ] T070 [US5] Register the dashboard use case and cubit in `lib/features/ledger/ledger_injection.dart`
-- [ ] T071 [US5] Build the dashboard and its drill-down into `lib/features/ledger/presentation/pages/transaction_list_page.dart` from `lib/features/ledger/presentation/pages/dashboard_page.dart` and `lib/features/ledger/presentation/navigation/ledger_router.dart`
+- [ ] T069 [US5] Create `GetDashboardUseCase` in `lib/features/ledger/domain/usecases/get_dashboard_use_case.dart`, reading through `lib/features/ledger/domain/services/report_calculator.dart` and `lib/features/ledger/domain/services/balance_calculator.dart`
+- [ ] T070 [US5] Create the dashboard cubit and part-file state in `lib/features/ledger/presentation/controller/get_dashboard/get_dashboard_cubit.dart`
+- [ ] T071 [US5] Register the dashboard use case and cubit in `lib/features/ledger/ledger_injection.dart`
+- [ ] T072 [US5] Build the dashboard and its drill-down into `lib/features/ledger/presentation/pages/transaction_list_page.dart` from `lib/features/ledger/presentation/pages/dashboard_page.dart` and `lib/features/ledger/presentation/navigation/ledger_router.dart`
 
 **Checkpoint**: Opening the app answers how this month is going.
 
@@ -201,15 +202,15 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 6
 
-- [ ] T072 [P] [US6] Write failing report use-case tests in `test/features/ledger/domain/get_report_use_case_test.dart`
-- [ ] T073 [P] [US6] Write failing report cubit tests for success and error in `test/features/ledger/presentation/get_report_cubit_test.dart`
+- [ ] T073 [P] [US6] Write failing report use-case tests in `test/features/ledger/domain/get_report_use_case_test.dart`
+- [ ] T074 [P] [US6] Write failing report cubit tests for success and error in `test/features/ledger/presentation/get_report_cubit_test.dart`
 
 ### Implementation for User Story 6
 
-- [ ] T074 [US6] Create `GetReportUseCase` in `lib/features/ledger/domain/usecases/get_report_use_case.dart`
-- [ ] T075 [US6] Create the report cubit and part-file state in `lib/features/ledger/presentation/controller/get_report/get_report_cubit.dart`
-- [ ] T076 [US6] Register the report use case and cubit in `lib/features/ledger/ledger_injection.dart`
-- [ ] T077 [US6] Build presets, custom range, category shares, and the account report in `lib/features/ledger/presentation/pages/report_page.dart` and `lib/features/ledger/presentation/navigation/ledger_router.dart`
+- [ ] T075 [US6] Create `GetReportUseCase` in `lib/features/ledger/domain/usecases/get_report_use_case.dart`
+- [ ] T076 [US6] Create the report cubit and part-file state in `lib/features/ledger/presentation/controller/get_report/get_report_cubit.dart`
+- [ ] T077 [US6] Register the report use case and cubit in `lib/features/ledger/ledger_injection.dart`
+- [ ] T078 [US6] Build presets, custom range, category shares, and the account report in `lib/features/ledger/presentation/pages/report_page.dart` and `lib/features/ledger/presentation/navigation/ledger_router.dart`. The report’s transaction list is `lib/features/ledger/presentation/pages/transaction_list_page.dart` opened with the chosen date range, not a second list inside the report page.
 
 **Checkpoint**: Any day, week, month, or custom range can be checked by hand.
 
@@ -223,16 +224,16 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 7
 
-- [ ] T078 [P] [US7] Write failing search use-case tests in `test/features/ledger/domain/search_transactions_use_case_test.dart`
-- [ ] T079 [P] [US7] Write failing search cubit tests for success and empty results in `test/features/ledger/presentation/search_transactions_cubit_test.dart`
+- [ ] T079 [P] [US7] Write failing search use-case tests in `test/features/ledger/domain/search_transactions_use_case_test.dart`
+- [ ] T080 [P] [US7] Write failing search cubit tests for success and empty results in `test/features/ledger/presentation/search_transactions_cubit_test.dart`
 
 ### Implementation for User Story 7
 
-- [ ] T080 [US7] Apply trimmed case-insensitive substring search and AND filters in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
-- [ ] T081 [US7] Create `SearchTransactionsUseCase` in `lib/features/ledger/domain/usecases/search_transactions_use_case.dart`
-- [ ] T082 [US7] Create the search cubit and part-file state in `lib/features/ledger/presentation/controller/search_transactions/search_transactions_cubit.dart`
-- [ ] T083 [US7] Register the search use case and cubit in `lib/features/ledger/ledger_injection.dart`
-- [ ] T084 [US7] Add search and combined filters to `lib/features/ledger/presentation/pages/transaction_list_page.dart`
+- [ ] T081 [US7] Apply trimmed case-insensitive substring search and AND filters in `lib/features/ledger/data/datasources/ledger_local_data_source.dart` and `lib/features/ledger/data/repositories/ledger_repository_impl.dart`
+- [ ] T082 [US7] Create `SearchTransactionsUseCase` in `lib/features/ledger/domain/usecases/search_transactions_use_case.dart`
+- [ ] T083 [US7] Create the search cubit and part-file state in `lib/features/ledger/presentation/controller/search_transactions/search_transactions_cubit.dart`
+- [ ] T084 [US7] Register the search use case and cubit in `lib/features/ledger/ledger_injection.dart`
+- [ ] T085 [US7] Add search and combined filters to `lib/features/ledger/presentation/pages/transaction_list_page.dart`. Those filters still apply when `lib/features/ledger/presentation/pages/report_page.dart` opened the list with a date range.
 
 **Checkpoint**: A past transaction can be found without changing it.
 
@@ -242,9 +243,9 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 **Purpose**: Static analysis, the scale check, and the manual quickstart
 
-- [ ] T085 Run `flutter analyze` and clear every issue in `lib/`, `test/`, and `packages/either/`
-- [ ] T086 [P] Add a 5,000-transaction report timing assertion in `test/features/ledger/domain/report_calculator_test.dart`
-- [ ] T087 Walk the manual pass in `specs/001-phase0-mvp/quickstart.md` on a device in airplane mode and fix any miss against `specs/001-phase0-mvp/contracts/`
+- [ ] T086 Run `flutter analyze` and clear every issue in `lib/`, `test/`, and `packages/either/`
+- [ ] T087 [P] Add a 5,000-transaction report timing assertion in `test/features/ledger/domain/report_calculator_test.dart`
+- [ ] T088 Walk the manual pass in `specs/001-phase0-mvp/quickstart.md` on a device in airplane mode and fix any miss against `specs/001-phase0-mvp/contracts/`
 
 ---
 
@@ -262,10 +263,10 @@ description: "Task list for Phase 0 MVP personal money tracking"
 - **User Story 1 (P1)**: After Foundational. No other story required. This is the first stop.
 - **User Story 2 (P1)**: After User Story 1, because income and expense need an account. Uses the foundational category seed, not User Story 4.
 - **User Story 3 (P2)**: After User Story 2. Extends the transaction form and transaction storage.
-- **User Story 4 (P2)**: After Foundational for data, and after User Story 2 if you want to disable a category that an expense already uses. Can be built in parallel with User Story 3 only up through its tests (T057–T059). Implementation shares `ledger_local_data_source.dart` with User Story 3, so implement T060 after T052.
+- **User Story 4 (P2)**: After Foundational for data, and after User Story 2 if you want to disable a category that an expense already uses. Can be built in parallel with User Story 3 only up through its tests (T058–T060). Implementation shares `ledger_local_data_source.dart` with User Story 3, so implement T061 after T052.
 - **User Story 5 (P2)**: After User Stories 1, 2, and 3. Category management (User Story 4) is not required for the seed categories on the dashboard.
 - **User Story 6 (P2)**: After User Story 5. The report page is separate from the dashboard, but both use the same calculators.
-- **User Story 7 (P3)**: After User Story 2’s history page, and after User Story 6 if the report drill-down and search both land on `transaction_list_page.dart`. Implement T084 last among page edits to that file.
+- **User Story 7 (P3)**: After User Story 2’s history page, and after User Story 6 if the report drill-down and search both land on `transaction_list_page.dart`. Implement T085 last among page edits to that file.
 
 ### Within Each User Story
 

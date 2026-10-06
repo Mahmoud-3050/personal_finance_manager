@@ -1,24 +1,28 @@
 <!--
 Sync Impact Report
-- Version change: 2.0.0 → 2.1.0
-- Bump rationale: MINOR. The local-package rule is no longer conditional.
-  The app MUST path-depend on the five packages under packages/. No principle
-  was removed or redefined.
-- Modified principles: none renamed. Code Quality & Dart Discipline expanded.
-- Added sections: none
+- Version change: 2.1.0 → 2.2.0
+- Bump rationale: MINOR. New Principle VI records the existing host codebase
+  (lib/core, lib/config, lib/shared, initApp) as mandatory shared code.
+  No principle was removed or redefined.
+- Modified principles:
+  - Principle II: points at the existing FeatureScope
+  - Principle III: ApiCallState is the existing sealed class, not a new typedef
+  - Principle IV: repositories MUST use RepositoryGuard
+  - Code Quality item 8: UseCase comes from lib/core/usecases/usecase.dart
+- Added sections: Principle VI: Shared App Codebase
 - Removed sections: none
 - Templates:
   - .specify/templates/plan-template.md ✅ aligned (Constitution Check still filled from this file)
   - .specify/templates/spec-template.md ✅ no change (no new business-spec sections)
-  - .specify/templates/tasks-template.md ✅ no change (testing gate already recorded)
+  - .specify/templates/tasks-template.md ✅ updated (reuse shared code)
   - .specify/templates/commands/ ✅ none present
   - README.md ✅ no constitution reference to update
   - .cursor/rules/00-project-constitution.mdc ✅ synced
-  - pubspec.yaml ✅ path dependencies added
   - specs/001-phase0-mvp/plan.md ✅ updated
-  - specs/001-phase0-mvp/research.md ✅ updated
-  - specs/001-phase0-mvp/tasks.md ✅ T001 lists all five path packages
-- Follow-up TODOs: none
+  - specs/001-phase0-mvp/tasks.md ✅ foundational tasks reuse existing core types
+- Follow-up TODOs: lib/main.dart still launches the counter demo. Startup MUST
+  call initApp() and run App from lib/app.dart. That wiring is not part of
+  this amendment.
 -->
 
 # codebase Constitution
@@ -82,8 +86,9 @@ be registered in `ServiceLocator.init()` in `lib/injection_container.dart`.
 Feature dependencies MUST NOT be registered globally at app start. Each feature
 MUST expose granular `register*` functions in
 `lib/features/<feature>/<feature>_injection.dart`. Route builders MUST wrap the
-screen in `FeatureScope` with only the registrations that route needs, then provide
-Cubits via `BlocProvider` that resolve from `ServiceLocator.instance`.
+screen in `FeatureScope` (`lib/core/di/feature_scope.dart`) with only the
+registrations that route needs, then provide Cubits via `BlocProvider` that
+resolve from `ServiceLocator.instance`. Do NOT add a second scope widget.
 
 Registration conventions:
 - **Cubits/Blocs**: `registerFactory` (fresh instance per provider).
@@ -102,9 +107,10 @@ declarative. Widgets MUST NEVER run network calls, parse JSON, or decide
 success versus failure.
 
 - Public Cubit actions MUST use the `f` prefix (`fGetStudentProfile`).
-- Cubit state MUST be a typedef of the shared sealed `ApiCallState<T>`
-  (`holding`, `loading`, `success`, `error`, `empty`, `refresh`, `pagination`)
-  unless the operation genuinely needs a different sealed hierarchy.
+- Cubit state MUST be the sealed `ApiCallState<T>` in
+  `lib/core/presentation/api_call_state.dart` (`holding`, `loading`, `success`,
+  `error`, `empty`, `refresh`, `pagination`) unless the operation genuinely
+  needs a different sealed hierarchy. Do NOT add a second state base class.
 - States MUST be immutable. Cubits MUST NOT keep UI-relevant data in mutable
   side-channel fields; everything the UI needs MUST flow through `emit`.
 - Screens that need rebuild and side effects MUST use `BlocConsumer`. Screens
@@ -123,8 +129,9 @@ Domain and data layers MUST use the local `either` package
 - DataSources MUST throw domain exceptions (`AppException` / `ServerException` /
   `CacheException`). They MUST NOT return `Either`.
 - Repository implementations MUST catch `AppException` and map it with
-  `error.toFailure()` into `Left`. They MUST NOT leak raw SDK exceptions past
-  the data boundary.
+  `error.toFailure()` into `Left`, through `RepositoryGuard` in
+  `lib/core/data/repository_guard.dart`. They MUST NOT leak raw SDK exceptions
+  past the data boundary. Do NOT add a second exception mapper.
 - Cubits MUST consume results with `.fold()` (or equivalent exhaustive matching)
   and emit both error and success states.
 
@@ -143,6 +150,52 @@ Models in `data/models/` MUST extend or map to domain entities in
 - Co-locate `*Params` (including `toJson()` for request bodies) with the use case.
 
 *Rationale*: Backend schema changes stay in the data layer.
+
+### Principle VI: Shared App Codebase (NON-NEGOTIABLE)
+
+The host app already owns startup, configuration, and shared UI. A feature
+MUST reuse that code. It MUST NOT create a second copy of a type that already
+lives here.
+
+Startup MUST go through `initApp()` in `lib/init_app.dart` and `App` in
+`lib/app.dart`. App-wide GetIt registrations stay in `ServiceLocator.init()`
+in `lib/injection_container.dart`.
+
+`lib/core/` is shared infrastructure:
+
+- `error/failures.dart` and `error/exceptions.dart`: the only `Failure` and
+  `AppException` types, including `ValidationFailure`.
+- `usecases/usecase.dart`: the only `UseCase`, `Params`, and `NoParams`.
+- `presentation/api_call_state.dart`: the only `ApiCallState<T>`.
+- `di/feature_scope.dart`: the only `FeatureScope`.
+- `data/repository_guard.dart`: the only repository exception boundary.
+- `api/`: `DioConsumer` and the HTTP interceptors. A feature that calls the
+  network MUST use these. A local-only feature MUST NOT call Dio.
+- `services/`: secure storage, preferences, device identity, network status,
+  and notifications.
+- `utils/`: extensions, assets, and `values/text_styles.dart`.
+
+`lib/config/` is host configuration:
+
+- `themes/`: the app palette and `ThemeData`. Colors MUST come from here and
+  from `package:themes`. Do NOT add a second palette.
+- `language/`: user-facing copy. New strings MUST go through the `language`
+  package and this config. Do NOT add a second string table.
+- `routes/`: `AppRoutes` and `AppRouter`. A new screen MUST register here.
+  Do NOT add a second app router.
+
+`lib/shared/` is UI and types used by more than one feature:
+
+- `widgets/`: buttons, fields, dialogs, snack bars, empty and loading states.
+  A feature MUST use these before adding a lookalike widget. A widget used by
+  two features MUST move here. A widget used by one feature stays in that
+  feature's `presentation/widgets/`.
+- `pagination/`: paged lists MUST use this cubit and widget.
+- `domain/entities/`: an entity used by two features MUST live here. An entity
+  used by one feature stays in that feature.
+
+*Rationale*: One startup path, one failure model, and one set of widgets keep
+features from drifting into parallel frameworks.
 
 ## Code Quality & Dart Discipline
 
@@ -169,8 +222,9 @@ for this constitution.
 7. **Modern Dart**: Fixed sets of states MUST be a `sealed class` or enhanced
    `enum`. Prefer records for 2–3 related return values. Prefer pattern matching
    over `is` plus cast. Prefer extensions over static `Utils` classes.
-8. **Use cases**: Every use case MUST extend `UseCase<Type, Params>` and
-   implement `Future<Either<Failure, Type>> call(Params params)`.
+8. **Use cases**: Every use case MUST extend `UseCase<T, P extends Params>`
+   from `lib/core/usecases/usecase.dart` and implement
+   `Future<Either<Failure, T>> call(P params)`.
 
 Do NOT add premature layers: no service between Cubit and UseCase, no
 `BaseCubit` / `BaseRepository` wrappers, no domain event bus.
@@ -238,4 +292,4 @@ Distilled from `.cursor/rules/02-flutter-development.mdc`.
    Core Principles. Implementation plans MUST include a Constitution Check
    against the gates in `.specify/templates/plan-template.md`.
 
-**Version**: 2.1.0 | **Ratified**: 2026-07-26 | **Last Amended**: 2026-10-06
+**Version**: 2.2.0 | **Ratified**: 2026-07-26 | **Last Amended**: 2026-10-06

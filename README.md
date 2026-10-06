@@ -1,4 +1,4 @@
-# personal_finance_manager
+# finzomanager
 
 A new Flutter project.
 

@@ -1,0 +1,323 @@
+import 'dart:convert';
+import 'dart:io';
+
+import '../../utils/enums.dart';
+import '../../utils/extension.dart';
+import '../../utils/functions.dart';
+import '../files/project_files/datasource/datasource_request_buffers.dart';
+import '../files/project_files/injection/injection_request_buffers.dart';
+import '../files/project_files/repository/repository_request_buffers.dart';
+import '../files/project_files/repository_impl/repository_impl_request_buffers.dart';
+import '../files/request_files/cubit_test/cubit_test_buffers.dart';
+import '../files/request_files/datasource_test/datasource_test_buffers.dart';
+import '../files/request_files/repository_test/repository_test_buffers.dart';
+import '../files/request_files/usecase_test/usecase_test_buffers.dart';
+import '../files/request_files/cubit/cubit_buffers.dart';
+import '../files/request_files/cubit_states/cubit_states_buffers.dart';
+import '../files/request_files/entity/entity_buffers.dart';
+import '../files/request_files/model/model_buffers.dart';
+import '../files/request_files/usecase/usecase_buffers.dart';
+import 'endpoint.dart';
+import 'names.dart';
+import 'request_buffers.dart';
+import 'request_files.dart';
+import 'shared_entity_lookup.dart';
+
+class Request {
+  final File file;
+  final Names names;
+  final Names modelClassNames;
+  final DartType? dartType;
+  final Endpoint endpoint;
+  final RequestType type;
+  final bool hasToken;
+  final Map<String, dynamic>? params;
+  final Map<String, String> paramTypes;
+  final Map<String, dynamic> response;
+  final RequestBuffers buffers;
+  final RequestFiles files;
+
+  /// Request-level mode from this JSON file. Independent of `settings.json`.
+  final ModeType mode;
+  final bool hasExplicitModelClass;
+  final File? sharedEntityFile;
+
+  const Request({
+    required this.file,
+    required this.names,
+    required this.modelClassNames,
+    required this.dartType,
+    required this.endpoint,
+    required this.type,
+    required this.hasToken,
+    required this.response,
+    required this.buffers,
+    required this.files,
+    required this.mode,
+    required this.paramTypes,
+    required this.hasExplicitModelClass,
+    this.params,
+    this.sharedEntityFile,
+  });
+
+  bool get usesSharedEntity => sharedEntityFile != null;
+
+  static const String paginationKey = 'pagination';
+  static const String errorsKey = 'errors';
+  static const String pageParamKey = 'page';
+  static const String perPageParamKey = 'per_page';
+
+  static bool isEnvelopeKey(String key) =>
+      key == 'data' || key == paginationKey || key == errorsKey;
+
+  bool get hasPagination {
+    final dynamic pagination = response[paginationKey];
+    return pagination is Map;
+  }
+
+  bool get isPaginatedList => hasPagination && (dartType?.isList ?? false);
+
+  bool get hasRequestParams => params != null || hasPagination;
+
+  bool isPagingParam(String key) =>
+      key == pageParamKey || key == perPageParamKey || key == 'perPage';
+
+  /// JSON params plus `page` / `per_page` when [hasPagination].
+  Map<String, dynamic> get effectiveParams {
+    final Map<String, dynamic> merged = <String, dynamic>{...?params};
+    if (hasPagination) {
+      merged.putIfAbsent(pageParamKey, () => 1);
+      merged.putIfAbsent(perPageParamKey, () => 10);
+    }
+    return merged;
+  }
+
+  Map<String, dynamic> get extraFilterParams {
+    return Map<String, dynamic>.fromEntries(
+      effectiveParams.entries.where(
+        (MapEntry<String, dynamic> entry) => !isPagingParam(entry.key),
+      ),
+    );
+  }
+
+  String get paginationItemTypeName {
+    final DartType? dataType = dartType;
+    if (dataType == null) {
+      return 'Object';
+    }
+    if (dataType == DartType.listModel) {
+      return modelClassNames.classCase;
+    }
+    final String listType = dataType.typeName(
+      modelClass: modelClassNames.classCase,
+    );
+    if (listType.startsWith('List<') && listType.endsWith('>')) {
+      return listType.substring(5, listType.length - 1);
+    }
+    return modelClassNames.classCase;
+  }
+
+  String? get sharedEntityImport => sharedEntityFile == null
+      ? null
+      : SharedEntityLookup.packageImport(sharedEntityFile!);
+
+  bool isFileParam(String key) => isFileParamType(paramTypes[key]);
+
+  bool get hasFileParams {
+    final Map<String, dynamic>? requestParams = params;
+    if (requestParams == null) {
+      return false;
+    }
+    return requestParams.keys.any(isFileParam);
+  }
+
+  String dartTypeForParam(String key, dynamic value) {
+    if (isFileParam(key)) {
+      return 'File';
+    }
+    return getDartType(value);
+  }
+
+  void writeParamsConstructorArgs({
+    required StringBuffer buffer,
+    required String indent,
+  }) {
+    effectiveParams.forEach((String key, dynamic value) {
+      final Names keyNames = Names.fromString(key);
+      if (isPagingParam(key)) {
+        buffer.writeln('$indent${keyNames.camelCase}: $value,');
+        return;
+      }
+      final String dartType = dartTypeForParam(key, value);
+      buffer.writeln(
+        '$indent${keyNames.camelCase}: ${defaultValueForDartType(dartType)},',
+      );
+    });
+  }
+
+  void writePaginationTestJson({
+    required StringBuffer buffer,
+    required String indent,
+  }) {
+    if (!hasPagination) {
+      return;
+    }
+    buffer.writeln("$indent'pagination': <String, dynamic>{");
+    buffer.writeln("$indent  'total': 0,");
+    buffer.writeln("$indent  'count': 0,");
+    buffer.writeln("$indent  'per_page': 10,");
+    buffer.writeln("$indent  'current_page': 1,");
+    buffer.writeln("$indent  'total_pages': 1,");
+    buffer.writeln('$indent},');
+  }
+
+  factory Request.init({
+    required File file,
+    required String featureProjectPath,
+    required Map<String, dynamic> json,
+  }) {
+    final Names names = Names.fromString(json['name']?.toString() ?? '');
+    final dynamic rawModelClass = json['model_class'];
+    final bool hasExplicitModelClass =
+        rawModelClass != null && rawModelClass.toString().trim().isNotEmpty;
+    final Names modelClassNames = _resolveModelClassNames(names, rawModelClass);
+    final File? sharedEntityFile = hasExplicitModelClass
+        ? SharedEntityLookup.find(modelClassNames.classCase)
+        : null;
+
+    final Map<String, dynamic> response =
+        (json['response'] as Map<String, dynamic>?) ??
+        <String, dynamic>{'status': true, 'message': '', 'data': null};
+
+    DartType? dartType;
+    if (response['data'] != null) {
+      dartType = DartTypeExtension.fromType(value: response['data']);
+    }
+
+    final bool hasParamsJson = json['params'] != null;
+    final RequestType requestType =
+        RequestTypeExtension.fromString(json['type']?.toString() ?? '') ?? .get;
+    final bool hasPagination = response[paginationKey] is Map;
+
+    final String originalEndpoint = json['endpoint']?.toString() ?? '';
+    final Endpoint endpointModel = Endpoint(
+      endpoint: originalEndpoint,
+      hasParams: hasParamsJson,
+      hasQueryParams: requestType == .get && (hasParamsJson || hasPagination),
+      terms: const [],
+    );
+
+    final String testProjectPath = featureProjectPath.replaceAll(
+      'lib/features',
+      'test/features',
+    );
+
+    final RequestBuffers buffers = _buildRequestBuffers();
+    final RequestFiles files = _buildRequestFiles(
+      featureProjectPath: featureProjectPath,
+      testProjectPath: testProjectPath,
+      names: names,
+    );
+
+    final int modeInt = (json['mode'] as num?)?.toInt() ?? 1;
+    final ModeType modeType = .fromCode(modeInt);
+
+    return Request(
+      file: file,
+      names: names,
+      modelClassNames: modelClassNames,
+      dartType: dartType,
+      endpoint: endpointModel,
+      type: requestType,
+      hasToken: (json['token'] as bool?) ?? false,
+      params: json['params'] as Map<String, dynamic>?,
+      paramTypes: _parseParamTypes(json['param_types']),
+      response: response,
+      buffers: buffers,
+      files: files,
+      mode: modeType,
+      hasExplicitModelClass: hasExplicitModelClass,
+      sharedEntityFile: sharedEntityFile,
+    );
+  }
+
+  void markAsProtected() {
+    final Map<String, dynamic> jsonMap =
+        jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+    jsonMap['mode'] = 0;
+    file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(jsonMap));
+  }
+
+  static Map<String, String> _parseParamTypes(dynamic raw) {
+    if (raw is! Map) {
+      return const <String, String>{};
+    }
+    return raw.map(
+      (dynamic key, dynamic value) =>
+          MapEntry(key.toString(), value.toString()),
+    );
+  }
+
+  static Names _resolveModelClassNames(
+    Names requestNames,
+    dynamic rawModelClass,
+  ) {
+    if (rawModelClass != null && rawModelClass.toString().trim().isNotEmpty) {
+      return Names.fromString(rawModelClass.toString());
+    }
+    return Names.fromString('${requestNames.snakeCase}_data');
+  }
+
+  static RequestBuffers _buildRequestBuffers() {
+    return RequestBuffers(
+      datasource: DatasourceRequestBuffers(),
+      repository: RepositoryRequestBuffers(),
+      repositoryImpl: RepositoryImplRequestBuffers(),
+      entity: EntityRequestBuffers(),
+      model: ModelRequestBuffers(),
+      useCase: UseCaseRequestBuffers(),
+      cubit: CubitRequestBuffers(),
+      cubitStates: CubitStatesRequestBuffers(),
+      cubitTest: CubitTestRequestBuffers(),
+      useCaseTest: UseCaseTestRequestBuffers(),
+      repositoryTest: RepositoryTestRequestBuffers(),
+      datasourceTest: DatasourceTestRequestBuffers(),
+      injection: InjectionRequestBuffers(),
+    );
+  }
+
+  static RequestFiles _buildRequestFiles({
+    required String featureProjectPath,
+    required String testProjectPath,
+    required Names names,
+  }) {
+    final String snake = names.snakeCase;
+    return RequestFiles(
+      entity: File(
+        '$featureProjectPath/domain/entities/${snake}_response.dart',
+      ),
+      model: File('$featureProjectPath/data/models/${snake}_model.dart'),
+      useCase: File(
+        '$featureProjectPath/domain/usecases/${snake}_usecase.dart',
+      ),
+      cubit: File(
+        '$featureProjectPath/presentation/controller/$snake/${snake}_cubit.dart',
+      ),
+      cubitStates: File(
+        '$featureProjectPath/presentation/controller/$snake/${snake}_states.dart',
+      ),
+      cubitTest: File(
+        '$testProjectPath/presentation/controller/$snake/${snake}_cubit_test.dart',
+      ),
+      useCaseTest: File(
+        '$testProjectPath/domain/usecases/${snake}_usecase_test.dart',
+      ),
+      repositoryTest: File(
+        '$testProjectPath/data/repositories/${snake}_repository_test.dart',
+      ),
+      datasourceTest: File(
+        '$testProjectPath/data/datasources/${snake}_datasource_test.dart',
+      ),
+    );
+  }
+}
