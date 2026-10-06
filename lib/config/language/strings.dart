@@ -738,4 +738,64 @@ abstract class Strings {
   static String get welcomeSubtitle => 'welcome_subtitle'.tr;
 
   static String get orContinueWith => 'or_continue_with'.tr;
+
+  static String get fenzoTitle => 'fenzo_title'.tr;
+  static String get fenzoAddAccount => 'fenzo_add_account'.tr;
+  static String get fenzoAccounts => 'fenzo_accounts'.tr;
+  static String get fenzoIncome => 'fenzo_income'.tr;
+  static String get fenzoExpense => 'fenzo_expense'.tr;
+  static String get fenzoTransfer => 'fenzo_transfer'.tr;
+  static String get fenzoReports => 'fenzo_reports'.tr;
+  static String get fenzoCategories => 'fenzo_categories'.tr;
+  static String get fenzoSave => 'fenzo_save'.tr;
+  static String get fenzoCancel => 'fenzo_cancel'.tr;
+  static String get fenzoConfirm => 'fenzo_confirm'.tr;
+  static String get fenzoDelete => 'fenzo_delete'.tr;
+  static String get fenzoDeactivate => 'fenzo_deactivate'.tr;
+  static String get fenzoTotal => 'fenzo_total'.tr;
+  static String get fenzoEmpty => 'fenzo_empty'.tr;
+  static String get fenzoAmount => 'fenzo_amount'.tr;
+  static String get fenzoName => 'fenzo_name'.tr;
+  static String get fenzoSearch => 'fenzo_search'.tr;
+  static String get fenzoBank => 'fenzo_bank'.tr;
+  static String get fenzoWallet => 'fenzo_wallet'.tr;
+  static String get fenzoCash => 'fenzo_cash'.tr;
+  static String get fenzoOther => 'fenzo_other'.tr;
+  static String get fenzoBankName => 'fenzo_bank_name'.tr;
+  static String get fenzoAccountNumber => 'fenzo_account_number'.tr;
+  static String get fenzoPhone => 'fenzo_phone'.tr;
+  static String get fenzoOpeningDate => 'fenzo_opening_date'.tr;
+  static String get fenzoIncludeInTotal => 'fenzo_include_in_total'.tr;
+  static String get fenzoNet => 'fenzo_net'.tr;
+  static String get fenzoNotes => 'fenzo_notes'.tr;
+  static String get fenzoAccount => 'fenzo_account'.tr;
+  static String get fenzoCategory => 'fenzo_category'.tr;
+  static String get fenzoSubcategory => 'fenzo_subcategory'.tr;
+  static String get fenzoFromAccount => 'fenzo_from_account'.tr;
+  static String get fenzoToAccount => 'fenzo_to_account'.tr;
+  static String get fenzoDate => 'fenzo_date'.tr;
+  static String get fenzoDay => 'fenzo_day'.tr;
+  static String get fenzoWeek => 'fenzo_week'.tr;
+  static String get fenzoMonth => 'fenzo_month'.tr;
+  static String get fenzoCustom => 'fenzo_custom'.tr;
+  static String get fenzoReactivate => 'fenzo_reactivate'.tr;
+  static String get fenzoAddCategory => 'fenzo_add_category'.tr;
+  static String get fenzoBalance => 'fenzo_balance'.tr;
+  static String get fenzoStarting => 'fenzo_starting'.tr;
+  static String get fenzoTransfersIn => 'fenzo_transfers_in'.tr;
+  static String get fenzoTransfersOut => 'fenzo_transfers_out'.tr;
+  static String get fenzoEnding => 'fenzo_ending'.tr;
+  static String get fenzoInvalidRange => 'fenzo_invalid_range'.tr;
+  static String get fenzoAmountPositive => 'fenzo_amount_positive'.tr;
+  static String get fenzoAmountScale => 'fenzo_amount_scale'.tr;
+  static String get fenzoAmountInvalid => 'fenzo_amount_invalid'.tr;
+  static String get fenzoDateBeforeOpening => 'fenzo_date_before_opening'.tr;
+  static String get fenzoTypeLocked => 'fenzo_type_locked'.tr;
+  static String get fenzoTransactions => 'fenzo_transactions'.tr;
+  static String get fenzoNoMatches => 'fenzo_no_matches'.tr;
+  static String get fenzoTransferSameAccount =>
+      'fenzo_transfer_same_account'.tr;
+  static String get fenzoTransferAccountMissing =>
+      'fenzo_transfer_account_missing'.tr;
+  static String get fenzoOpeningDateBlocked => 'fenzo_opening_date_blocked'.tr;
 }

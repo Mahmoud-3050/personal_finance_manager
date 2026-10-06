@@ -8,9 +8,9 @@
 
 ## Summary
 
-Phase 0 is an Arabic, right-to-left, offline ledger for one person. They keep accounts with opening balances, record income, expenses, and internal transfers, classify them, and read a current-month dashboard plus date-range reports. Nothing connects to a bank.
+Phase 0 is an Arabic, right-to-left, offline fenzo for one person. They keep accounts with opening balances, record income, expenses, and internal transfers, classify them, and read a current-month dashboard plus date-range reports. Nothing connects to a bank.
 
-The technical approach is one `ledger` feature in the existing Flutter app. Domain code owns money (integer piastres), the balance formula, and date ranges. Drift stores the facts on device. Cubits call one use case each and never calculate balances in widgets. Decisions are in [research.md](research.md).
+The technical approach is one `fenzo` feature in the existing Flutter app. Domain code owns money (integer piastres), the balance formula, and date ranges. Drift stores the facts on device. Cubits call one use case each and never calculate balances in widgets. Decisions are in [research.md](research.md).
 
 ## Technical Context
 
@@ -40,8 +40,8 @@ Gates below are `.specify/memory/constitution.md` version 2.2.0, the same text a
 
 | Gate | Result |
 |---|---|
-| I. Feature-first layers: presentation → domain ← data. Domain has no Flutter, Dio, or data imports | Pass. One `ledger` feature. `lib/features/profile/` is not in this repo; `ledger` uses the prescribed tree |
-| II. GetIt through `ServiceLocator`. Feature types registered on the route via `FeatureScope`, not in `ServiceLocator.init()`. Cubits `registerFactory`. Use cases, repository, data source `registerLazySingleton` | Pass. Database registration lives in the ledger scope |
+| I. Feature-first layers: presentation → domain ← data. Domain has no Flutter, Dio, or data imports | Pass. One `fenzo` feature. `lib/features/profile/` is not in this repo; `fenzo` uses the prescribed tree |
+| II. GetIt through `ServiceLocator`. Feature types registered on the route via `FeatureScope`, not in `ServiceLocator.init()`. Cubits `registerFactory`. Use cases, repository, data source `registerLazySingleton` | Pass. Database registration lives in the fenzo scope |
 | III. Cubit per user action, `f` prefix, immutable `ApiCallState<T>`, widgets dispatch with `context.read` and do not call the data source | Pass. Confirm dialogs stay in the widget and only then call `f…` |
 | IV. `Either<Failure, T>` from `package:either/either.dart`, not `dartz`. Data source throws `AppException`. Repository maps to `Failure` | Pass. `either` is the path package `packages/either` |
 | V. Models map to entities. `fromJson` stays in data. Domain stays pure Dart | Pass. Drift rows map in the data layer. No separate mapper class |
@@ -49,8 +49,8 @@ Gates below are `.specify/memory/constitution.md` version 2.2.0, the same text a
 | Tests for use cases, repository, and cubit success/error. `flutter analyze` clean | Pass. Required before the feature is done |
 | No service between cubit and use case, no `BaseCubit` / `BaseRepository` | Pass |
 | Local packages `either`, `themes`, `language`, `screen_util`, `field_validator` | Pass. Root `pubspec.yaml` path-depends on `packages/<name>`. Presentation uses those packages instead of pub.dev duplicates |
-| VI. Shared app codebase | Pass. Ledger reuses `lib/core`, `lib/config`, and `lib/shared`. It does not add a second `Failure`, `UseCase`, `ApiCallState`, `FeatureScope`, router, or string table. Local ledger data does not call Dio |
-| HTTP / Dio remote data source | Not applicable. The constitution allows local I/O in the data source. Phase 0 must work offline, so the ledger data source is local only |
+| VI. Shared app codebase | Pass. Fenzo reuses `lib/core`, `lib/config`, and `lib/shared`. It does not add a second `Failure`, `UseCase`, `ApiCallState`, `FeatureScope`, router, or string table. Local fenzo data does not call Dio |
+| HTTP / Dio remote data source | Not applicable. The constitution allows local I/O in the data source. Phase 0 must work offline, so the fenzo data source is local only |
 
 ## Project Structure
 
@@ -74,13 +74,13 @@ specs/001-phase0-mvp/
 ```text
 lib/
 ├── main.dart
-├── injection_container.dart          # ServiceLocator.init(); no ledger types
+├── injection_container.dart          # ServiceLocator.init(); no fenzo types
 ├── core/
 │   ├── error/                        # Failure, AppException
 │   ├── usecase/usecase.dart
 │   └── presentation/                 # ApiCallState, FeatureScope
-├── features/ledger/
-│   ├── ledger_injection.dart
+├── features/fenzo/
+│   ├── fenzo_injection.dart
 │   ├── data/
 │   │   ├── datasources/              # Drift local data source + seed
 │   │   ├── models/
@@ -96,13 +96,13 @@ lib/
 │       └── widgets/
 packages/either/                      # package:either/either.dart
 test/
-├── features/ledger/domain/
-├── features/ledger/data/
-├── features/ledger/presentation/
+├── features/fenzo/domain/
+├── features/fenzo/data/
+├── features/fenzo/presentation/
 └── widget_test.dart
 ```
 
-**Structure Decision**: Single Flutter app. Phase 0 is the `ledger` feature plus the small core types the constitution requires (`ServiceLocator`, `UseCase`, `ApiCallState`, `FeatureScope`, `Failure`). Operations, each with its own cubit and use case:
+**Structure Decision**: Single Flutter app. Phase 0 is the `fenzo` feature plus the small core types the constitution requires (`ServiceLocator`, `UseCase`, `ApiCallState`, `FeatureScope`, `Failure`). Operations, each with its own cubit and use case:
 
 - Save, deactivate, reactivate, and delete account; get accounts
 - Save income, save expense, save transfer, update transaction, delete transaction

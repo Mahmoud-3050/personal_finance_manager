@@ -1,6 +1,6 @@
 # Phase 0 Quickstart
 
-Validation guide for the ledger MVP. Behavior contracts:
+Validation guide for the fenzo MVP. Behavior contracts:
 
 - [accounts.md](contracts/accounts.md)
 - [transactions.md](contracts/transactions.md)

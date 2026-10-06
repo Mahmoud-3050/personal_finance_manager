@@ -1,6 +1,6 @@
 # Phase 0 Data Model
 
-Logical model for the on-device ledger. Physical tables follow this model in the data layer. Domain code sees the entities below and does not see SQL.
+Logical model for the on-device fenzo. Physical tables follow this model in the data layer. Domain code sees the entities below and does not see SQL.
 
 Amounts are piastres (`int`). Display divides by 100 and always shows two decimal places. See [research.md](research.md).
 

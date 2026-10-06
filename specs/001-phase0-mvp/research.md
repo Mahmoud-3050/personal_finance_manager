@@ -2,7 +2,7 @@
 
 ## 1. Local storage
 
-- **Decision**: Persist the ledger with Drift on SQLite, in a single on-device database file.
+- **Decision**: Persist the fenzo with Drift on SQLite, in a single on-device database file.
 - **Rationale**: Accounts, categories, and transactions are relational. Reports filter by date, account, type, and category, and a used category must not be erasable. SQLite keeps that integrity on device with no network, and a few thousand rows stay well inside the two-second report goal.
 - **Alternatives considered**: Raw `sqflite` (same engine, more hand-written schema risk). Hive or Isar (weaker foreign keys for “disable instead of delete”). Memory only (fails the requirement that records survive a restart).
 
@@ -32,9 +32,9 @@
 
 ## 6. Feature boundaries
 
-- **Decision**: One feature, `ledger`, with one repository and one use case per repository method. Cubits stay one per user action.
+- **Decision**: One feature, `fenzo`, with one repository and one use case per repository method. Cubits stay one per user action.
 - **Rationale**: Accounts, categories, transactions, the dashboard, and reports share one consistency model. Splitting them into features would force those features to import each other. The constitution still gets granular cubits and use cases inside the one feature.
-- **Alternatives considered**: Separate account, transaction, category, and report features (cross-feature coupling). One god cubit for the whole ledger (forbidden by the constitution).
+- **Alternatives considered**: Separate account, transaction, category, and report features (cross-feature coupling). One god cubit for the whole fenzo (forbidden by the constitution).
 
 ## 7. Either and other shared packages
 
@@ -50,7 +50,7 @@
 
 ## 9. Navigation and state
 
-- **Decision**: `go_router` for routes. Each ledger route is wrapped in `FeatureScope`, which registers that route’s cubits and the shared ledger data layer. `ServiceLocator.init()` does not register feature types. Cubit states for loads and saves are `ApiCallState<T>`. Public cubit methods use the `f` prefix. Confirmation dialogs stay in the widget; the cubit runs only after the person confirms.
+- **Decision**: `go_router` for routes. Each fenzo route is wrapped in `FeatureScope`, which registers that route’s cubits and the shared fenzo data layer. `ServiceLocator.init()` does not register feature types. Cubit states for loads and saves are `ApiCallState<T>`. Public cubit methods use the `f` prefix. Confirmation dialogs stay in the widget; the cubit runs only after the person confirms.
 - **Rationale**: Matches the constitution’s injection, cubit, and route-scope rules. A dialog is a UI decision, not a domain rule.
 - **Alternatives considered**: Registering the database in `ServiceLocator.init()` (leaves a feature singleton for the whole process). Imperative `Navigator` only (harder to keep each route’s scope explicit).
 
