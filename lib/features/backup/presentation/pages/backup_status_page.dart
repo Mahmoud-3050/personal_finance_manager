@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screen_util/screen_util.dart';
+import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../../../../core/presentation/api_call_state.dart';
+import '../../../../core/utils/values/fonts.dart';
 import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
 import '../../domain/entities/backup_settings.dart';
@@ -35,70 +37,99 @@ class BackupStatusPage extends StatelessWidget {
             _ => const BackupSettings(),
           };
           return ListView(
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 32.h),
             children: <Widget>[
               Text(
                 _scheduleLabel(settings.schedule),
-                style: TextStyles.of(size: 16, weight: FontWeight.w500),
+                style: TextStyles.of(
+                  size: 28,
+                  weight: FontWeight.w600,
+                  fontFamily: Fonts.display,
+                  letterSpacing: -0.6,
+                  fontVariations: const <FontVariation>[
+                    FontVariation.weight(600),
+                  ],
+                ),
               ),
               SizedBox(height: 8.h),
               Text(
                 settings.lastOutcome == null
                     ? Strings.backupNone
                     : _outcomeLabel(settings.lastOutcome!),
-                style: TextStyles.of(size: 14),
+                style: TextStyles.of(
+                  size: 15,
+                  color: context.colors.textSecondary,
+                ),
               ),
               if (settings.lastAttemptAt != null)
                 Text(
                   settings.lastAttemptAt!.toIso8601String(),
-                  style: TextStyles.of(size: 13),
+                  style: TextStyles.of(size: 13, color: context.colors.hint),
                 ),
               if (settings.lastOrigin != null)
                 Text(
                   _originLabel(settings.lastOrigin!),
-                  style: TextStyles.of(size: 13),
+                  style: TextStyles.of(size: 13, color: context.colors.hint),
                 ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 20.h),
               Wrap(
                 spacing: 8.w,
+                runSpacing: 8.h,
                 children: <Widget>[
                   for (final BackupSchedule schedule in BackupSchedule.values)
-                    OutlinedButton(
-                      onPressed: () => _setSchedule(context, schedule),
-                      child: Text(
-                        _scheduleLabel(schedule),
-                        style: TextStyles.of(size: 13),
-                      ),
-                    ),
+                    _scheduleButton(context, settings, schedule),
                 ],
               ),
-              SizedBox(height: 16.h),
-              FilledButton(
-                onPressed: () => _backupNow(context),
-                child: Text(Strings.backupNow, style: TextStyles.of(size: 14)),
-              ),
-              SizedBox(height: 8.h),
-              OutlinedButton(
-                onPressed: () => context.push(AppRoutes.cloudCopies),
-                child: Text(
-                  Strings.backupCopies,
-                  style: TextStyles.of(size: 14),
+              SizedBox(height: 24.h),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => _backupNow(context),
+                  child: Text(
+                    Strings.backupNow,
+                    maxLines: 1,
+                    style: TextStyles.of(
+                      size: 15,
+                      weight: FontWeight.w600,
+                      color: context.colors.onPrimary,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 8.h),
-              OutlinedButton(
-                onPressed: () => _export(context),
-                child: Text(
-                  Strings.backupExport,
-                  style: TextStyles.of(size: 14),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => context.push(AppRoutes.cloudCopies),
+                  child: Text(
+                    Strings.backupCopies,
+                    maxLines: 1,
+                    style: TextStyles.of(size: 15, weight: FontWeight.w500),
+                  ),
                 ),
               ),
               SizedBox(height: 8.h),
-              OutlinedButton(
-                onPressed: () => _import(context),
-                child: Text(
-                  Strings.backupImport,
-                  style: TextStyles.of(size: 14),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => _export(context),
+                  child: Text(
+                    Strings.backupExport,
+                    maxLines: 1,
+                    style: TextStyles.of(size: 15, weight: FontWeight.w500),
+                  ),
+                ),
+              ),
+              SizedBox(height: 8.h),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => _import(context),
+                  child: Text(
+                    Strings.backupImport,
+                    maxLines: 1,
+                    style: TextStyles.of(size: 15, weight: FontWeight.w500),
+                  ),
                 ),
               ),
               BlocBuilder<SignInForBackupCubit, SignInForBackupState>(
@@ -149,6 +180,34 @@ class BackupStatusPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _scheduleButton(
+    BuildContext context,
+    BackupSettings settings,
+    BackupSchedule schedule,
+  ) {
+    final bool selected = settings.schedule == schedule;
+    final ThemeColors colors = context.colors;
+    final Text label = Text(
+      _scheduleLabel(schedule),
+      maxLines: 1,
+      style: TextStyles.of(
+        size: 13,
+        weight: FontWeight.w500,
+        color: selected ? colors.onPrimary : colors.textPrimary,
+      ),
+    );
+    if (selected) {
+      return FilledButton(
+        onPressed: () => _setSchedule(context, schedule),
+        child: label,
+      );
+    }
+    return OutlinedButton(
+      onPressed: () => _setSchedule(context, schedule),
+      child: label,
     );
   }
 

@@ -402,6 +402,7 @@
   "fenzo_date_before_opening": "The date cannot be earlier than the opening date",
   "fenzo_type_locked": "The account type is fixed once a transaction exists",
   "fenzo_transactions": "Transactions",
+  "fenzo_add_transaction": "Add Transaction",
   "fenzo_no_matches": "No matching transactions",
   "fenzo_transfer_same_account": "Choose two different accounts",
   "fenzo_transfer_account_missing": "Choose two active accounts",

@@ -18,4 +18,6 @@ abstract final class ColorKeys {
   static const String greyBackground = 'greyBackground';
   static const String greyForeground = 'greyForeground';
   static const String progressBarBackground = 'progressBarBackground';
+  static const String cardGradientStart = 'cardGradientStart';
+  static const String cardGradientEnd = 'cardGradientEnd';
 }

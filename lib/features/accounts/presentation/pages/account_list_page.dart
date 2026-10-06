@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screen_util/screen_util.dart';
+import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/routes/app_routes.dart';
@@ -11,6 +12,8 @@ import '../../../../shared/domain/entities/account.dart';
 import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/widgets/finance/account_mark.dart';
+import '../../../../shared/widgets/finance/summary_card.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
 import '../../domain/entities/account_list_data.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
@@ -57,20 +60,19 @@ class AccountListPage extends StatelessWidget {
             final AccountListData data = state.data;
             final FinanceRecords book = data.records;
             return ListView(
-              padding: EdgeInsets.symmetric(vertical: 8.h),
+              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 88.h),
               children: book.accounts
                   .map(
-                    (Account account) => ListTile(
-                      title: Text(
-                        account.name,
-                        style: TextStyles.of(size: 16, weight: FontWeight.w500),
-                      ),
-                      subtitle: Text(
-                        account.isActive
-                            ? '${Strings.fenzoBalance} ${Money(data.balances[account.id] ?? 0).format()}'
-                            : Strings.fenzoDeactivate,
-                        style: TextStyles.of(size: 14),
-                      ),
+                    (Account account) => SummaryCard(
+                      title: account.name,
+                      subtitle: account.isActive
+                          ? null
+                          : Strings.fenzoDeactivate,
+                      amount: account.isActive
+                          ? Money(data.balances[account.id] ?? 0).format()
+                          : null,
+                      amountColor: context.colors.success,
+                      leading: AccountMark(type: account.type),
                       onTap: () =>
                           context.push(AppRoutes.accountForm, extra: account),
                       trailing: PopupMenuButton<String>(

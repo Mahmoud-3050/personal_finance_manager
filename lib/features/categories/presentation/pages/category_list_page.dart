@@ -9,6 +9,8 @@ import '../../../../shared/domain/entities/category.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/entities/subcategory.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/widgets/finance_ledger.dart';
+import '../../../../shared/widgets/finance_menu_field.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
 import '../../domain/usecases/deactivate_category_use_case.dart';
@@ -102,15 +104,9 @@ class _CategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool used = _idIsUsed(book, category.id);
-    return ListTile(
-      title: Text(
-        category.name,
-        style: TextStyles.of(size: 16, weight: FontWeight.w500),
-      ),
-      subtitle: Text(
-        category.isActive ? category.kind.name : Strings.fenzoDeactivate,
-        style: TextStyles.of(size: 14),
-      ),
+    return FinanceLedgerRow(
+      title: category.name,
+      subtitle: category.isActive ? category.kind.name : Strings.fenzoDeactivate,
       trailing: PopupMenuButton<String>(
         onSelected: (String action) => _onAction(context, action, used),
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -206,15 +202,12 @@ class _SubcategoryTile extends StatelessWidget {
     final CategoryKind kind = book.categories
         .firstWhere((Category item) => item.id == subcategory.categoryId)
         .kind;
-    return ListTile(
-      contentPadding: EdgeInsetsDirectional.only(start: 32.w, end: 16.w),
-      title: Text(subcategory.name, style: TextStyles.of(size: 15)),
-      subtitle: Text(
-        subcategory.isActive
-            ? Strings.fenzoSubcategory
-            : Strings.fenzoDeactivate,
-        style: TextStyles.of(size: 13),
-      ),
+    return FinanceLedgerRow(
+      indent: 16.w,
+      title: subcategory.name,
+      subtitle: subcategory.isActive
+          ? Strings.fenzoSubcategory
+          : Strings.fenzoDeactivate,
       trailing: PopupMenuButton<String>(
         onSelected: (String action) async {
           if (action == 'rename') {
@@ -309,9 +302,9 @@ class _CategoryPromptState extends State<_CategoryPrompt> {
         children: <Widget>[
           AppTextFormField(controller: _name, labelText: Strings.fenzoName),
           SizedBox(height: 12.h),
-          DropdownButton<CategoryKind>(
+          FinanceMenuField<CategoryKind>(
             value: _kind,
-            isExpanded: true,
+            label: Strings.fenzoCategory,
             items: CategoryKind.values
                 .map(
                   (CategoryKind kind) => DropdownMenuItem<CategoryKind>(

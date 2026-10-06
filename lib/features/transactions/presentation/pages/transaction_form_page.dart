@@ -18,6 +18,8 @@ import '../../../../shared/domain/finance_records.dart';
 import '../../../../shared/widgets/app_dropdown.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
+import '../../../../shared/widgets/finance_ledger.dart';
+import '../../../../shared/widgets/finance_menu_field.dart';
 import '../../../accounts/domain/entities/account_list_data.dart';
 import '../../../accounts/presentation/controller/get_accounts/get_accounts_cubit.dart';
 import '../../../categories/presentation/controller/get_categories/get_categories_cubit.dart';
@@ -428,9 +430,8 @@ class _FormBody extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 12.h),
             child: Text(message!, style: TextStyles.of(size: 14)),
           ),
-        DropdownButton<MoneyTransactionType>(
+        FinanceMenuField<MoneyTransactionType>(
           value: type,
-          isExpanded: true,
           items: MoneyTransactionType.values
               .map(
                 (MoneyTransactionType item) =>
@@ -496,10 +497,9 @@ class _FormBody extends StatelessWidget {
             onChanged: onSubcategoryChanged,
           ),
         ],
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(Strings.fenzoDate, style: TextStyles.of(size: 16)),
-          subtitle: Text(date.toIso(), style: TextStyles.of(size: 14)),
+        FinanceLedgerRow(
+          title: Strings.fenzoDate,
+          subtitle: date.toIso(),
           onTap: onPickDate,
         ),
         AppTextFormField(controller: notes, labelText: Strings.fenzoNotes),

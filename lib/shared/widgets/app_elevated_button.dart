@@ -69,14 +69,14 @@ class AppElevatedButton extends StatefulWidget {
     BorderRadius? borderRadius,
     EdgeInsetsGeometry? padding,
   }) {
-    final resolvedRadius = borderRadius ?? .circular(16.r);
+    final resolvedRadius = borderRadius ?? .circular(999);
     return ContainerShimmer(
       borderRadius: resolvedRadius,
       child: AppElevatedButton(
         onPressed: null,
         text: 'Button',
         buttonColor: Colors.transparent,
-        borderRadius: 16.r,
+        borderRadius: 999,
         padding: padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
       ),
     );
@@ -87,8 +87,8 @@ class AppElevatedButton extends StatefulWidget {
 }
 
 class _AppElevatedButtonState extends State<AppElevatedButton> {
-  static const Duration _stateAnimationDuration = Duration(milliseconds: 250);
-  static const double _defaultRadius = 16;
+  static const Duration _stateAnimationDuration = Duration(milliseconds: 220);
+  static const double _defaultRadius = 999;
   static const double _iconGap = 8;
   static const double _loaderSize = 20;
   static const double _disabledTextOpacity = 0.85;
@@ -106,7 +106,7 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final radius = widget.borderRadius ?? _defaultRadius.r;
+    final radius = widget.borderRadius ?? _defaultRadius;
     final backgroundColor = widget.buttonColor ?? colors.primary;
 
     return Semantics(
@@ -123,28 +123,17 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
         height: widget.height,
         margin:
             widget.margin ?? .symmetric(horizontal: widget.sidePadding ?? 0),
-        decoration: BoxDecoration(
-          borderRadius: .circular(radius),
-          boxShadow: _isVisuallyDisabled
-              ? const []
-              : [
-                  BoxShadow(
-                    color: widget.shadowColor ?? colors.secondary,
-                    blurRadius:
-                        widget.elevation ?? (context.isDarkTheme ? 16.r : 4.r),
-                  ),
-                ],
-        ),
+        decoration: BoxDecoration(borderRadius: .circular(radius)),
         child: ElevatedButton(
           onPressed: _blocksPress ? null : _handlePressed,
           clipBehavior: .antiAliasWithSaveLayer,
           style: ElevatedButton.styleFrom(
             padding:
                 widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
-            foregroundColor: colors.foreground,
+            foregroundColor: colors.onPrimary,
             backgroundColor: backgroundColor,
             disabledBackgroundColor: colors.grey400,
-            disabledForegroundColor: colors.white.withValues(
+            disabledForegroundColor: colors.onPrimary.withValues(
               alpha: _disabledTextOpacity,
             ),
             elevation: 0,
@@ -198,7 +187,7 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
       child: SizedBox.square(
         dimension: _loaderSize.r,
         child: CircularProgressIndicator(
-          color: widget.textColor ?? colors.white,
+            color: widget.textColor ?? colors.onPrimary,
         ).appLoading,
       ),
     );
@@ -257,8 +246,8 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
             color:
                 widget.textColor ??
                 (isDisabled
-                    ? colors.white.withValues(alpha: _disabledTextOpacity)
-                    : colors.white),
+                    ? colors.onPrimary.withValues(alpha: _disabledTextOpacity)
+                    : colors.onPrimary),
           ),
       textAlign: .center,
       maxLines: widget.maxLines,

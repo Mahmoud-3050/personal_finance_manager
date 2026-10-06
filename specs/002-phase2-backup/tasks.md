@@ -19,7 +19,7 @@
 
 **Purpose**: Packages and the backup feature tree
 
-- [X] T001 Add `firebase_auth` and `firebase_storage` to `pubspec.yaml`
+- [X] T001 Add `firebase_auth` and `cloud_firestore` to `pubspec.yaml`
 - [X] T002 [P] Create `lib/features/backup/` with `data/datasources/`, `data/models/`, `data/repositories/`, `domain/entities/`, `domain/repositories/`, `domain/usecases/`, `domain/services/`, and `presentation/controller/`, `presentation/pages/` per `specs/002-phase2-backup/plan.md`
 
 ---
@@ -58,12 +58,12 @@
 
 ### Implementation for User Story 1
 
-- [X] T015 [US1] Upload a version-1 snapshot for the signed-in person with the Firebase Storage SDK in `lib/features/backup/data/datasources/cloud_backup_data_source.dart`. Do not send the upload through `DioConsumer`. Sign in with Google only when a cloud send starts. Cancel leaves the book unchanged
+- [X] T015 [US1] Upload a version-1 snapshot for the signed-in person with the Firestore SDK in `lib/features/backup/data/datasources/cloud_backup_data_source.dart`. Do not send the upload through `DioConsumer`. Sign in with Google only when a cloud send starts. Cancel leaves the book unchanged
 - [X] T016 [US1] Add `SignInForBackupUseCase`, `RunManualBackupUseCase`, and `GetBackupStatusUseCase` in `lib/features/backup/domain/usecases/sign_in_for_backup_use_case.dart`, `lib/features/backup/domain/usecases/run_manual_backup_use_case.dart`, and `lib/features/backup/domain/usecases/get_backup_status_use_case.dart`
 - [X] T017 [US1] Add cubits and part-file `ApiCallState` types under `lib/features/backup/presentation/controller/sign_in_for_backup/`, `lib/features/backup/presentation/controller/run_manual_backup/`, and `lib/features/backup/presentation/controller/get_backup_status/`
 - [X] T018 [US1] Register those use cases and cubits in `lib/features/backup/backup_injection.dart`
 - [X] T019 [US1] Build the status screen from `specs/002-phase2-backup/contracts/backup-screens.md` in `lib/features/backup/presentation/pages/backup_status_page.dart`, with a manual backup action and the last time, status, and source
-- [X] T020 [US1] Add `AppRoutes.backup` and a `FeatureScope` route in `lib/config/routes/app_routes.dart` and `lib/config/routes/app_router.dart`, and link it from `lib/features/dashboard/presentation/pages/dashboard_page.dart`
+- [X] T020 [US1] Add `AppRoutes.backup` and a `FeatureScope` route in `lib/config/routes/app_routes.dart` and `lib/config/routes/app_router.dart`, and open it from Settings (`lib/features/dashboard/presentation/pages/settings_page.dart`)
 
 **Checkpoint**: Manual backup works online, fails visibly offline, and recording still saves.
 

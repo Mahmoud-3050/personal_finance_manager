@@ -8,9 +8,9 @@
 
 ## 2. Cloud transport
 
-- **Decision**: Store each cloud copy as one file in Firebase Storage under the signed-in person. Add `firebase_auth` and `firebase_storage`. The app already initializes Firebase and already depends on `google_sign_in`.
-- **Rationale**: The phase request names Firebase cloud backup. One file per copy matches export/import and the five-copy limit. Firebase is already initialized for Crashlytics, Analytics, Remote Config, and Messaging.
-- **Alternatives considered**: Firestore documents per transaction (a second ledger, easy to diverge). Uploading through `DioConsumer` (Firebase Storage is not an HTTP API this app owns). A vendor-neutral interface with a fake in tests, and Firebase only in the data source.
+- **Decision**: Store each cloud copy as one Firestore document under `backups/{uid}/copies/{id}` for the signed-in person. Add `firebase_auth` and `cloud_firestore`. The app already initializes Firebase and already depends on `google_sign_in`.
+- **Rationale**: The phase request names Firebase cloud backup. One document per copy matches export/import and the five-copy limit. Firestore works on the free Spark plan; Firebase Storage requires Blaze billing. Firebase is already initialized for Crashlytics, Analytics, Remote Config, and Messaging.
+- **Alternatives considered**: Firebase Storage objects (requires Blaze). Firestore documents per transaction (a second ledger, easy to diverge). Uploading through `DioConsumer` (Firestore is not an HTTP API this app owns). A vendor-neutral interface with a fake in tests, and Firebase only in the data source.
 
 ## 3. Who may send or retrieve a cloud copy
 
@@ -20,7 +20,7 @@
 
 ## 4. How many cloud copies
 
-- **Decision**: After each successful upload, keep the five newest successful objects and delete the older ones. Failed and waiting attempts are not stored as copies.
+- **Decision**: After each successful upload, keep the five newest successful documents and delete the older ones. Failed and waiting attempts are not stored as copies.
 - **Rationale**: Matches the clarification. Five covers a bad latest copy without unbounded storage.
 - **Alternatives considered**: Only the latest (one bad backup is the only way back). Keep all until the person deletes one (unbounded). A 30-day window (harder to test than a count of five).
 

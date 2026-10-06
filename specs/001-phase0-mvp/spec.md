@@ -17,16 +17,17 @@ This specification covers only the MVP described in BRD section 20.1: accounts a
 ### Session 2026-10-06
 
 - Q: How precise are money amounts in Phase 0? → A: Egyptian pounds and piastres, at most 2 decimal places (for example 12.50). More than 2 decimal places is rejected, not rounded.
-- Q: Which accounts does the dashboard list when some are deactivated? → A: Active accounts only. Deactivated accounts stay in the account list and in past reports, and are not offered for new transactions.
+- Q: Which accounts does the home screen list when some are deactivated? → A: The home screen does not list accounts. Deactivated accounts stay in the account list and in past reports, are not offered for new transactions, and their current balance still counts in the home total.
 - Q: Which days does “this week” include? → A: Saturday through Friday.
 - Q: Can the account type change after creation? → A: Only while the account has no transactions. After that, the type is fixed.
 - Q: Which destructive actions ask for confirmation? → A: Deleting a transaction, deleting an account with no transactions, and deactivating an account. Cancel leaves everything unchanged. Amount edits do not ask.
+- Q: What does the home screen lead with, and where do categories and backup live? → A: The home figure is the current money in every account, not this month’s net. This month’s income and expenses stay on that card. Expense categories are listed largest share first. The home screen does not list accounts and does not show a separate net row. Categories and backup open from Settings, which is reached from the home bar. On search, the word field stays on the screen; account, type, category, and subcategory filters open together from a filter control beside that field.
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - See where money sits (Priority: P1)
 
-A person adds each account that holds money — a bank account, an electronic wallet, cash, or another account — and records how much was there when they started tracking it. They can then see each account’s current balance and the total of the accounts they choose to include.
+A person adds each account that holds money — a bank account, an electronic wallet, cash, or another account — and records how much was there when they started tracking it. They can then see each account’s current balance. The home total is the sum of every account’s current balance.
 
 **Why this priority**: Without accounts and a starting balance, later income, spending, and reports have nothing to attach to. This story alone already answers “how much money do I have, and where is it?”
 
@@ -37,9 +38,9 @@ A person adds each account that holds money — a bank account, an electronic wa
 1. **Given** the person has no accounts yet, **When** they add “Bank ABC” as a bank account with an opening balance of 25,000 EGP and a start date, **Then** that account shows a current balance of 25,000 EGP, and that 25,000 is not counted as income.
 2. **Given** a bank account is being added, **When** the person enters a bank name and an account number, **Then** those values are kept only as labels that identify the account.
 3. **Given** an electronic wallet is being added, **When** the person enters the linked phone number, **Then** that number is kept only as a label that identifies the wallet.
-4. **Given** two active accounts are included in the total, **When** the person views their money, **Then** the total equals the sum of those two current balances.
-5. **Given** an account is excluded from the total, **When** the person views total money, **Then** that account’s balance is omitted from the total and remains visible on the account itself.
-6. **Given** an account already has history, **When** the person deactivates it and confirms, **Then** its past records stay unchanged, it disappears from the dashboard, it remains in the account list, it cannot be used for new transactions, and it stays out of the total unless the person includes it again. **When** they cancel, **Then** the account stays active and nothing changes.
+4. **Given** several accounts exist, **When** the person views their money on the home screen, **Then** the total equals the sum of every account’s current balance, including a deactivated account and an account marked as excluded from the total.
+5. **Given** an account is excluded from the total, **When** the person views that account, **Then** its own current balance is still shown on the account. The home total still includes it.
+6. **Given** an account already has history, **When** the person deactivates it and confirms, **Then** its past records stay unchanged, it remains in the account list, it cannot be used for new transactions, and its current balance still counts in the home total. **When** they cancel, **Then** the account stays active and nothing changes.
 7. **Given** an account has no transactions, **When** the person removes it and confirms, **Then** it disappears. **When** they cancel, **Then** the account remains. **Given** an account has transactions, **When** the person tries to remove it permanently, **Then** the product offers deactivation instead and keeps the history.
 8. **Given** an account has no transactions, **When** the person changes its type, **Then** the type changes and identifying labels that do not apply to the new type are cleared.
 9. **Given** an account already has a transaction, **When** the person tries to change its type, **Then** the type stays unchanged and they are told that the type is fixed once transactions exist.
@@ -84,7 +85,7 @@ A person records an internal move from one of their accounts to another. The sou
 3. **Given** the person edits the amount or either account, **When** they save, **Then** both balances and the total match the edited move.
 4. **Given** the person deletes the move and confirms, **When** deletion completes, **Then** both balances return to what they were before that move. **When** they cancel, **Then** the move and both balances stay as they were.
 5. **Given** the source and destination are the same account, or either account is deactivated, or the amount is not greater than zero, or the date is before either account’s opening date, **When** they try to save, **Then** the move is rejected with a clear reason.
-6. **Given** only the source account is included in the total, **When** a move is recorded to an excluded account, **Then** total money decreases by the amount, because the destination is outside the total. The move is still not an expense.
+6. **Given** a move between any two of the person’s accounts, **When** it is recorded, **Then** the source decreases, the destination increases, the home total is unchanged, and total expenses do not increase. The move is not an expense.
 
 ---
 
@@ -109,20 +110,21 @@ A person classifies income and expenses with categories and optional subcategori
 
 ### User Story 5 - Read the current month at a glance (Priority: P2)
 
-A person opens the dashboard and sees this calendar month’s income, expenses, and net result, plus total money, each active account’s balance, how expenses split by category, and the latest transactions. From any summary they can open the matching detail. Deactivated accounts are not on the dashboard.
+A person opens the home screen and sees the money currently in every account, this calendar month’s income and expenses, how this month’s expenses split by category, and the latest transactions. The month’s net is not a separate row and is not the leading figure. Accounts are not listed here. Categories and backup are opened from Settings. From income, expenses, or a category they can open the matching transactions.
 
-**Why this priority**: The dashboard is the daily answer to “how is this month going?”. It depends on Stories 1–4 and is the first screen that brings them together.
+**Why this priority**: The home screen is the daily answer to “how much do I have, and how is this month going?”. It depends on Stories 1–4 and is the first screen that brings them together.
 
-**Independent Test**: With known transactions inside and outside the current month, open the dashboard and confirm only the current month is summarized, then open one summary and land on the matching detail.
+**Independent Test**: With known transactions inside and outside the current month, and with more than one account, open the home screen and confirm the leading figure is the sum of every account’s current balance, income and expenses cover only the current month, and expense categories are ordered from the largest share to the smallest.
 
 **Acceptance Scenarios**:
 
-1. **Given** transactions exist in the current calendar month and in earlier months, **When** the person opens the dashboard, **Then** income, expenses, and net result include only the current calendar month, and transfers are not part of income or expenses.
-2. **Given** the dashboard is open, **When** the person looks at accounts, **Then** each active account shows its current balance, deactivated accounts are absent, and total money matches the included accounts.
-3. **Given** the current month has expenses in more than one category, **When** the person views the expense split, **Then** each category shows its amount and its share of the month’s expenses.
-4. **Given** the dashboard is open, **When** the person looks at recent activity, **Then** they see the ten most recent transactions across all accounts, newest first.
-5. **Given** a summary figure or category on the dashboard, **When** the person opens it, **Then** they see the underlying transactions for that figure.
-6. **Given** the current month has no transactions, **When** the person opens the dashboard, **Then** income, expenses, and net result are zero and the empty state is clear, while account balances still reflect opening balances and older transactions.
+1. **Given** transactions exist in the current calendar month and in earlier months, **When** the person opens the home screen, **Then** income and expenses include only the current calendar month, and transfers are not part of income or expenses.
+2. **Given** the person has several accounts, including one deactivated and one marked as excluded from the total, **When** they view the home screen, **Then** the leading figure is the sum of every account’s current balance, and no account list is shown.
+3. **Given** the current month has expenses in more than one category, **When** the person views the expense split, **Then** each category shows its amount and its share of the month’s expenses, ordered from the largest share to the smallest.
+4. **Given** the home screen is open, **When** the person looks at recent activity, **Then** they see the ten most recent transactions across all accounts, newest first.
+5. **Given** income, expenses, or a category on the home screen, **When** the person opens it, **Then** they see the underlying transactions for that figure.
+6. **Given** the current month has no transactions, **When** the person opens the home screen, **Then** income and expenses are zero, while the leading total still reflects opening balances and older transactions.
+7. **Given** the home screen is open, **When** the person opens Settings, **Then** they can open categories and backup, and those two entries are not on the home screen.
 
 ---
 
@@ -159,7 +161,7 @@ A person searches by words in the description or notes, and narrows the list by 
 **Acceptance Scenarios**:
 
 1. **Given** transactions with descriptions and notes, **When** the person searches for a word that appears in a description, note, account name, category name, or subcategory name, **Then** only transactions containing that word in one of those fields are shown.
-2. **Given** a list of transactions, **When** the person filters by a date range, an account, a type (income, expense, or transfer), or a category or subcategory, **Then** the list shows only matches for that filter.
+2. **Given** a list of transactions, **When** the person opens the filter control beside the search field, **Then** they can narrow by account, type (income, expense, or transfer), category, or subcategory, and the list shows only matches. The word search stays on the screen. A date range already chosen, such as the current month opened from home, stays applied.
 3. **Given** several filters at once, **When** the list refreshes, **Then** a transaction must match every selected filter to appear.
 4. **Given** filters that match nothing, **When** the list refreshes, **Then** the person sees an empty result, not an error.
 5. **Given** the person clears search and filters, **When** the list refreshes, **Then** the full set for the current context is shown again.
@@ -171,11 +173,10 @@ A person searches by words in the description or notes, and narrows the list by 
 - Opening balance is never income, including when a report’s period starts on the account’s opening date.
 - Correcting an opening balance or opening date recalculates every later balance and report. The new opening date cannot be moved to after an existing transaction; the person is told which transactions block the change.
 - Account type can change only before the first transaction. That change clears identifying labels that do not apply to the new type. After any transaction, the type stays as it is.
-- A deactivated account remains in the account list and in historical reports for periods when it had activity. It does not appear on the dashboard and it is not a choice for new income, expenses, or transfers. If the person includes it in total money, its balance counts in the total even though the dashboard does not list it.
+- A deactivated account remains in the account list and in historical reports for periods when it had activity. It is not a choice for new income, expenses, or transfers. Its current balance still counts in the home total. The home screen does not list accounts.
 - A disabled category or subcategory remains visible on old transactions and disappears from choices for new ones.
 - An expense or transfer larger than the current balance is allowed. The balance is shown as negative and stays mathematically consistent.
-- A transfer into an account that is excluded from total money changes total money, because money left the included set. It still does not count as an expense.
-- A transfer out of an excluded account into an included account increases total money and still does not count as income.
+- A transfer between the person’s accounts does not change the home total, because every account’s current balance is included. It still does not count as income or as an expense.
 - The same display name may be used for two accounts. The person can still tell them apart by type and identifying labels.
 - Amounts are in Egyptian pounds with at most 2 decimal places. A third decimal place is rejected and is not rounded. Phase 0 does not convert between currencies, so every total is a plain sum of those EGP amounts. Opening balances follow the same 2-decimal rule.
 - Dates may be in the future. They affect balances immediately and appear only in reports whose range includes that date.
@@ -197,10 +198,10 @@ A person searches by words in the description or notes, and narrows the list by 
 - **FR-004**: Every amount in Phase 0, including opening balances, income, expenses, transfers, balances, and totals, MUST be in Egyptian pounds (EGP) with at most 2 decimal places. The person is not offered another currency. An amount with more than 2 decimal places MUST be rejected and MUST NOT be rounded.
 - **FR-005**: The person MUST be able to edit an account’s name, type-specific labels, opening balance, opening date, and whether it is included in total money. The person MUST be able to change the account type only while that account has no transactions. Changing the type MUST clear identifying labels that do not apply to the new type. Once the account has any transaction, the type MUST stay unchanged.
 - **FR-006**: A new account MUST be included in total money by default. The person MUST be able to exclude or include it later.
-- **FR-007**: The person MUST be able to deactivate an account. A deactivated account MUST NOT accept new income, expenses, or transfers, and MUST NOT appear on the dashboard. It MUST remain in the account list, where the person can still see it, reactivate it, or change whether it is included in total money. Its existing history MUST remain available in past views and reports.
+- **FR-007**: The person MUST be able to deactivate an account. A deactivated account MUST NOT accept new income, expenses, or transfers. It MUST remain in the account list, where the person can still see it, reactivate it, or change whether it is included in total money. Its existing history MUST remain available in past views and reports. Its current balance MUST still count in the home total.
 - **FR-008**: An account with no transactions MUST be removable. An account with transactions MUST NOT be permanently erased; deactivation is the way to retire it.
 - **FR-009**: The current balance of an account MUST equal its opening balance, plus income, minus expenses, plus transfers in, minus transfers out.
-- **FR-010**: Total money MUST equal the sum of the current balances of accounts marked as included. Deactivated accounts stay excluded unless the person includes them.
+- **FR-010**: The home total MUST equal the sum of the current balance of every account, whether or not the account is active and whether or not it is marked as included. The include flag remains on the account and MUST NOT remove that account from this figure.
 - **FR-011**: The opening balance MUST NOT be counted as income in any total, dashboard, or report.
 - **FR-012**: Changing an opening balance or opening date MUST recalculate affected balances and reports. The product MUST reject an opening date that falls after an existing transaction on that account.
 
@@ -211,7 +212,7 @@ A person searches by words in the description or notes, and narrows the list by 
 - **FR-015**: Income MUST increase the chosen account’s balance. An expense MUST decrease it.
 - **FR-016**: The person MUST be able to record a transfer with a required amount, source account, destination account, and date, plus optional notes.
 - **FR-017**: A transfer MUST decrease the source and increase the destination by the same amount. It MUST NOT be included in income totals or expense totals.
-- **FR-018**: When both accounts in a transfer are included in total money, the transfer MUST leave total money unchanged.
+- **FR-018**: A transfer between the person’s accounts MUST leave the home total unchanged.
 - **FR-019**: The person MUST be able to edit and delete income, expenses, and transfers. After each confirmed change, balances, the dashboard, and reports MUST match the remaining records.
 - **FR-020**: Income, expense, and transfer amounts MUST be greater than zero. Opening balances MAY be positive, zero, or negative.
 - **FR-021**: A transfer MUST be rejected when the source and destination are the same account, or when either account is missing or deactivated.
@@ -233,11 +234,12 @@ A person searches by words in the description or notes, and narrows the list by 
 
 **Dashboard, reports, search**
 
-- **FR-032**: The dashboard MUST show, for the current calendar month: total income, total expenses, and net result (income minus expenses). Transfers MUST be excluded from these three figures.
-- **FR-033**: The dashboard MUST show total money and each active account with its current balance. It MUST NOT list deactivated accounts.
-- **FR-034**: The dashboard MUST show the current month’s expenses by category, with amount and percentage share.
-- **FR-035**: The dashboard MUST show the ten most recent transactions, newest first.
-- **FR-036**: From a dashboard total, category, or account, the person MUST be able to open the transactions that make up that figure.
+- **FR-032**: The home screen MUST show, for the current calendar month, total income and total expenses. Transfers MUST be excluded from both. It MUST NOT show the month’s net result as its own row or as the leading figure.
+- **FR-033**: The leading home figure MUST be the current money in every account, as defined in FR-010. The home screen MUST NOT list accounts.
+- **FR-034**: The home screen MUST show the current month’s expenses by category, with amount and percentage share, ordered from the largest share to the smallest.
+- **FR-035**: The home screen MUST show the ten most recent transactions, newest first.
+- **FR-036**: From home income, home expenses, or a home category, the person MUST be able to open the transactions that make up that figure.
+- **FR-036a**: Categories and backup MUST be opened from Settings. Settings MUST be reachable from the home screen. Those two entries MUST NOT appear as rows on the home screen.
 - **FR-037**: The person MUST be able to run reports for a single day, the current week (Saturday through Friday), a calendar month, or a custom start and end date. The start and end dates are included.
 - **FR-038**: The financial summary for a period MUST show total income, total expenses, and net result, excluding transfers.
 - **FR-039**: Expenses by category MUST show, for the period, the amount and the percentage of period expenses for each category and subcategory that has activity.
@@ -245,10 +247,10 @@ A person searches by words in the description or notes, and narrows the list by 
 - **FR-041**: When the relevant period total is zero, percentages MUST be shown as 0%.
 - **FR-042**: The account report for a period MUST show starting balance, income, expenses, transfers in, transfers out, and ending balance. Starting balance is the account’s balance just before the period begins. If the account opens during the period, starting balance is its opening balance.
 - **FR-043**: The transaction report MUST list income, expenses, and transfers in the period. When a search or filters are active, the list MUST show only the transactions that match.
-- **FR-044**: Total money on reports and the dashboard is the current sum of included accounts, not a figure limited to the report period.
+- **FR-044**: The leading home figure is the current sum of every account’s balance, not a figure limited to the current month. A report’s income, expenses, and net result stay limited to the chosen period.
 - **FR-045**: A period or filter with no matching transactions MUST show zero totals and an empty list, without treating that as a failure.
 - **FR-046**: The person MUST be able to search transactions by words in the description, notes, account name, category name, or subcategory name.
-- **FR-047**: The person MUST be able to filter transactions by date range, account, transaction type, and category or subcategory, and MUST be able to combine those filters. Combined filters keep only transactions that match all of them.
+- **FR-047**: The person MUST be able to filter transactions by account, transaction type, and category or subcategory, and MUST be able to combine those filters with the word search and with a date range already in effect. Combined filters keep only transactions that match all of them. The word search stays on the screen. Account, type, category, and subcategory filters MUST open together from a filter control beside the search field.
 
 **Privacy, trust, and availability**
 
@@ -267,7 +269,7 @@ A person searches by words in the description or notes, and narrows the list by 
 - **Transaction**: One recorded change. Types are Income, Expense, and Transfer. Income and expense point at one account and one category, with an optional subcategory, date, and notes. A transfer points at a source account and a destination account, with a date, amount, and optional notes.
 - **Category**: A classification for either income or expense, such as Salary or Food. It can be ready-made or added by the person, and it can be active or disabled.
 - **Subcategory**: A finer classification under one category, such as Fuel under Transportation. It can be active or disabled.
-- **Total Money**: The sum of current balances for accounts included in the total. It is a result, not a separate record the person edits.
+- **Total Money**: The sum of the current balance of every account. It is a result, not a separate record the person edits. Marking an account as excluded does not remove it from this sum.
 
 ## Success Criteria *(mandatory)*
 
@@ -275,8 +277,8 @@ A person searches by words in the description or notes, and narrows the list by 
 
 - **SC-001**: A person can add a new account, including its opening balance and start date, in under 1 minute.
 - **SC-002**: A person can record an expense (amount, account, category, and date) in under 30 seconds, and an income record in the same time.
-- **SC-003**: In 100% of checked cases, after any add, edit, or delete, each affected account balance equals opening balance + income − expenses + transfers in − transfers out, and total money equals the sum of included balances.
-- **SC-004**: In 100% of checked transfers between two included accounts, both balances change by the same amount, total money does not change, and expense totals do not change.
+- **SC-003**: In 100% of checked cases, after any add, edit, or delete, each affected account balance equals opening balance + income − expenses + transfers in − transfers out, and the home total equals the sum of every account’s current balance.
+- **SC-004**: In 100% of checked transfers between two of the person’s accounts, both balances change by the same amount, the home total does not change, and expense totals do not change.
 - **SC-005**: A person can go from an empty product to seeing total money across at least two accounts, after one income and one expense, in under 5 minutes.
 - **SC-006**: For any chosen day, week, month, or custom range, the person can see income, expenses, and net result in one step. For a personal history of up to 5,000 transactions, that result appears within 2 seconds.
 - **SC-007**: Opening balance never appears in an income total, across the dashboard and every report, in 100% of checked cases.
@@ -293,9 +295,9 @@ A person searches by words in the description or notes, and narrows the list by 
 - Accounts: bank, e-wallet, cash, and other, with opening balances.
 - Income, expense, and internal transfers, including edit and delete.
 - Categories and subcategories, including a ready-made set and disable-instead-of-delete.
-- Dashboard for the current calendar month, with a path from summary to detail.
-- Reports: financial summary, expenses by category, income by category, account report, transaction list, and total money, over a day, week, month, or custom range.
-- Search and combined filters.
+- Home screen for the current calendar month, with the money currently in every account, a path from income, expenses, or a category to the matching transactions, and Settings for categories and backup.
+- Reports: financial summary, expenses by category, income by category, account report, and transaction list, over a day, week, month, or custom range.
+- Search on the screen, with account, type, category, and subcategory filters opened together beside it.
 - Records kept on the device that work with no internet connection.
 - Arabic, right-to-left presentation.
 - Egyptian pounds only, with at most 2 decimal places (piastres).
@@ -318,10 +320,10 @@ A person searches by words in the description or notes, and narrows the list by 
 **Defaults chosen where the BRD left room**
 
 - One person, one device, no sign-in. The BRD’s “owner of the data and settings” is this single local person, not a registered profile.
-- The dashboard’s “current period” is the current calendar month.
+- The home screen’s period for income and expenses is the current calendar month. The leading total is not limited to that month.
 - A “week” preset is Saturday through Friday. Any other week shape is done with a custom range.
 - The ready-made categories are the set named in FR-027, shown in Arabic. The BRD required categories and gave examples (Food, Salary, Transportation / Fuel) but did not list a full starter catalog.
-- Recent activity on the dashboard is the ten newest transactions.
+- Recent activity on the home screen is the ten newest transactions. Expense categories there are ordered from the largest share to the smallest.
 - Negative balances are allowed so an incomplete history does not block recording.
 - Unused categories may be removed; used ones are disabled. The BRD said disabling is preferred so history stays intact.
 - Accounts with history are deactivated rather than erased, for the same reason.

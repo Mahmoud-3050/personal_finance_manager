@@ -14,6 +14,8 @@ import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
+import '../../../../shared/widgets/finance_ledger.dart';
+import '../../../../shared/widgets/finance_menu_field.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
 import '../../domain/entities/account_list_data.dart';
 import '../../domain/usecases/save_account_use_case.dart';
@@ -94,9 +96,9 @@ class _AccountFormPageState extends State<AccountFormPage> {
               validatorType: const EmptyValidator(),
             ),
             SizedBox(height: 12.h),
-            DropdownButton<AccountType>(
+            FinanceMenuField<AccountType>(
               value: _type,
-              isExpanded: true,
+              label: Strings.fenzoAccount,
               items: AccountType.values
                   .map(
                     (AccountType type) => DropdownMenuItem<AccountType>(
@@ -163,16 +165,9 @@ class _AccountFormPageState extends State<AccountFormPage> {
               ),
             ),
             SizedBox(height: 12.h),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                Strings.fenzoOpeningDate,
-                style: TextStyles.of(size: 16),
-              ),
-              subtitle: Text(
-                _openingDate.toIso(),
-                style: TextStyles.of(size: 14),
-              ),
+            FinanceLedgerRow(
+              title: Strings.fenzoOpeningDate,
+              subtitle: _openingDate.toIso(),
               onTap: _pickOpeningDate,
             ),
             SwitchListTile(

@@ -1,11 +1,9 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/error/exceptions.dart';
+import '../../../../firebase_options.dart';
 import '../../domain/entities/backup_copy.dart';
 import '../../domain/entities/backup_settings.dart';
 import '../models/book_snapshot_model.dart';
@@ -27,14 +25,19 @@ abstract interface class CloudBackupDataSource {
 class FirebaseCloudBackupDataSource implements CloudBackupDataSource {
   FirebaseCloudBackupDataSource({
     FirebaseAuth? auth,
-    FirebaseStorage? storage,
+    FirebaseFirestore? firestore,
     GoogleSignIn? googleSignIn,
   }) : _auth = auth ?? FirebaseAuth.instance,
-       _storage = storage ?? FirebaseStorage.instance,
+       _firestore = firestore ?? FirebaseFirestore.instance,
        _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
+  static const String _payloadField = 'payload';
+  static const String _createdAtField = 'createdAt';
+  static const String _originField = 'origin';
+  static const String _outcomeField = 'outcome';
+
   final FirebaseAuth _auth;
-  final FirebaseStorage _storage;
+  final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
   bool _googleInitialized = false;
 
@@ -44,7 +47,9 @@ class FirebaseCloudBackupDataSource implements CloudBackupDataSource {
   @override
   Future<void> signIn() async {
     if (!_googleInitialized) {
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(
+        serverClientId: DefaultFirebaseOptions.googleServerClientId,
+      );
       _googleInitialized = true;
     }
     try {
@@ -69,67 +74,95 @@ class FirebaseCloudBackupDataSource implements CloudBackupDataSource {
 
   @override
   Future<BackupCopy> upload(BookSnapshotModel snapshot) async {
-    final Reference ref = _userFolder().child(_objectName(snapshot.createdAt));
-    await ref.putData(
-      Uint8List.fromList(utf8.encode(snapshot.encode())),
-      SettableMetadata(
-        contentType: 'application/json',
-        customMetadata: <String, String>{
-          'origin': snapshot.origin.name,
-          'outcome': BackupOutcome.succeeded.name,
-        },
-      ),
-    );
-    return BackupCopy(
-      id: ref.fullPath,
-      createdAt: snapshot.createdAt,
-      origin: snapshot.origin,
-      outcome: BackupOutcome.succeeded,
-    );
+    try {
+      final DocumentReference<Map<String, dynamic>> doc = _userCopies().doc(
+        _documentId(snapshot.createdAt),
+      );
+      await doc.set(<String, dynamic>{
+        _createdAtField: Timestamp.fromDate(snapshot.createdAt.toUtc()),
+        _originField: snapshot.origin.name,
+        _outcomeField: BackupOutcome.succeeded.name,
+        _payloadField: snapshot.toJson(),
+      });
+      return BackupCopy(
+        id: doc.path,
+        createdAt: snapshot.createdAt,
+        origin: snapshot.origin,
+        outcome: BackupOutcome.succeeded,
+      );
+    } on FirebaseException catch (error) {
+      throw ServerException(message: error.message);
+    }
   }
 
   @override
   Future<List<BackupCopy>> listCopies() async {
-    final ListResult listed = await _userFolder().listAll();
-    final List<BackupCopy> copies = <BackupCopy>[];
-    for (final Reference item in listed.items) {
-      final FullMetadata metadata = await item.getMetadata();
-      final String originName =
-          metadata.customMetadata?['origin'] ?? BackupOrigin.manualCloud.name;
-      copies.add(
-        BackupCopy(
-          id: item.fullPath,
-          createdAt: metadata.timeCreated ?? DateTime.now().toUtc(),
-          origin:
-              BackupOrigin.values.asNameMap()[originName] ??
-              BackupOrigin.manualCloud,
-          outcome: BackupOutcome.succeeded,
-        ),
-      );
+    try {
+      final QuerySnapshot<Map<String, dynamic>> listed = await _userCopies()
+          .orderBy(_createdAtField, descending: true)
+          .get();
+      return listed.docs.map(_copyFromDocument).toList();
+    } on FirebaseException catch (error) {
+      throw ServerException(message: error.message);
     }
-    return copies;
   }
 
   @override
   Future<BookSnapshotModel> download(String copyId) async {
-    final Uint8List? bytes = await _storage.ref(copyId).getData();
-    if (bytes == null) {
-      throw const CacheException(message: 'missing_backup');
+    try {
+      final DocumentSnapshot<Map<String, dynamic>> doc = await _firestore
+          .doc(copyId)
+          .get();
+      final Map<String, dynamic>? data = doc.data();
+      final Object? payload = data?[_payloadField];
+      if (!doc.exists || payload is! Map) {
+        throw const CacheException(message: 'missing_backup');
+      }
+      return BookSnapshotModel.fromJson(Map<String, dynamic>.from(payload));
+    } on FirebaseException catch (error) {
+      throw ServerException(message: error.message);
     }
-    return BookSnapshotModel.decode(utf8.decode(bytes));
   }
 
   @override
-  Future<void> delete(String copyId) => _storage.ref(copyId).delete();
+  Future<void> delete(String copyId) async {
+    try {
+      await _firestore.doc(copyId).delete();
+    } on FirebaseException catch (error) {
+      throw ServerException(message: error.message);
+    }
+  }
 
-  Reference _userFolder() {
+  CollectionReference<Map<String, dynamic>> _userCopies() {
     final User? user = _auth.currentUser;
     if (user == null) {
       throw const UnauthorizedException(message: 'sign_in_required');
     }
-    return _storage.ref('backups/${user.uid}');
+    return _firestore.collection('backups').doc(user.uid).collection('copies');
   }
 
-  String _objectName(DateTime createdAt) =>
-      '${createdAt.toUtc().toIso8601String()}.json';
+  String _documentId(DateTime createdAt) =>
+      createdAt.toUtc().toIso8601String().replaceAll(':', '-');
+
+  BackupCopy _copyFromDocument(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final Map<String, dynamic> data = doc.data();
+    final Object? createdRaw = data[_createdAtField];
+    final DateTime createdAt = switch (createdRaw) {
+      Timestamp timestamp => timestamp.toDate().toUtc(),
+      String iso => DateTime.parse(iso).toUtc(),
+      _ => DateTime.now().toUtc(),
+    };
+    final String originName =
+        data[_originField] as String? ?? BackupOrigin.manualCloud.name;
+    return BackupCopy(
+      id: doc.reference.path,
+      createdAt: createdAt,
+      origin:
+          BackupOrigin.values.asNameMap()[originName] ??
+          BackupOrigin.manualCloud,
+      outcome: BackupOutcome.succeeded,
+    );
+  }
 }

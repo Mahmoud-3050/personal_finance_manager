@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
+import 'fonts.dart';
+
 /// Figma size (px) + [FontWeight] → [TextStyle].
 ///
 /// `size` is passed through `.sp`. Color defaults to
@@ -61,7 +63,7 @@ abstract final class TextStyles {
       decorationColor: decorationColor,
       decorationStyle: decorationStyle,
       decorationThickness: decorationThickness,
-      fontFamily: fontFamily,
+      fontFamily: fontFamily ?? Fonts.current,
       fontFamilyFallback: fontFamilyFallback,
       overflow: overflow,
       textBaseline: textBaseline,

@@ -792,6 +792,7 @@ abstract class Strings {
   static String get fenzoDateBeforeOpening => 'fenzo_date_before_opening'.tr;
   static String get fenzoTypeLocked => 'fenzo_type_locked'.tr;
   static String get fenzoTransactions => 'fenzo_transactions'.tr;
+  static String get fenzoAddTransaction => 'fenzo_add_transaction'.tr;
   static String get fenzoNoMatches => 'fenzo_no_matches'.tr;
   static String get fenzoTransferSameAccount =>
       'fenzo_transfer_same_account'.tr;

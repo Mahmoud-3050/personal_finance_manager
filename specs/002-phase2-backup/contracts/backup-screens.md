@@ -4,7 +4,7 @@ Arabic, right to left. The device book is what later screens edit. These screens
 
 ## Status
 
-Shows the schedule (`off`, daily, weekly, monthly), the last attempt time, the last status (`succeeded`, `failed`, `waiting`), and the last source when one exists.
+Reached from Settings. Shows the schedule (`off`, daily, weekly, monthly), the last attempt time, the last status (`succeeded`, `failed`, `waiting`), and the last source when one exists.
 
 - Manual backup: asks the person to identify themselves if they have not. Connected → success with the new time. Offline or upload failure → failed or waiting, book unchanged.
 - Schedule change: saved on the device immediately. `off` sends nothing further.

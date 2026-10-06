@@ -21,11 +21,12 @@ extension ExtraColors on ThemeColors {
   Color get progressBarBackground => extra(ColorKeys.progressBarBackground);
   Color get baseColorShimmer => extra(ColorKeys.baseColorShimmer);
   Color get highlightColorShimmer => extra(ColorKeys.highlightColorShimmer);
+  Color get cardGradientStart => extra(ColorKeys.cardGradientStart);
+  Color get cardGradientEnd => extra(ColorKeys.cardGradientEnd);
 
   LinearGradient get primaryGradient => LinearGradient(
-    colors: [secondary, primary],
-    begin: AlignmentDirectional.topCenter,
-    end: AlignmentDirectional.bottomCenter,
-    stops: const [0.0, 1.0],
+    colors: [cardGradientStart, cardGradientEnd],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 }

@@ -432,7 +432,7 @@ class AppTextFormField extends StatefulWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       backgroundColor: backgroundColor,
-      borderRadius: .circular(16.r),
+      borderRadius: .circular(8.r),
       hintText: hintText ?? '${Strings.search}...',
       validatorType: validatorType ?? FieldValidator.required(),
       keyboardType: .text,
@@ -490,7 +490,7 @@ class AppTextFormField extends StatefulWidget {
     BorderRadius? borderRadius,
     EdgeInsetsGeometry? contentPadding,
   }) {
-    final BorderRadius resolvedRadius = borderRadius ?? .circular(16.r);
+    final BorderRadius resolvedRadius = borderRadius ?? .circular(8.r);
     return ContainerShimmer(
       borderRadius: resolvedRadius,
       child: AppTextFormField(
@@ -638,16 +638,13 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       contentPadding: _padding,
       errorText: _visibleError,
       errorMaxLines: 2,
-      fillColor:
-          widget.backgroundColor ?? colors.primary.withValues(alpha: 0.05),
+      fillColor: widget.backgroundColor ?? colors.foreground,
       filled: true,
       focusColor: colors.primary,
-      border: _createBorder(
-        widget.borderColor ?? colors.primary.withValues(alpha: 0.05),
-      ),
-      enabledBorder: _createBorder(widget.borderColor ?? colors.hint),
+      border: _createBorder(widget.borderColor ?? colors.border),
+      enabledBorder: _createBorder(widget.borderColor ?? colors.border),
       focusedBorder: _createBorder(widget.focusBorderColor ?? colors.primary),
-      focusedErrorBorder: _createBorder(colors.primary),
+      focusedErrorBorder: _createBorder(colors.error),
       errorBorder: _createBorder(colors.error),
       errorStyle: TextStyles.of(size: 12, color: colors.error),
       hintStyle:
@@ -771,7 +768,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   OutlineInputBorder _createBorder(Color color) {
     return OutlineInputBorder(
-      borderRadius: widget.borderRadius ?? .circular(16.r),
+      borderRadius: widget.borderRadius ?? .circular(8.r),
       borderSide: BorderSide(color: color),
     );
   }

@@ -1,0 +1,58 @@
+/* Hallmark · pre-emit critique: P5 H5 E4 S4 R5 V4 */
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Cobalt
+ * tone: utilitarian · anchor hue: cobalt · design-system: design.md · designed-as-app
+ * nav: edge-aligned tab bar · footer: none (app chrome) · enrichment: none
+ */
+
+:root {
+  --color-paper: #0b1220;
+  --color-paper-2: #141c2b;
+  --color-ink: #f7f8fa;
+  --color-ink-2: #b7c0cc;
+  --color-rule: #243044;
+  --color-accent: #3ddc97;
+  --color-accent-ink: #071018;
+  --color-focus: #3ddc97;
+  --color-income: #3ddc97;
+  --color-expense: #ff8a80;
+  --color-graphite: #0d1219;
+  --color-graphite-2: #161b23;
+  --color-ink-dark: #eef2f7;
+  --color-ink-2-dark: #b1b8c1;
+  --color-rule-dark: #2d333d;
+  --color-accent-dark: #72adfb;
+  --color-income-dark: #73ce95;
+  --color-expense-dark: #f28881;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-outlier: "Inter", sans-serif;
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 7rem;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
+  --text-display: 2.5rem;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-short: 220ms;
+
+  --rule-hairline: 1px;
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-pill: 999px;
+}

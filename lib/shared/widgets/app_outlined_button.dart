@@ -52,14 +52,14 @@ class AppOutlinedButton extends StatefulWidget {
     BorderRadius? borderRadius,
     EdgeInsetsGeometry? padding,
   }) {
-    final resolvedRadius = borderRadius ?? .circular(16.r);
+    final resolvedRadius = borderRadius ?? .circular(999);
     return ContainerShimmer(
       borderRadius: resolvedRadius,
       child: AppOutlinedButton(
         onPressed: null,
         text: 'Button',
         backgroundColor: Colors.transparent,
-        borderRadius: 16.r,
+        borderRadius: 999,
         padding: padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
       ),
     );
@@ -70,8 +70,8 @@ class AppOutlinedButton extends StatefulWidget {
 }
 
 class _AppOutlinedButtonState extends State<AppOutlinedButton> {
-  static const Duration _stateAnimationDuration = Duration(milliseconds: 250);
-  static const double _defaultRadius = 16;
+  static const Duration _stateAnimationDuration = Duration(milliseconds: 220);
+  static const double _defaultRadius = 999;
   static const double _iconGap = 8;
   static const double _loaderSize = 20;
 
@@ -85,10 +85,10 @@ class _AppOutlinedButtonState extends State<AppOutlinedButton> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final radius = widget.borderRadius ?? _defaultRadius.r;
+    final radius = widget.borderRadius ?? _defaultRadius;
     final backgroundColor = widget.backgroundColor ?? Colors.transparent;
     final accentColor =
-        widget.textColor ?? widget.borderColor ?? colors.primary;
+        widget.textColor ?? widget.borderColor ?? colors.textPrimary;
 
     return Semantics(
       label: widget.isLoading
@@ -114,7 +114,7 @@ class _AppOutlinedButtonState extends State<AppOutlinedButton> {
             side: BorderSide(
               color: _isVisuallyDisabled
                   ? colors.grey400
-                  : widget.borderColor ?? colors.primary,
+                  : widget.borderColor ?? colors.border,
             ),
             padding:
                 widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),

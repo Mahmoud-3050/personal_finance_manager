@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>221286834750-d8rov199dvki9pq4i6bprij0q637155r.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.221286834750-d8rov199dvki9pq4i6bprij0q637155r</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>221286834750-bfgok0ku0m7k4ptkeq6lrv4pmtcrk781.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyA7UwtcwMrM1Zg5A507SvZ2jAeb7E9aXG8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>221286834750</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.finzomanager.app</string>
+	<key>PROJECT_ID</key>
+	<string>finzo-manager</string>
+	<key>STORAGE_BUCKET</key>
+	<string>finzo-manager.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:221286834750:ios:a3fbd7e9717444f048676f</string>
+</dict>
+</plist>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screen_util/screen_util.dart';
+import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/routes/app_routes.dart';
@@ -10,12 +11,13 @@ import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/domain/entities/account.dart';
 import '../../../../shared/domain/entities/category.dart';
 import '../../../../shared/domain/entities/subcategory.dart';
-import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
-import '../../../../shared/widgets/app_dropdown.dart';
+import '../widgets/transaction_filter_sheet.dart';
+import '../widgets/transaction_summary.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
+import '../../../../shared/widgets/dialogs/show_modal_bottom_sheet.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
 import '../../../accounts/domain/entities/account_list_data.dart';
 import '../../../accounts/presentation/controller/get_accounts/get_accounts_cubit.dart';
@@ -78,11 +80,6 @@ class _TransactionListPageState extends State<TransactionListPage> {
     final List<Subcategory> subcategories =
         categoriesState is ApiCallSuccess<FinanceRecords>
         ? categoriesState.data.subcategories
-              .where(
-                (Subcategory item) =>
-                    _categoryId == null || item.categoryId == _categoryId,
-              )
-              .toList()
         : const <Subcategory>[];
     return MultiBlocListener(
       listeners: <BlocListener<dynamic, dynamic>>[
@@ -112,78 +109,30 @@ class _TransactionListPageState extends State<TransactionListPage> {
         body: Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
-              child: AppTextFormField(
-                controller: _search,
-                labelText: Strings.fenzoSearch,
-                onChanged: (_) => _searchNow(),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: AppDropdown<String>(
-                value: _accountId,
-                values: accounts.map((Account item) => item.id).toList(),
-                names: accounts.map((Account item) => item.name).toList(),
-                hintText: Strings.fenzoAccount,
-                labelText: Strings.fenzoAccount,
-                isOptional: true,
-                onChanged: (String? value) {
-                  setState(() => _accountId = value);
-                  _searchNow();
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: AppDropdown<MoneyTransactionType>(
-                value: _type,
-                values: MoneyTransactionType.values,
-                names: MoneyTransactionType.values.map(_movementLabel).toList(),
-                hintText: Strings.fenzoTransfer,
-                labelText: Strings.fenzoTransfer,
-                isOptional: true,
-                onChanged: (MoneyTransactionType? value) {
-                  setState(() => _type = value);
-                  _searchNow();
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              child: AppDropdown<String>(
-                value: _categoryId,
-                values: categories.map((Category item) => item.id).toList(),
-                names: categories.map((Category item) => item.name).toList(),
-                hintText: Strings.fenzoCategory,
-                labelText: Strings.fenzoCategory,
-                isOptional: true,
-                onChanged: (String? value) {
-                  setState(() {
-                    _categoryId = value;
-                    _subcategoryId = null;
-                  });
-                  _searchNow();
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: AppDropdown<String>(
-                value: _subcategoryId,
-                values: subcategories
-                    .map((Subcategory item) => item.id)
-                    .toList(),
-                names: subcategories
-                    .map((Subcategory item) => item.name)
-                    .toList(),
-                hintText: Strings.fenzoSubcategory,
-                labelText: Strings.fenzoSubcategory,
-                isOptional: true,
-                onChanged: (String? value) {
-                  setState(() => _subcategoryId = value);
-                  _searchNow();
-                },
+              padding: EdgeInsets.fromLTRB(16.w, 12.h, 4.w, 8.h),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: AppTextFormField(
+                      controller: _search,
+                      labelText: Strings.fenzoSearch,
+                      onChanged: (_) => _searchNow(),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _openFilters(
+                      accounts,
+                      categories,
+                      subcategories,
+                    ),
+                    icon: Icon(
+                      Icons.tune,
+                      color: _filtersActive
+                          ? context.colors.primary
+                          : context.colors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -218,49 +167,31 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               );
                             }
                             return ListView(
-                              padding: EdgeInsets.symmetric(vertical: 8.h),
+                              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 88.h),
                               children: state.data
                                   .map(
-                                    (MoneyTransaction item) => ListTile(
-                                      onTap: () => context.push(
-                                        AppRoutes.transactionForm,
-                                        extra: item,
-                                      ),
-                                      title: Text(
-                                        item.description ??
-                                            item.notes ??
-                                            _movementLabel(item.type),
-                                        style: TextStyles.of(size: 16),
-                                      ),
-                                      subtitle: Text(
-                                        _classification(
-                                          item,
-                                          categoriesState
+                                    (MoneyTransaction item) =>
+                                        TransactionSummary(
+                                          item: item,
+                                          book:
+                                              categoriesState
                                                   is ApiCallSuccess<
                                                     FinanceRecords
                                                   >
                                               ? categoriesState.data
                                               : null,
-                                        ),
-                                        style: TextStyles.of(size: 13),
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          Text(
-                                            Money(item.amountMinor).format(),
-                                            style: TextStyles.of(size: 14),
+                                          onTap: () => context.push(
+                                            AppRoutes.transactionForm,
+                                            extra: item,
                                           ),
-                                          IconButton(
+                                          trailing: IconButton(
                                             onPressed: () =>
                                                 _confirmDelete(context, item),
                                             icon: const Icon(
                                               Icons.delete_outline,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
                                   )
                                   .toList(),
                             );
@@ -273,6 +204,45 @@ class _TransactionListPageState extends State<TransactionListPage> {
             ),
           ],
         ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: Strings.fenzoTransactions,
+          onPressed: () => context.push(AppRoutes.transactionForm),
+          child: const Icon(Icons.add),
+        ),
+      ),
+    );
+  }
+
+  bool get _filtersActive =>
+      _accountId != null ||
+      _type != null ||
+      _categoryId != null ||
+      _subcategoryId != null;
+
+  Future<void> _openFilters(
+    List<Account> accounts,
+    List<Category> categories,
+    List<Subcategory> subcategories,
+  ) {
+    return showAppModalBottomSheet(
+      context: context,
+      child: TransactionFilterSheet(
+        accounts: accounts,
+        categories: categories,
+        subcategories: subcategories,
+        accountId: _accountId,
+        type: _type,
+        categoryId: _categoryId,
+        subcategoryId: _subcategoryId,
+        onChanged: (TransactionFilterValue value) {
+          setState(() {
+            _accountId = value.accountId;
+            _type = value.type;
+            _categoryId = value.categoryId;
+            _subcategoryId = value.subcategoryId;
+          });
+          _searchNow();
+        },
       ),
     );
   }
@@ -319,24 +289,3 @@ class _TransactionListPageState extends State<TransactionListPage> {
     );
   }
 }
-
-String _classification(MoneyTransaction item, FinanceRecords? book) {
-  if (book == null) {
-    return '';
-  }
-  final String? category = book.categories
-      .where((Category category) => category.id == item.categoryId)
-      .map((Category category) => category.name)
-      .firstOrNull;
-  final String? subcategory = book.subcategories
-      .where((Subcategory subcategory) => subcategory.id == item.subcategoryId)
-      .map((Subcategory subcategory) => subcategory.name)
-      .firstOrNull;
-  return <String?>[category, subcategory].whereType<String>().join(' / ');
-}
-
-String _movementLabel(MoneyTransactionType type) => switch (type) {
-  MoneyTransactionType.income => Strings.fenzoIncome,
-  MoneyTransactionType.expense => Strings.fenzoExpense,
-  MoneyTransactionType.transfer => Strings.fenzoTransfer,
-};

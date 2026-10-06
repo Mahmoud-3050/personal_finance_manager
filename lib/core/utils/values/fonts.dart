@@ -1,4 +1,6 @@
 abstract class Fonts {
-  static String get current => _poppins;
-  static const String _poppins = 'Poppins';
+  static String get current => inter;
+
+  static const String inter = 'Inter';
+  static const String display = 'Space Grotesk';
 }

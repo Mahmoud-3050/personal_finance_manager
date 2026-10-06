@@ -18,6 +18,7 @@ import '../../features/backup/presentation/controller/sign_in_for_backup/sign_in
 import '../../features/backup/presentation/pages/backup_status_page.dart';
 import '../../features/backup/presentation/pages/cloud_copies_page.dart';
 import '../../features/backup/presentation/widgets/automatic_backup_host.dart';
+import '../../shared/widgets/finance_tab_shell.dart';
 import '../../features/categories/categories_injection.dart';
 import '../../features/dashboard/dashboard_injection.dart';
 import '../../features/reports/reports_injection.dart';
@@ -47,6 +48,7 @@ import '../../features/accounts/presentation/pages/account_form_page.dart';
 import '../../features/accounts/presentation/pages/account_list_page.dart';
 import '../../features/categories/presentation/pages/category_list_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/dashboard/presentation/pages/settings_page.dart';
 import '../../features/reports/presentation/pages/report_page.dart';
 import '../../features/transactions/presentation/pages/transaction_form_page.dart';
 import '../../features/transactions/presentation/pages/transaction_list_page.dart';
@@ -150,7 +152,9 @@ class AppRouter {
                       ServiceLocator.instance<RunAutomaticBackupCubit>(),
                 ),
               ],
-              child: AutomaticBackupHost(child: child),
+              child: AutomaticBackupHost(
+                child: FinanceTabShell(child: child),
+              ),
             ),
           );
         },
@@ -159,6 +163,11 @@ class AppRouter {
             path: AppRoutes.dashboard,
             builder: (BuildContext context, GoRouterState state) =>
                 const DashboardPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.settings,
+            builder: (BuildContext context, GoRouterState state) =>
+                const SettingsPage(),
           ),
           GoRoute(
             path: AppRoutes.accounts,

@@ -7,6 +7,7 @@ import '../../../../core/presentation/api_call_state.dart';
 import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/domain/finance_records.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
+import '../../../../shared/widgets/finance_ledger.dart';
 import '../../domain/entities/backup_copy.dart';
 import '../../domain/entities/backup_settings.dart';
 import '../controller/list_cloud_copies/list_cloud_copies_cubit.dart';
@@ -65,25 +66,19 @@ class _CloudCopiesPageState extends State<CloudCopiesPage> {
                   child: CircularProgressIndicator(),
                 ),
                 ApiCallSuccess(:final data) => ListView.builder(
-                  padding: EdgeInsets.all(16.w),
                   itemCount: data.length,
                   itemBuilder: (BuildContext context, int index) {
                     final BackupCopy copy = data[index];
-                    return ListTile(
+                    return FinanceLedgerRow(
                       key: ValueKey<String>(copy.id),
-                      title: Text(
-                        copy.createdAt.toIso8601String(),
-                        style: TextStyles.of(size: 14),
-                      ),
-                      subtitle: Text(
-                        Strings.backupCloud,
-                        style: TextStyles.of(size: 13),
-                      ),
+                      title: copy.createdAt.toIso8601String(),
+                      subtitle: Strings.backupCloud,
                       trailing: TextButton(
                         onPressed: () => _restore(context, copy),
                         child: Text(
                           Strings.backupRestore,
-                          style: TextStyles.of(size: 14),
+                          maxLines: 1,
+                          style: TextStyles.of(size: 14, weight: FontWeight.w600),
                         ),
                       ),
                     );

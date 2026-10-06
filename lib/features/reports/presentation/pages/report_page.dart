@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:screen_util/screen_util.dart';
+import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/routes/app_routes.dart';
@@ -13,6 +14,10 @@ import '../../../../shared/domain/entities/category_share.dart';
 import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/widgets/finance/balance_flow_stat.dart';
+import '../../../../shared/widgets/finance/balance_hero_body.dart';
+import '../../../../shared/widgets/finance/gradient_panel.dart';
+import '../../../../shared/widgets/finance_ledger.dart';
 import '../../../transactions/domain/usecases/search_transactions_use_case.dart';
 import '../../../transactions/presentation/controller/delete_transaction/delete_transaction_cubit.dart';
 import '../../../transactions/presentation/controller/save_expense/save_expense_cubit.dart';
@@ -73,11 +78,12 @@ class _ReportPageState extends State<ReportPage> {
               padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
               child: Wrap(
                 spacing: 8.w,
+                runSpacing: 8.h,
                 children: <Widget>[
-                  _preset(Strings.fenzoDay, _day),
-                  _preset(Strings.fenzoWeek, _week),
-                  _preset(Strings.fenzoMonth, _month),
-                  _preset(Strings.fenzoCustom, _custom),
+                  _preset(Strings.fenzoDay, _day, _isDay),
+                  _preset(Strings.fenzoWeek, _week, _isWeek),
+                  _preset(Strings.fenzoMonth, _month, _isMonth),
+                  _preset(Strings.fenzoCustom, _custom, !_isDay && !_isWeek && !_isMonth),
                 ],
               ),
             ),
@@ -94,42 +100,45 @@ class _ReportPageState extends State<ReportPage> {
                   }
                   final ReportData data = state.data;
                   return ListView(
-                    padding: EdgeInsets.symmetric(vertical: 8.h),
                     children: <Widget>[
-                      _moneyTile(Strings.fenzoIncome, data.figures.incomeMinor),
-                      _moneyTile(
-                        Strings.fenzoExpense,
-                        data.figures.expenseMinor,
-                      ),
-                      _moneyTile(Strings.fenzoNet, data.figures.netMinor),
-                      ListTile(
-                        title: Text(
-                          Strings.fenzoTransactions,
-                          style: TextStyles.of(
-                            size: 16,
-                            weight: FontWeight.w500,
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+                        child: GradientPanel(
+                          child: BalanceHeroBody(
+                            label: Strings.fenzoNet,
+                            amount: Money(data.figures.netMinor).format(),
+                            amountColor: data.figures.netMinor < 0
+                                ? context.colors.error
+                                : context.colors.success,
+                            footer: BalanceFlowStat(
+                              incomeLabel: Strings.fenzoIncome,
+                              incomeAmount: Money(
+                                data.figures.incomeMinor,
+                              ).format(),
+                              expenseLabel: Strings.fenzoExpense,
+                              expenseAmount: Money(
+                                data.figures.expenseMinor,
+                              ).format(),
+                            ),
                           ),
                         ),
+                      ),
+                      FinanceLedgerRow(
+                        title: Strings.fenzoTransactions,
                         onTap: () => context.push(
                           AppRoutes.transactions,
                           extra: SearchTransactionsParams(range: _range),
                         ),
                       ),
+                      if (data.figures.expenseShares.isNotEmpty)
+                        FinanceSectionTitle(Strings.fenzoExpense),
                       for (final CategoryShare share
                           in data.figures.expenseShares)
-                        ListTile(
-                          title: Text(
-                            share.name,
-                            style: TextStyles.of(size: 16),
-                          ),
-                          subtitle: Text(
-                            share.percentageLabel,
-                            style: TextStyles.of(size: 13),
-                          ),
-                          trailing: Text(
-                            Money(share.amountMinor).format(),
-                            style: TextStyles.of(size: 14),
-                          ),
+                        FinanceLedgerRow(
+                          title: share.name,
+                          subtitle: share.percentageLabel,
+                          amount: Money(share.amountMinor).format(),
+                          amountColor: context.colors.error,
                           onTap: () => context.push(
                             AppRoutes.transactions,
                             extra: SearchTransactionsParams(
@@ -143,39 +152,21 @@ class _ReportPageState extends State<ReportPage> {
                           in data.figures.expenseShares.expand(
                             (CategoryShare share) => share.children,
                           ))
-                        ListTile(
-                          contentPadding: EdgeInsetsDirectional.only(
-                            start: 32.w,
-                            end: 16.w,
-                          ),
-                          title: Text(
-                            child.name,
-                            style: TextStyles.of(size: 15),
-                          ),
-                          subtitle: Text(
-                            child.percentageLabel,
-                            style: TextStyles.of(size: 13),
-                          ),
-                          trailing: Text(
-                            Money(child.amountMinor).format(),
-                            style: TextStyles.of(size: 14),
-                          ),
+                        FinanceLedgerRow(
+                          indent: 16.w,
+                          title: child.name,
+                          subtitle: child.percentageLabel,
+                          amount: Money(child.amountMinor).format(),
+                          amountColor: context.colors.error,
                         ),
-                      for (final CategoryShare share
-                          in data.figures.incomeShares)
-                        ListTile(
-                          title: Text(
-                            share.name,
-                            style: TextStyles.of(size: 16),
-                          ),
-                          subtitle: Text(
-                            share.percentageLabel,
-                            style: TextStyles.of(size: 13),
-                          ),
-                          trailing: Text(
-                            Money(share.amountMinor).format(),
-                            style: TextStyles.of(size: 14),
-                          ),
+                      if (data.figures.incomeShares.isNotEmpty)
+                        FinanceSectionTitle(Strings.fenzoIncome),
+                      for (final CategoryShare share in data.figures.incomeShares)
+                        FinanceLedgerRow(
+                          title: share.name,
+                          subtitle: share.percentageLabel,
+                          amount: Money(share.amountMinor).format(),
+                          amountColor: context.colors.success,
                           onTap: () => context.push(
                             AppRoutes.transactions,
                             extra: SearchTransactionsParams(
@@ -186,25 +177,35 @@ class _ReportPageState extends State<ReportPage> {
                           ),
                         ),
                       for (final AccountPeriodFigures account
-                          in data.figures.accounts)
-                        ListTile(
-                          title: Text(
-                            account.name,
-                            style: TextStyles.of(
-                              size: 16,
-                              weight: FontWeight.w500,
-                            ),
-                          ),
-                          subtitle: Text(
-                            '${Strings.fenzoStarting} ${Money(account.startingMinor).format()}\n'
-                            '${Strings.fenzoIncome} ${Money(account.incomeMinor).format()}\n'
-                            '${Strings.fenzoExpense} ${Money(account.expenseMinor).format()}\n'
-                            '${Strings.fenzoTransfersIn} ${Money(account.transfersInMinor).format()}\n'
-                            '${Strings.fenzoTransfersOut} ${Money(account.transfersOutMinor).format()}\n'
-                            '${Strings.fenzoEnding} ${Money(account.endingMinor).format()}',
-                            style: TextStyles.of(size: 13),
-                          ),
+                          in data.figures.accounts) ...<Widget>[
+                        FinanceSectionTitle(account.name),
+                        FinanceLedgerRow(
+                          title: Strings.fenzoStarting,
+                          amount: Money(account.startingMinor).format(),
                         ),
+                        FinanceLedgerRow(
+                          title: Strings.fenzoIncome,
+                          amount: Money(account.incomeMinor).format(),
+                          amountColor: context.colors.success,
+                        ),
+                        FinanceLedgerRow(
+                          title: Strings.fenzoExpense,
+                          amount: Money(account.expenseMinor).format(),
+                          amountColor: context.colors.error,
+                        ),
+                        FinanceLedgerRow(
+                          title: Strings.fenzoTransfersIn,
+                          amount: Money(account.transfersInMinor).format(),
+                        ),
+                        FinanceLedgerRow(
+                          title: Strings.fenzoTransfersOut,
+                          amount: Money(account.transfersOutMinor).format(),
+                        ),
+                        FinanceLedgerRow(
+                          title: Strings.fenzoEnding,
+                          amount: Money(account.endingMinor).format(),
+                        ),
+                      ],
                     ],
                   );
                 },
@@ -216,24 +217,30 @@ class _ReportPageState extends State<ReportPage> {
     );
   }
 
-  Widget _preset(String label, VoidCallback onPressed) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      child: Text(label, style: TextStyles.of(size: 14)),
-    );
-  }
+  bool get _isDay =>
+      _range == DateRange(CalendarDate.today(), CalendarDate.today());
 
-  Widget _moneyTile(String title, int amountMinor) {
-    return ListTile(
-      title: Text(
-        title,
-        style: TextStyles.of(size: 16, weight: FontWeight.w500),
-      ),
-      trailing: Text(
-        Money(amountMinor).format(),
-        style: TextStyles.of(size: 14),
+  bool get _isWeek =>
+      _range == CalendarDate.weekContaining(CalendarDate.today());
+
+  bool get _isMonth =>
+      _range == CalendarDate.monthContaining(CalendarDate.today());
+
+  Widget _preset(String label, VoidCallback onPressed, bool selected) {
+    final ThemeColors colors = context.colors;
+    final Text labelText = Text(
+      label,
+      maxLines: 1,
+      style: TextStyles.of(
+        size: 14,
+        weight: FontWeight.w500,
+        color: selected ? colors.onPrimary : colors.textPrimary,
       ),
     );
+    if (selected) {
+      return FilledButton(onPressed: onPressed, child: labelText);
+    }
+    return OutlinedButton(onPressed: onPressed, child: labelText);
   }
 
   void _day() => _apply(DateRange(CalendarDate.today(), CalendarDate.today()));

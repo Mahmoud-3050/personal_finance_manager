@@ -47,7 +47,7 @@ class DashboardRepositoryImpl
         netMinor: figures.netMinor,
         accounts: activeAccounts,
         accountBalances: <String, int>{
-          for (final Account account in activeAccounts)
+          for (final Account account in book.accounts)
             account.id: accountBalanceMinor(account, book.transactions),
         },
         expenseShares: figures.expenseShares,

@@ -49,6 +49,9 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const String googleServerClientId =
+      '221286834750-jfilg1srkkt79j05j05ltbs6706n50dv.apps.googleusercontent.com';
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAunQTxONCPmX_d1F8ZaVAn62JKNfy3RLM',
     appId: '1:221286834750:android:bb046e985ebf4a0748676f',

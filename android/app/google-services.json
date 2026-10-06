@@ -12,7 +12,20 @@
           "package_name": "com.finzomanager.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "221286834750-bfgok0ku0m7k4ptkeq6lrv4pmtcrk781.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.finzomanager.app",
+            "certificate_hash": "dd4368edcd09f74177a93dd093b8863511550b10"
+          }
+        },
+        {
+          "client_id": "221286834750-jfilg1srkkt79j05j05ltbs6706n50dv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAunQTxONCPmX_d1F8ZaVAn62JKNfy3RLM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "221286834750-jfilg1srkkt79j05j05ltbs6706n50dv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "221286834750-d8rov199dvki9pq4i6bprij0q637155r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.finzomanager.app"
+              }
+            }
+          ]
         }
       }
     }
