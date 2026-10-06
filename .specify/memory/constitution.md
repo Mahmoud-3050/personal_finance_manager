@@ -1,50 +1,241 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: 2.0.0 → 2.1.0
+- Bump rationale: MINOR. The local-package rule is no longer conditional.
+  The app MUST path-depend on the five packages under packages/. No principle
+  was removed or redefined.
+- Modified principles: none renamed. Code Quality & Dart Discipline expanded.
+- Added sections: none
+- Removed sections: none
+- Templates:
+  - .specify/templates/plan-template.md ✅ aligned (Constitution Check still filled from this file)
+  - .specify/templates/spec-template.md ✅ no change (no new business-spec sections)
+  - .specify/templates/tasks-template.md ✅ no change (testing gate already recorded)
+  - .specify/templates/commands/ ✅ none present
+  - README.md ✅ no constitution reference to update
+  - .cursor/rules/00-project-constitution.mdc ✅ synced
+  - pubspec.yaml ✅ path dependencies added
+  - specs/001-phase0-mvp/plan.md ✅ updated
+  - specs/001-phase0-mvp/research.md ✅ updated
+  - specs/001-phase0-mvp/tasks.md ✅ T001 lists all five path packages
+- Follow-up TODOs: none
+-->
+
+# codebase Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Principle I: Feature-First Clean Architecture (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every feature MUST live in its own directory under `lib/features/<feature_name>/`.
+A feature MUST use three decoupled layers. Dependencies flow inward only:
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+```text
+Presentation (Cubit, pages, widgets, navigation)
+    ↓ depends on
+Domain (UseCase → Repository interface → Entity)
+    ↑ implemented by
+Data (RepositoryImpl → DataSource → Model)
+```
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+- **Domain (`domain/`)**: Entities, repository contracts, use cases, and `*Params`.
+  MUST have zero imports of Flutter UI, Dio, `data/`, or `presentation/`.
+- **Data (`data/`)**: DataSources, models (`fromJson`/`toJson`), repository
+  implementations. MUST NOT import `presentation/`.
+- **Presentation (`presentation/`)**: Cubits, pages, widgets, and the feature
+  router. MUST NOT import datasources or repository implementations.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+`lib/features/profile/` is the canonical layout. Every new feature MUST mirror it:
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+```text
+lib/features/<feature>/
+├── <feature>_injection.dart
+├── data/
+│   ├── datasources/
+│   ├── models/
+│   └── repositories/
+├── domain/
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
+└── presentation/
+    ├── controller/<operation>/
+    ├── navigation/
+    ├── pages/
+    └── widgets/
+```
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+One use case per repository method. One Cubit per user-facing operation. Operation
+names MUST match across layers (`get_student_profile` → `GetStudentProfileCubit` →
+`GetStudentProfileUseCase` → `getStudentProfile()`).
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+*Rationale*: Independent feature work, testable layers, and no leak of HTTP or JSON
+into UI or domain.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### Principle II: Explicit Dependency Injection via Service Locator
+
+Dependency injection MUST use GetIt through `ServiceLocator.instance`.
+
+App-wide infrastructure (Dio, secure storage, preferences, device identity) MUST
+be registered in `ServiceLocator.init()` in `lib/injection_container.dart`.
+
+Feature dependencies MUST NOT be registered globally at app start. Each feature
+MUST expose granular `register*` functions in
+`lib/features/<feature>/<feature>_injection.dart`. Route builders MUST wrap the
+screen in `FeatureScope` with only the registrations that route needs, then provide
+Cubits via `BlocProvider` that resolve from `ServiceLocator.instance`.
+
+Registration conventions:
+- **Cubits/Blocs**: `registerFactory` (fresh instance per provider).
+- **UseCases, Repositories, DataSources**: `registerLazySingleton`.
+
+Widgets MUST NEVER construct Cubits, use cases, repositories, or datasources with
+`new`.
+
+*Rationale*: Predictable lifetimes, mock substitution in tests, and no leftover
+feature singletons after the user leaves a route.
+
+### Principle III: Reactive State Management with Cubit/Bloc
+
+State management MUST use `flutter_bloc` (`Cubit` or `Bloc`). Widgets are
+declarative. Widgets MUST NEVER run network calls, parse JSON, or decide
+success versus failure.
+
+- Public Cubit actions MUST use the `f` prefix (`fGetStudentProfile`).
+- Cubit state MUST be a typedef of the shared sealed `ApiCallState<T>`
+  (`holding`, `loading`, `success`, `error`, `empty`, `refresh`, `pagination`)
+  unless the operation genuinely needs a different sealed hierarchy.
+- States MUST be immutable. Cubits MUST NOT keep UI-relevant data in mutable
+  side-channel fields; everything the UI needs MUST flow through `emit`.
+- Screens that need rebuild and side effects MUST use `BlocConsumer`. Screens
+  that only display one field SHOULD use `BlocSelector` or `buildWhen`.
+- Widgets dispatch with `context.read<Cubit>().f…()` only.
+
+*Rationale*: Deterministic UI, testable presentation logic, exhaustive state
+handling.
+
+### Principle IV: Safe Functional Error Handling (`Either<Failure, T>`)
+
+Domain and data layers MUST use the local `either` package
+(`package:either/either.dart`), not `dartz`.
+
+- Repositories MUST return `Future<Either<Failure, T>>`.
+- DataSources MUST throw domain exceptions (`AppException` / `ServerException` /
+  `CacheException`). They MUST NOT return `Either`.
+- Repository implementations MUST catch `AppException` and map it with
+  `error.toFailure()` into `Left`. They MUST NOT leak raw SDK exceptions past
+  the data boundary.
+- Cubits MUST consume results with `.fold()` (or equivalent exhaustive matching)
+  and emit both error and success states.
+
+*Rationale*: Compile-time handling of failure; presentation never depends on a
+third-party exception shape.
+
+### Principle V: Separation of Domain Entities and Data Models
+
+Models in `data/models/` MUST extend or map to domain entities in
+`domain/entities/`.
+
+- `fromJson` / `toJson` belong only on models.
+- Domain entities MUST stay pure Dart (no Flutter, no Dio, no JSON).
+- Remote DataSources speak models and HTTP. Repositories hand entities to domain.
+- Do NOT add a separate mapper class unless parsing is genuinely complex.
+- Co-locate `*Params` (including `toJson()` for request bodies) with the use case.
+
+*Rationale*: Backend schema changes stay in the data layer.
+
+## Code Quality & Dart Discipline
+
+These rules are non-negotiable. Detailed examples live in `.cursor/rules/`
+(§1 clean code, §2 OOP, §3 SOLID, §4 modern Dart, §5 null safety, §7 checklist).
+Pull requests MUST satisfy them; the numbered Cursor rules are the style handbook
+for this constitution.
+
+1. **Single responsibility**: A function does one thing. A class has one reason
+   to change. Prefer granular Cubits over a feature-wide god Cubit.
+2. **Program to interfaces**: Depend on `abstract interface class` contracts.
+   Inject abstractions; never hard-code a concrete collaborator inside a
+   high-level type.
+3. **Composition over inheritance**: Do not grow deep `extends` chains for
+   unrelated capabilities. Use composition or a mixin.
+4. **Immutability and explicit optionality**: Fields are `final` by default.
+   `T?` means the value can genuinely be absent. Prefer `?.` / `??` / `??=`
+   over manual null checks. Do not silence nullability with `!` except after
+   a local promotion the analyzer cannot see.
+5. **Intention-revealing names; no magic literals**: Names explain purpose.
+   Unexplained numbers and strings MUST be named constants.
+6. **Guard clauses and specific exceptions**: Flatten nesting with early
+   return/throw. Throw typed exceptions, not `Exception('error')`.
+7. **Modern Dart**: Fixed sets of states MUST be a `sealed class` or enhanced
+   `enum`. Prefer records for 2–3 related return values. Prefer pattern matching
+   over `is` plus cast. Prefer extensions over static `Utils` classes.
+8. **Use cases**: Every use case MUST extend `UseCase<Type, Params>` and
+   implement `Future<Either<Failure, Type>> call(Params params)`.
+
+Do NOT add premature layers: no service between Cubit and UseCase, no
+`BaseCubit` / `BaseRepository` wrappers, no domain event bus.
+
+The root `pubspec.yaml` MUST path-depend on every package under `packages/`.
+Do NOT add a pub.dev package that duplicates one of them.
+
+- `either` (`packages/either`, `package:either/either.dart`) is the only
+  `Either` type. Do NOT add `dartz`.
+- `themes` (`packages/themes`, `package:themes/themes.dart`) owns theme mode
+  and color palettes.
+- `language` (`packages/language`, `package:language/language.dart`) owns
+  locale and translations.
+- `screen_util` (`packages/screen_util`,
+  `package:screen_util/screen_util.dart`) owns responsive spacing and type
+  (`.w`, `.h`, `.sp`, `.r`).
+- `field_validator` (`packages/field_validator`,
+  `package:field_validator/field_validator.dart`) owns form-field validation.
+
+## Flutter Presentation Discipline
+
+Distilled from `.cursor/rules/02-flutter-development.mdc`.
+
+1. Use `const` constructors wherever values are compile-time constant. Spacing
+   and typography that use `screen_util` (`.w`, `.h`, `.sp`, `.r`) or
+   `TextStyles` are runtime-sized and MUST NOT be forced `const`.
+2. Break large `build()` methods into small named widgets. Do not ship 5+ levels
+   of anonymous nesting.
+3. Keep async work in Cubits. After `await` in a widget (dialogs, navigation),
+   check `context.mounted` before using `context`.
+4. Dispose every `Controller`, `FocusNode`, `ScrollController`,
+   `AnimationController`, and `StreamSubscription` in `dispose()` (call
+   `super.dispose()` last). Cubits cancel work in `close()` (call `super.close()`
+   last).
+5. Prefer `ListView.builder` / `GridView.builder` for long lists. Give list items
+   a `Key` when the list can reorder.
+
+## Development Workflow & Review Gates
+
+1. **Static analysis**: Code MUST pass `flutter analyze` with 0 warnings or
+   errors before PR submission.
+2. **Architecture check**: A new feature PR MUST include domain, data, and
+   presentation layers, `<feature>_injection.dart` with `register*` functions,
+   and `FeatureScope` at the route. It MUST NOT register feature types in
+   `ServiceLocator.init()`.
+3. **Testing**:
+   - Unit tests MUST cover use cases and repository implementations.
+   - Bloc tests MUST cover Cubit success and error paths.
+4. **Refactoring reviews**: When refactoring, follow the pass order in
+   `.cursor/rules/06-refactoring-workflow.mdc` and cite the rule number for
+   each change. Preserve behavior unless the request is a behavior change.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+1. **Supremacy**: This Constitution supersedes informal conventions for
+   `codebase`. Cursor rules in `.cursor/rules/` are the detailed handbook;
+   where a rule and this document disagree, this document wins and the rule
+   MUST be updated in the same amendment.
+2. **Amendment procedure**: Amendments update `.specify/memory/constitution.md`,
+   bump the version (MAJOR for principle removal or redefinition, MINOR for new
+   principle or material expansion, PATCH for clarification), sync
+   `.cursor/rules/00-project-constitution.mdc`, and run consistency checks on
+   Specify templates.
+3. **Compliance review**: Every pull request and feature plan MUST pass the
+   Core Principles. Implementation plans MUST include a Constitution Check
+   against the gates in `.specify/templates/plan-template.md`.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 2.1.0 | **Ratified**: 2026-07-26 | **Last Amended**: 2026-10-06

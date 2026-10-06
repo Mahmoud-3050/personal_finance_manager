@@ -35,6 +35,17 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  either:
+    path: packages/either
+  themes:
+    path: packages/themes
+  language:
+    path: packages/language
+  screen_util:
+    path: packages/screen_util
+  field_validator:
+    path: packages/field_validator
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

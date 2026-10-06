@@ -157,9 +157,20 @@ for this constitution.
 Do NOT add premature layers: no service between Cubit and UseCase, no
 `BaseCubit` / `BaseRepository` wrappers, no domain event bus.
 
-Shared capabilities that already exist as local packages (`either`, `themes`,
-`language`, `screen_util`, `field_validator`) MUST be used. Do NOT add a pub.dev
-duplicate for a capability a local package already provides.
+The root `pubspec.yaml` MUST path-depend on every package under `packages/`.
+Do NOT add a pub.dev package that duplicates one of them.
+
+- `either` (`packages/either`, `package:either/either.dart`) is the only
+  `Either` type. Do NOT add `dartz`.
+- `themes` (`packages/themes`, `package:themes/themes.dart`) owns theme mode
+  and color palettes.
+- `language` (`packages/language`, `package:language/language.dart`) owns
+  locale and translations.
+- `screen_util` (`packages/screen_util`,
+  `package:screen_util/screen_util.dart`) owns responsive spacing and type
+  (`.w`, `.h`, `.sp`, `.r`).
+- `field_validator` (`packages/field_validator`,
+  `package:field_validator/field_validator.dart`) owns form-field validation.
 
 ## Flutter Presentation Discipline
 
@@ -209,4 +220,4 @@ Distilled from `.cursor/rules/02-flutter-development.mdc`.
    Core Principles. Implementation plans MUST include a Constitution Check
    against the gates in `.specify/templates/plan-template.md`.
 
-**Version**: 2.0.0 | **Ratified**: 2026-07-26 | **Last Amended**: 2026-09-17
+**Version**: 2.1.0 | **Ratified**: 2026-07-26 | **Last Amended**: 2026-10-06
