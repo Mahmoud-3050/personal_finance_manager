@@ -1,4 +1,3 @@
-import 'package:either/either.dart';
 import 'package:finzomanager/features/backup/domain/entities/backup_settings.dart';
 import 'package:finzomanager/features/backup/domain/usecases/run_manual_backup_use_case.dart';
 import 'package:finzomanager/features/backup/domain/usecases/sign_in_for_backup_use_case.dart';

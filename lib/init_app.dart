@@ -6,7 +6,6 @@ import 'package:language/language.dart';
 import 'package:themes/themes.dart';
 
 import 'config/language/language_change_adapter.dart';
-import 'config/routes/app_router.dart';
 import 'config/themes/colors_palettes.dart';
 import 'core/api/refresh_token_helper.dart';
 import 'core/services/bloc_observer/bloc_observer.dart';

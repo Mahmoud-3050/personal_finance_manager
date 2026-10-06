@@ -53,7 +53,7 @@ void main() {
     expect(
       backupIsDue(
         schedule: BackupSchedule.monthly,
-        lastSuccessAt: DateTime(2026, 10, 1),
+        lastSuccessAt: DateTime(2026, 10),
         now: DateTime(2026, 10, 31),
       ),
       isFalse,
@@ -62,7 +62,7 @@ void main() {
       backupIsDue(
         schedule: BackupSchedule.monthly,
         lastSuccessAt: DateTime(2026, 10, 31),
-        now: DateTime(2026, 11, 1),
+        now: DateTime(2026, 11),
       ),
       isTrue,
     );

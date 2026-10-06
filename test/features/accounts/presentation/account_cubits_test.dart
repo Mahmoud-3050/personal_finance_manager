@@ -4,8 +4,6 @@ import 'package:finzomanager/core/error/failures.dart';
 import 'package:finzomanager/core/presentation/api_call_state.dart';
 import 'package:finzomanager/shared/domain/entities/account.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
-import 'package:finzomanager/shared/domain/entities/category.dart';
-import 'package:finzomanager/shared/domain/entities/money_transaction.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:finzomanager/features/accounts/domain/repositories/accounts_repository.dart';
 import 'package:finzomanager/features/accounts/domain/usecases/save_account_use_case.dart';

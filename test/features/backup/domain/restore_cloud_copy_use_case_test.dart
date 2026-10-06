@@ -61,7 +61,7 @@ void main() {
     expect(harness.cloud.stored, hasLength(5));
     expect(
       harness.cloud.stored.containsKey(
-        DateTime.utc(2026, 10, 1).toIso8601String(),
+        DateTime.utc(2026, 10).toIso8601String(),
       ),
       isFalse,
     );

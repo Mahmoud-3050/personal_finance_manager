@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:finzomanager/core/error/failures.dart';
 import 'package:finzomanager/core/presentation/api_call_state.dart';
-import 'package:finzomanager/core/usecases/usecase.dart';
 import 'package:finzomanager/features/backup/domain/entities/backup_settings.dart';
 import 'package:finzomanager/features/backup/domain/usecases/get_backup_status_use_case.dart';
 import 'package:finzomanager/features/backup/domain/usecases/run_manual_backup_use_case.dart';

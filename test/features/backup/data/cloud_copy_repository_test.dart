@@ -21,7 +21,7 @@ void main() {
     expect(harness.cloud.stored.length, 5);
     expect(
       harness.cloud.stored.keys,
-      isNot(contains(DateTime.utc(2026, 10, 1).toIso8601String())),
+      isNot(contains(DateTime.utc(2026, 10).toIso8601String())),
     );
   });
 }
