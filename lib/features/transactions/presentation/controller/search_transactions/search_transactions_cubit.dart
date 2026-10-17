@@ -11,8 +11,18 @@ class SearchTransactionsCubit extends Cubit<SearchTransactionsState> {
     : super(const ApiCallHolding<List<MoneyTransaction>>());
 
   final SearchTransactionsUseCase _useCase;
+  SearchTransactionsParams? _lastParams;
+
+  Future<void> fRepeatLastSearch() {
+    final SearchTransactionsParams? params = _lastParams;
+    if (params == null) {
+      return Future<void>.value();
+    }
+    return fSearchTransactions(params);
+  }
 
   Future<void> fSearchTransactions(SearchTransactionsParams params) async {
+    _lastParams = params;
     emit(const ApiCallLoading<List<MoneyTransaction>>());
     final result = await _useCase(params);
     result.fold(

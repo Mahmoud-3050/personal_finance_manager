@@ -797,6 +797,11 @@ abstract class Strings {
   static String get fenzoTypeLocked => 'fenzo_type_locked'.tr;
   static String get fenzoTransactions => 'fenzo_transactions'.tr;
   static String get fenzoAddTransaction => 'fenzo_add_transaction'.tr;
+  static String get fenzoCaptureReview => 'fenzo_capture_review'.tr;
+  static String get fenzoCaptureConfirm => 'fenzo_capture_confirm'.tr;
+  static String get fenzoCaptureDiscard => 'fenzo_capture_discard'.tr;
+  static String get fenzoCaptureKind => 'fenzo_capture_kind'.tr;
+  static String get fenzoCaptureUncertain => 'fenzo_capture_uncertain'.tr;
   static String get fenzoNoMatches => 'fenzo_no_matches'.tr;
   static String get fenzoTransferSameAccount =>
       'fenzo_transfer_same_account'.tr;

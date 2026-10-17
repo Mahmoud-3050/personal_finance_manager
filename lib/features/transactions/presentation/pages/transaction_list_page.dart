@@ -105,6 +105,13 @@ class _TransactionListPageState extends State<TransactionListPage> {
             Strings.fenzoSearch,
             style: TextStyles.of(size: 18, weight: FontWeight.w600),
           ),
+          actions: <Widget>[
+            IconButton(
+              tooltip: Strings.fenzoCaptureReview,
+              onPressed: () => context.push(AppRoutes.captureReview),
+              icon: const Icon(Icons.fact_check_outlined),
+            ),
+          ],
         ),
         body: Column(
           children: <Widget>[
@@ -120,11 +127,8 @@ class _TransactionListPageState extends State<TransactionListPage> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () => _openFilters(
-                      accounts,
-                      categories,
-                      subcategories,
-                    ),
+                    onPressed: () =>
+                        _openFilters(accounts, categories, subcategories),
                     icon: Icon(
                       Icons.tune,
                       color: _filtersActive
@@ -167,34 +171,36 @@ class _TransactionListPageState extends State<TransactionListPage> {
                               );
                             }
                             return ListView(
-                              padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 88.h),
+                              padding: EdgeInsets.fromLTRB(
+                                16.w,
+                                8.h,
+                                16.w,
+                                88.h,
+                              ),
                               children: state.data
                                   .map(
-                                    (MoneyTransaction item) =>
-                                        TransactionSummary(
-                                          item: item,
-                                          showFeeAsAmount:
-                                              _categoryId ==
-                                              transferCommissionCategoryId,
-                                          book:
-                                              categoriesState
-                                                  is ApiCallSuccess<
-                                                    FinanceRecords
-                                                  >
-                                              ? categoriesState.data
-                                              : null,
-                                          onTap: () => context.push(
-                                            AppRoutes.transactionForm,
-                                            extra: item,
-                                          ),
-                                          trailing: IconButton(
-                                            onPressed: () =>
-                                                _confirmDelete(context, item),
-                                            icon: const Icon(
-                                              Icons.delete_outline,
-                                            ),
-                                          ),
-                                        ),
+                                    (
+                                      MoneyTransaction item,
+                                    ) => TransactionSummary(
+                                      item: item,
+                                      showFeeAsAmount:
+                                          _categoryId ==
+                                          transferCommissionCategoryId,
+                                      book:
+                                          categoriesState
+                                              is ApiCallSuccess<FinanceRecords>
+                                          ? categoriesState.data
+                                          : null,
+                                      onTap: () => context.push(
+                                        AppRoutes.transactionForm,
+                                        extra: item,
+                                      ),
+                                      trailing: IconButton(
+                                        onPressed: () =>
+                                            _confirmDelete(context, item),
+                                        icon: const Icon(Icons.delete_outline),
+                                      ),
+                                    ),
                                   )
                                   .toList(),
                             );

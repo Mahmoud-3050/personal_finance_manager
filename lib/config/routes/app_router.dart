@@ -19,6 +19,11 @@ import '../../features/backup/presentation/pages/backup_status_page.dart';
 import '../../features/backup/presentation/pages/cloud_copies_page.dart';
 import '../../features/backup/presentation/widgets/automatic_backup_host.dart';
 import '../../shared/widgets/finance_tab_shell.dart';
+import '../../features/capture/capture_injection.dart';
+import '../../features/capture/domain/entities/capture_draft.dart';
+import '../../features/capture/presentation/controller/confirm_capture_draft/confirm_capture_draft_cubit.dart';
+import '../../features/capture/presentation/controller/discard_capture_draft/discard_capture_draft_cubit.dart';
+import '../../features/capture/presentation/pages/capture_review_page.dart';
 import '../../features/categories/categories_injection.dart';
 import '../../features/dashboard/dashboard_injection.dart';
 import '../../features/reports/reports_injection.dart';
@@ -152,9 +157,7 @@ class AppRouter {
                       ServiceLocator.instance<RunAutomaticBackupCubit>(),
                 ),
               ],
-              child: AutomaticBackupHost(
-                child: FinanceTabShell(child: child),
-              ),
+              child: AutomaticBackupHost(child: FinanceTabShell(child: child)),
             ),
           );
         },
@@ -200,6 +203,35 @@ class AppRouter {
                   DateRange range => SearchTransactionsParams(range: range),
                   _ => null,
                 },
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.captureReview,
+            builder: (BuildContext context, GoRouterState state) {
+              final Object? extra = state.extra;
+              return FeatureScope(
+                scopeName: 'capture',
+                registrations: const <FeatureRegistration>[
+                  registerCaptureDataLayer,
+                  registerConfirmCaptureDraft,
+                  registerDiscardCaptureDraft,
+                ],
+                child: MultiBlocProvider(
+                  providers: <BlocProvider<dynamic>>[
+                    BlocProvider<ConfirmCaptureDraftCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<ConfirmCaptureDraftCubit>(),
+                    ),
+                    BlocProvider<DiscardCaptureDraftCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<DiscardCaptureDraftCubit>(),
+                    ),
+                  ],
+                  child: CaptureReviewPage(
+                    supplied: extra is CaptureDraft ? extra : null,
+                  ),
+                ),
               );
             },
           ),

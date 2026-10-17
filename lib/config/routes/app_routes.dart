@@ -7,6 +7,7 @@ abstract class AppRoutes {
   static const String accountForm = '/accounts/form';
   static const String transactionForm = '/transactions/form';
   static const String transactions = '/transactions';
+  static const String captureReview = '/capture/review';
   static const String categories = '/categories';
   static const String reports = '/reports';
   static const String settings = '/settings';
