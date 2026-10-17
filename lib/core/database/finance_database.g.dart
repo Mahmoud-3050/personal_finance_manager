@@ -79,6 +79,17 @@ class $AccountRowsTable extends AccountRows
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _defaultCommissionMinorMeta =
+      const VerificationMeta('defaultCommissionMinor');
+  @override
+  late final GeneratedColumn<int> defaultCommissionMinor = GeneratedColumn<int>(
+    'default_commission_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _openingDateMeta = const VerificationMeta(
     'openingDate',
   );
@@ -149,6 +160,7 @@ class $AccountRowsTable extends AccountRows
     accountNumber,
     phoneNumber,
     openingBalanceMinor,
+    defaultCommissionMinor,
     openingDate,
     isActive,
     includeInTotal,
@@ -222,6 +234,15 @@ class $AccountRowsTable extends AccountRows
       );
     } else if (isInserting) {
       context.missing(_openingBalanceMinorMeta);
+    }
+    if (data.containsKey('default_commission_minor')) {
+      context.handle(
+        _defaultCommissionMinorMeta,
+        defaultCommissionMinor.isAcceptableOrUnknown(
+          data['default_commission_minor']!,
+          _defaultCommissionMinorMeta,
+        ),
+      );
     }
     if (data.containsKey('opening_date')) {
       context.handle(
@@ -306,6 +327,10 @@ class $AccountRowsTable extends AccountRows
         DriftSqlType.int,
         data['${effectivePrefix}opening_balance_minor'],
       )!,
+      defaultCommissionMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}default_commission_minor'],
+      )!,
       openingDate: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}opening_date'],
@@ -343,6 +368,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
   final String? accountNumber;
   final String? phoneNumber;
   final int openingBalanceMinor;
+  final int defaultCommissionMinor;
   final String openingDate;
   final bool isActive;
   final bool includeInTotal;
@@ -356,6 +382,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     this.accountNumber,
     this.phoneNumber,
     required this.openingBalanceMinor,
+    required this.defaultCommissionMinor,
     required this.openingDate,
     required this.isActive,
     required this.includeInTotal,
@@ -378,6 +405,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       map['phone_number'] = Variable<String>(phoneNumber);
     }
     map['opening_balance_minor'] = Variable<int>(openingBalanceMinor);
+    map['default_commission_minor'] = Variable<int>(defaultCommissionMinor);
     map['opening_date'] = Variable<String>(openingDate);
     map['is_active'] = Variable<bool>(isActive);
     map['include_in_total'] = Variable<bool>(includeInTotal);
@@ -401,6 +429,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
           ? const Value.absent()
           : Value(phoneNumber),
       openingBalanceMinor: Value(openingBalanceMinor),
+      defaultCommissionMinor: Value(defaultCommissionMinor),
       openingDate: Value(openingDate),
       isActive: Value(isActive),
       includeInTotal: Value(includeInTotal),
@@ -424,6 +453,9 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       openingBalanceMinor: serializer.fromJson<int>(
         json['openingBalanceMinor'],
       ),
+      defaultCommissionMinor: serializer.fromJson<int>(
+        json['defaultCommissionMinor'],
+      ),
       openingDate: serializer.fromJson<String>(json['openingDate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       includeInTotal: serializer.fromJson<bool>(json['includeInTotal']),
@@ -442,6 +474,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       'accountNumber': serializer.toJson<String?>(accountNumber),
       'phoneNumber': serializer.toJson<String?>(phoneNumber),
       'openingBalanceMinor': serializer.toJson<int>(openingBalanceMinor),
+      'defaultCommissionMinor': serializer.toJson<int>(defaultCommissionMinor),
       'openingDate': serializer.toJson<String>(openingDate),
       'isActive': serializer.toJson<bool>(isActive),
       'includeInTotal': serializer.toJson<bool>(includeInTotal),
@@ -458,6 +491,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     Value<String?> accountNumber = const Value.absent(),
     Value<String?> phoneNumber = const Value.absent(),
     int? openingBalanceMinor,
+    int? defaultCommissionMinor,
     String? openingDate,
     bool? isActive,
     bool? includeInTotal,
@@ -473,6 +507,8 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
         : this.accountNumber,
     phoneNumber: phoneNumber.present ? phoneNumber.value : this.phoneNumber,
     openingBalanceMinor: openingBalanceMinor ?? this.openingBalanceMinor,
+    defaultCommissionMinor:
+        defaultCommissionMinor ?? this.defaultCommissionMinor,
     openingDate: openingDate ?? this.openingDate,
     isActive: isActive ?? this.isActive,
     includeInTotal: includeInTotal ?? this.includeInTotal,
@@ -494,6 +530,9 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       openingBalanceMinor: data.openingBalanceMinor.present
           ? data.openingBalanceMinor.value
           : this.openingBalanceMinor,
+      defaultCommissionMinor: data.defaultCommissionMinor.present
+          ? data.defaultCommissionMinor.value
+          : this.defaultCommissionMinor,
       openingDate: data.openingDate.present
           ? data.openingDate.value
           : this.openingDate,
@@ -516,6 +555,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
           ..write('accountNumber: $accountNumber, ')
           ..write('phoneNumber: $phoneNumber, ')
           ..write('openingBalanceMinor: $openingBalanceMinor, ')
+          ..write('defaultCommissionMinor: $defaultCommissionMinor, ')
           ..write('openingDate: $openingDate, ')
           ..write('isActive: $isActive, ')
           ..write('includeInTotal: $includeInTotal, ')
@@ -534,6 +574,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     accountNumber,
     phoneNumber,
     openingBalanceMinor,
+    defaultCommissionMinor,
     openingDate,
     isActive,
     includeInTotal,
@@ -551,6 +592,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
           other.accountNumber == this.accountNumber &&
           other.phoneNumber == this.phoneNumber &&
           other.openingBalanceMinor == this.openingBalanceMinor &&
+          other.defaultCommissionMinor == this.defaultCommissionMinor &&
           other.openingDate == this.openingDate &&
           other.isActive == this.isActive &&
           other.includeInTotal == this.includeInTotal &&
@@ -566,6 +608,7 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
   final Value<String?> accountNumber;
   final Value<String?> phoneNumber;
   final Value<int> openingBalanceMinor;
+  final Value<int> defaultCommissionMinor;
   final Value<String> openingDate;
   final Value<bool> isActive;
   final Value<bool> includeInTotal;
@@ -580,6 +623,7 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
     this.accountNumber = const Value.absent(),
     this.phoneNumber = const Value.absent(),
     this.openingBalanceMinor = const Value.absent(),
+    this.defaultCommissionMinor = const Value.absent(),
     this.openingDate = const Value.absent(),
     this.isActive = const Value.absent(),
     this.includeInTotal = const Value.absent(),
@@ -595,6 +639,7 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
     this.accountNumber = const Value.absent(),
     this.phoneNumber = const Value.absent(),
     required int openingBalanceMinor,
+    this.defaultCommissionMinor = const Value.absent(),
     required String openingDate,
     required bool isActive,
     required bool includeInTotal,
@@ -618,6 +663,7 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
     Expression<String>? accountNumber,
     Expression<String>? phoneNumber,
     Expression<int>? openingBalanceMinor,
+    Expression<int>? defaultCommissionMinor,
     Expression<String>? openingDate,
     Expression<bool>? isActive,
     Expression<bool>? includeInTotal,
@@ -634,6 +680,8 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
       if (phoneNumber != null) 'phone_number': phoneNumber,
       if (openingBalanceMinor != null)
         'opening_balance_minor': openingBalanceMinor,
+      if (defaultCommissionMinor != null)
+        'default_commission_minor': defaultCommissionMinor,
       if (openingDate != null) 'opening_date': openingDate,
       if (isActive != null) 'is_active': isActive,
       if (includeInTotal != null) 'include_in_total': includeInTotal,
@@ -651,6 +699,7 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
     Value<String?>? accountNumber,
     Value<String?>? phoneNumber,
     Value<int>? openingBalanceMinor,
+    Value<int>? defaultCommissionMinor,
     Value<String>? openingDate,
     Value<bool>? isActive,
     Value<bool>? includeInTotal,
@@ -666,6 +715,8 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
       accountNumber: accountNumber ?? this.accountNumber,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       openingBalanceMinor: openingBalanceMinor ?? this.openingBalanceMinor,
+      defaultCommissionMinor:
+          defaultCommissionMinor ?? this.defaultCommissionMinor,
       openingDate: openingDate ?? this.openingDate,
       isActive: isActive ?? this.isActive,
       includeInTotal: includeInTotal ?? this.includeInTotal,
@@ -699,6 +750,11 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
     if (openingBalanceMinor.present) {
       map['opening_balance_minor'] = Variable<int>(openingBalanceMinor.value);
     }
+    if (defaultCommissionMinor.present) {
+      map['default_commission_minor'] = Variable<int>(
+        defaultCommissionMinor.value,
+      );
+    }
     if (openingDate.present) {
       map['opening_date'] = Variable<String>(openingDate.value);
     }
@@ -730,6 +786,7 @@ class AccountRowsCompanion extends UpdateCompanion<AccountRow> {
           ..write('accountNumber: $accountNumber, ')
           ..write('phoneNumber: $phoneNumber, ')
           ..write('openingBalanceMinor: $openingBalanceMinor, ')
+          ..write('defaultCommissionMinor: $defaultCommissionMinor, ')
           ..write('openingDate: $openingDate, ')
           ..write('isActive: $isActive, ')
           ..write('includeInTotal: $includeInTotal, ')
@@ -1482,6 +1539,18 @@ class $TransactionRowsTable extends TransactionRows
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _commissionMinorMeta = const VerificationMeta(
+    'commissionMinor',
+  );
+  @override
+  late final GeneratedColumn<int> commissionMinor = GeneratedColumn<int>(
+    'commission_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1517,6 +1586,7 @@ class $TransactionRowsTable extends TransactionRows
     toAccountId,
     description,
     notes,
+    commissionMinor,
     createdAt,
     updatedAt,
   ];
@@ -1618,6 +1688,15 @@ class $TransactionRowsTable extends TransactionRows
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('commission_minor')) {
+      context.handle(
+        _commissionMinorMeta,
+        commissionMinor.isAcceptableOrUnknown(
+          data['commission_minor']!,
+          _commissionMinorMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1687,6 +1766,10 @@ class $TransactionRowsTable extends TransactionRows
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      commissionMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}commission_minor'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1716,6 +1799,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
   final String? toAccountId;
   final String? description;
   final String? notes;
+  final int commissionMinor;
   final DateTime createdAt;
   final DateTime updatedAt;
   const TransactionRow({
@@ -1730,6 +1814,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
     this.toAccountId,
     this.description,
     this.notes,
+    required this.commissionMinor,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1761,6 +1846,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    map['commission_minor'] = Variable<int>(commissionMinor);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1793,6 +1879,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      commissionMinor: Value(commissionMinor),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1815,6 +1902,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
       toAccountId: serializer.fromJson<String?>(json['toAccountId']),
       description: serializer.fromJson<String?>(json['description']),
       notes: serializer.fromJson<String?>(json['notes']),
+      commissionMinor: serializer.fromJson<int>(json['commissionMinor']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1834,6 +1922,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
       'toAccountId': serializer.toJson<String?>(toAccountId),
       'description': serializer.toJson<String?>(description),
       'notes': serializer.toJson<String?>(notes),
+      'commissionMinor': serializer.toJson<int>(commissionMinor),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1851,6 +1940,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
     Value<String?> toAccountId = const Value.absent(),
     Value<String?> description = const Value.absent(),
     Value<String?> notes = const Value.absent(),
+    int? commissionMinor,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => TransactionRow(
@@ -1869,6 +1959,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
     toAccountId: toAccountId.present ? toAccountId.value : this.toAccountId,
     description: description.present ? description.value : this.description,
     notes: notes.present ? notes.value : this.notes,
+    commissionMinor: commissionMinor ?? this.commissionMinor,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -1897,6 +1988,9 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
           ? data.description.value
           : this.description,
       notes: data.notes.present ? data.notes.value : this.notes,
+      commissionMinor: data.commissionMinor.present
+          ? data.commissionMinor.value
+          : this.commissionMinor,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1916,6 +2010,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
           ..write('toAccountId: $toAccountId, ')
           ..write('description: $description, ')
           ..write('notes: $notes, ')
+          ..write('commissionMinor: $commissionMinor, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1935,6 +2030,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
     toAccountId,
     description,
     notes,
+    commissionMinor,
     createdAt,
     updatedAt,
   );
@@ -1953,6 +2049,7 @@ class TransactionRow extends DataClass implements Insertable<TransactionRow> {
           other.toAccountId == this.toAccountId &&
           other.description == this.description &&
           other.notes == this.notes &&
+          other.commissionMinor == this.commissionMinor &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1969,6 +2066,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
   final Value<String?> toAccountId;
   final Value<String?> description;
   final Value<String?> notes;
+  final Value<int> commissionMinor;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -1984,6 +2082,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
     this.toAccountId = const Value.absent(),
     this.description = const Value.absent(),
     this.notes = const Value.absent(),
+    this.commissionMinor = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2000,6 +2099,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
     this.toAccountId = const Value.absent(),
     this.description = const Value.absent(),
     this.notes = const Value.absent(),
+    this.commissionMinor = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2021,6 +2121,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
     Expression<String>? toAccountId,
     Expression<String>? description,
     Expression<String>? notes,
+    Expression<int>? commissionMinor,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2037,6 +2138,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
       if (toAccountId != null) 'to_account_id': toAccountId,
       if (description != null) 'description': description,
       if (notes != null) 'notes': notes,
+      if (commissionMinor != null) 'commission_minor': commissionMinor,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2055,6 +2157,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
     Value<String?>? toAccountId,
     Value<String?>? description,
     Value<String?>? notes,
+    Value<int>? commissionMinor,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -2071,6 +2174,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
       toAccountId: toAccountId ?? this.toAccountId,
       description: description ?? this.description,
       notes: notes ?? this.notes,
+      commissionMinor: commissionMinor ?? this.commissionMinor,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2113,6 +2217,9 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (commissionMinor.present) {
+      map['commission_minor'] = Variable<int>(commissionMinor.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2139,6 +2246,7 @@ class TransactionRowsCompanion extends UpdateCompanion<TransactionRow> {
           ..write('toAccountId: $toAccountId, ')
           ..write('description: $description, ')
           ..write('notes: $notes, ')
+          ..write('commissionMinor: $commissionMinor, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2179,6 +2287,7 @@ typedef $$AccountRowsTableCreateCompanionBuilder =
       Value<String?> accountNumber,
       Value<String?> phoneNumber,
       required int openingBalanceMinor,
+      Value<int> defaultCommissionMinor,
       required String openingDate,
       required bool isActive,
       required bool includeInTotal,
@@ -2195,6 +2304,7 @@ typedef $$AccountRowsTableUpdateCompanionBuilder =
       Value<String?> accountNumber,
       Value<String?> phoneNumber,
       Value<int> openingBalanceMinor,
+      Value<int> defaultCommissionMinor,
       Value<String> openingDate,
       Value<bool> isActive,
       Value<bool> includeInTotal,
@@ -2244,6 +2354,11 @@ class $$AccountRowsTableFilterComposer
 
   ColumnFilters<int> get openingBalanceMinor => $composableBuilder(
     column: $table.openingBalanceMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get defaultCommissionMinor => $composableBuilder(
+    column: $table.defaultCommissionMinor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2317,6 +2432,11 @@ class $$AccountRowsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get defaultCommissionMinor => $composableBuilder(
+    column: $table.defaultCommissionMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get openingDate => $composableBuilder(
     column: $table.openingDate,
     builder: (column) => ColumnOrderings(column),
@@ -2379,6 +2499,11 @@ class $$AccountRowsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get defaultCommissionMinor => $composableBuilder(
+    column: $table.defaultCommissionMinor,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get openingDate => $composableBuilder(
     column: $table.openingDate,
     builder: (column) => column,
@@ -2437,6 +2562,7 @@ class $$AccountRowsTableTableManager
                 Value<String?> accountNumber = const Value.absent(),
                 Value<String?> phoneNumber = const Value.absent(),
                 Value<int> openingBalanceMinor = const Value.absent(),
+                Value<int> defaultCommissionMinor = const Value.absent(),
                 Value<String> openingDate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> includeInTotal = const Value.absent(),
@@ -2451,6 +2577,7 @@ class $$AccountRowsTableTableManager
                 accountNumber: accountNumber,
                 phoneNumber: phoneNumber,
                 openingBalanceMinor: openingBalanceMinor,
+                defaultCommissionMinor: defaultCommissionMinor,
                 openingDate: openingDate,
                 isActive: isActive,
                 includeInTotal: includeInTotal,
@@ -2467,6 +2594,7 @@ class $$AccountRowsTableTableManager
                 Value<String?> accountNumber = const Value.absent(),
                 Value<String?> phoneNumber = const Value.absent(),
                 required int openingBalanceMinor,
+                Value<int> defaultCommissionMinor = const Value.absent(),
                 required String openingDate,
                 required bool isActive,
                 required bool includeInTotal,
@@ -2481,6 +2609,7 @@ class $$AccountRowsTableTableManager
                 accountNumber: accountNumber,
                 phoneNumber: phoneNumber,
                 openingBalanceMinor: openingBalanceMinor,
+                defaultCommissionMinor: defaultCommissionMinor,
                 openingDate: openingDate,
                 isActive: isActive,
                 includeInTotal: includeInTotal,
@@ -2929,6 +3058,7 @@ typedef $$TransactionRowsTableCreateCompanionBuilder =
       Value<String?> toAccountId,
       Value<String?> description,
       Value<String?> notes,
+      Value<int> commissionMinor,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -2946,6 +3076,7 @@ typedef $$TransactionRowsTableUpdateCompanionBuilder =
       Value<String?> toAccountId,
       Value<String?> description,
       Value<String?> notes,
+      Value<int> commissionMinor,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -3012,6 +3143,11 @@ class $$TransactionRowsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get commissionMinor => $composableBuilder(
+    column: $table.commissionMinor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3090,6 +3226,11 @@ class $$TransactionRowsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get commissionMinor => $composableBuilder(
+    column: $table.commissionMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3155,6 +3296,11 @@ class $$TransactionRowsTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
+  GeneratedColumn<int> get commissionMinor => $composableBuilder(
+    column: $table.commissionMinor,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -3210,6 +3356,7 @@ class $$TransactionRowsTableTableManager
                 Value<String?> toAccountId = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int> commissionMinor = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3225,6 +3372,7 @@ class $$TransactionRowsTableTableManager
                 toAccountId: toAccountId,
                 description: description,
                 notes: notes,
+                commissionMinor: commissionMinor,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3242,6 +3390,7 @@ class $$TransactionRowsTableTableManager
                 Value<String?> toAccountId = const Value.absent(),
                 Value<String?> description = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int> commissionMinor = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -3257,6 +3406,7 @@ class $$TransactionRowsTableTableManager
                 toAccountId: toAccountId,
                 description: description,
                 notes: notes,
+                commissionMinor: commissionMinor,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

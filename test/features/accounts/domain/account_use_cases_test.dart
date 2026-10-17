@@ -35,6 +35,7 @@ class _MemoryAccountsRepository implements AccountsRepository {
     String? bankName,
     String? accountNumber,
     String? phoneNumber,
+    int defaultCommissionMinor = 0,
   }) {
     return _keep(
       book.saveAccount(
@@ -48,6 +49,7 @@ class _MemoryAccountsRepository implements AccountsRepository {
         bankName: bankName,
         accountNumber: accountNumber,
         phoneNumber: phoneNumber,
+        defaultCommissionMinor: defaultCommissionMinor,
       ),
     );
   }
@@ -64,7 +66,6 @@ class _MemoryAccountsRepository implements AccountsRepository {
   Future<Either<Failure, FinanceRecords>> deleteAccount(String id) =>
       _keep(book.deleteAccount(id));
 
-  @override
   Future<Either<Failure, FinanceRecords>> saveMovement({
     required String? id,
     required MoneyTransactionType type,
@@ -96,11 +97,9 @@ class _MemoryAccountsRepository implements AccountsRepository {
     );
   }
 
-  @override
   Future<Either<Failure, FinanceRecords>> deleteTransaction(String id) =>
       _keep(book.deleteTransaction(id));
 
-  @override
   Future<Either<Failure, FinanceRecords>> saveCategory({
     required String? id,
     required String? parentId,
@@ -110,11 +109,9 @@ class _MemoryAccountsRepository implements AccountsRepository {
     book.saveCategory(id: id, parentId: parentId, name: name, kind: kind),
   );
 
-  @override
   Future<Either<Failure, FinanceRecords>> deactivateCategory(String id) =>
       _keep(book.deactivateCategory(id));
 
-  @override
   Future<Either<Failure, FinanceRecords>> deleteCategory(String id) =>
       _keep(book.deleteCategory(id));
 }

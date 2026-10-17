@@ -32,6 +32,8 @@
 ## Notes
 
 - Validation passed on 2026-10-06 after one revision pass (terminology aligned to the BRD: Account, Transaction, Dashboard; article and wording fixes; Arabic labels made explicit in FR-027).
+- Re-validated on 2026-10-16 after the transfer-commission amendment. No new spec was created. Commission rules are in the existing accounts, payment, and transfer stories (FR-014, FR-016 through FR-018, FR-055 through FR-060) and stay free of implementation detail. No [NEEDS CLARIFICATION] markers remain.
+- Re-validated on 2026-10-17 after the usual-fee amendment. No new spec was created. A usual fee is stored on the account (FR-001, FR-005, FR-061) and only starts the next qualifying record. Saved fees are unchanged. No [NEEDS CLARIFICATION] markers remain.
 - No [NEEDS CLARIFICATION] markers. Defaults for items the BRD left open are recorded under Assumptions (single person, EGP only, current month on the dashboard, Monday–Sunday week, ready-made categories, ten recent transactions, negative balances allowed).
 - Phase 2 (backup and restore), Phase 3 (category suggestions), and Phase 4 (budgets, insights, assistant) are documented as out of scope so they are not lost and are not requirements of this spec.
 - Ready for `/speckit-plan`.

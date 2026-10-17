@@ -34,6 +34,7 @@ class TransactionsRepositoryImpl
     String? toAccountId,
     String? description,
     String? notes,
+    int commissionMinor = 0,
   }) {
     return changeRecords(
       'saveMovement',
@@ -50,6 +51,7 @@ class TransactionsRepositoryImpl
         toAccountId: toAccountId,
         description: description,
         notes: notes,
+        commissionMinor: commissionMinor,
       ),
     );
   }

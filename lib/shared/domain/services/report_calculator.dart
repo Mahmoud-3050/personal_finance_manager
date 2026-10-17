@@ -29,7 +29,7 @@ PeriodFigures periodFigures({
       .where((MoneyTransaction item) => range.contains(item.date))
       .toList();
   final int income = _sum(inside, MoneyTransactionType.income);
-  final int expense = _sum(inside, MoneyTransactionType.expense);
+  final int expense = _expenseTotal(inside);
   return PeriodFigures(
     incomeMinor: income,
     expenseMinor: expense,
@@ -56,6 +56,17 @@ PeriodFigures periodFigures({
   );
 }
 
+int _expenseTotal(List<MoneyTransaction> items) {
+  var total = 0;
+  for (final MoneyTransaction item in items) {
+    if (item.type == MoneyTransactionType.expense) {
+      total += item.amountMinor;
+    }
+    total += item.commissionMinor;
+  }
+  return total;
+}
+
 int _sum(List<MoneyTransaction> items, MoneyTransactionType type) {
   var total = 0;
   for (final MoneyTransaction item in items) {
@@ -78,12 +89,20 @@ List<CategoryShare> _shares(
   for (final Category category in categories.where(
     (Category item) => item.kind == kind,
   )) {
-    final int amount = items
-        .where(
-          (MoneyTransaction item) =>
-              item.type == type && item.categoryId == category.id,
-        )
-        .fold(0, (int sum, MoneyTransaction item) => sum + item.amountMinor);
+    final int amount = category.id == transferCommissionCategoryId
+        ? items.fold(
+            0,
+            (int sum, MoneyTransaction item) => sum + item.commissionMinor,
+          )
+        : items
+              .where(
+                (MoneyTransaction item) =>
+                    item.type == type && item.categoryId == category.id,
+              )
+              .fold(
+                0,
+                (int sum, MoneyTransaction item) => sum + item.amountMinor,
+              );
     if (amount == 0) {
       continue;
     }
@@ -151,7 +170,7 @@ AccountPeriodFigures _accountPeriod(
         }
       case MoneyTransactionType.expense:
         if (item.accountId == account.id) {
-          expense += item.amountMinor;
+          expense += item.amountMinor + item.commissionMinor;
         }
       case MoneyTransactionType.transfer:
         if (item.toAccountId == account.id) {
@@ -159,6 +178,7 @@ AccountPeriodFigures _accountPeriod(
         }
         if (item.fromAccountId == account.id) {
           transfersOut += item.amountMinor;
+          expense += item.commissionMinor;
         }
     }
   }

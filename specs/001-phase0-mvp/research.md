@@ -75,3 +75,33 @@
 - **Decision**: Deactivating an account sets it inactive and removes it from total money. Reactivating it makes it active again and does not put it back into the total until the person includes it. Changing type is allowed only when the account has no transactions; inapplicable labels are cleared in the same save.
 - **Rationale**: Matches the clarified dashboard rule and the “include it again” rule without a second hidden flag.
 - **Alternatives considered**: Leaving a deactivated account inside the total (the dashboard total would include an account the dashboard does not list, unless the person had opted in). Auto-including an account on reactivate (contradicts “unless the person includes it again”).
+
+## 13. Where a transfer commission is stored
+
+- **Decision**: Add `commissionMinor` to the existing transaction. It is an integer of piastres, zero or greater, default 0. The moved or paid amount stays in `amountMinor`. One save writes both. Drift schema moves from version 1 to version 2 with `commission_minor INTEGER NOT NULL DEFAULT 0`, so rows already on the device become zero.
+- **Rationale**: The spec requires one sitting, separate figures, and a delete that removes both the principal and the fee. A second row can be saved without the other and would change balances halfway. A default of 0 keeps every existing balance identical until the person edits a row.
+- **Alternatives considered**: A paired expense row under رسوم تحويل (partial-write risk, and a transfer would no longer be one action). A percentage or bank tariff table (the spec says the person types the fee). Storing the fee only in notes (reports could not add it exactly).
+
+## 14. Which rows may carry a fee
+
+- **Decision**: `saveMovement` accepts a commission on every transfer, and on an expense whose account type is `bank` or `eWallet`. Income, cash, and `other` reject a commission greater than zero with `ValidationFailure` and do not write. A blank field is sent as 0. A negative commission is rejected. More than two decimal places is rejected by the existing money parser before it becomes piastres. A commission larger than the principal is allowed.
+- **Rationale**: This matches the 2026-10-16 clarification. The widget hides the field in the disallowed cases, but the book is the check, so a cubit test can prove the rejection without the screen.
+- **Alternatives considered**: Enforcing the rule only in the form (a caller could still save a fee on cash). Treating cash transfers as fee-free (the spec allows a fee on every move between the person’s accounts).
+
+## 15. How the fee changes balances and reports
+
+- **Decision**: Keep balances derived. For an expense, the paying account decreases by `amountMinor + commissionMinor`. For a transfer, the destination increases by `amountMinor` only, and the source decreases by `amountMinor + commissionMinor`. Transfer in and transfer out on the account report use `amountMinor` only. Period expenses, the net result, and that account’s expenses include `commissionMinor`. The payment’s own category total includes `amountMinor` only. Every `commissionMinor` in the period is added to the seed category `رسوم تحويل` (`id`: `seed-expense-رسوم تحويل`), even though the transaction’s `categoryId` is unchanged. A transfer’s `categoryId` stays null. Total money changes by the fee only when the charged account is included; an excluded account follows the inclusion rule already in `totalMoneyMinor`.
+- **Rationale**: The destination is not shorted. The moved amount stays out of income and expenses. The fee is the only new spending. Putting the fee in `categoryId` would replace the category the person chose for the purchase.
+- **Alternatives considered**: Subtracting the fee from the amount the destination receives (rejected in clarification). Adding the fee to transfers out (the account report would no longer match the moved amount). A stored balance column (still rejected; the calculator is the only formula).
+
+## 16. The fee category and older book copies
+
+- **Decision**: If categories already exist, do not rerun the full seed. Insert `رسوم تحويل` only when that stable id is missing. The expense picker does not offer it, and a normal expense cannot be saved with that id. The person may rename it; commissions keep using the id and reports show the current name. A backup or export writes `commission_minor`. A copy that has no such key restores as 0.
+- **Rationale**: Existing books already have categories, so the current “seed only when empty” path would never add the fee category. Older copies must still open. A missing key means “no fee”, which is the pre-amendment book.
+- **Alternatives considered**: A second seed pass that resets every ready-made name (would undo renames). Refusing to restore a copy that lacks the key (would strand books saved before this amendment). Letting the person file the fee under any category (the spec fixes the category).
+
+## 17. Usual fee stored on the account
+
+- **Decision**: Add `defaultCommissionMinor` to the existing account. It is integer piastres, zero or greater, default 0. Drift schema moves from version 2 to version 3 with `default_commission_minor INTEGER NOT NULL DEFAULT 0` on `account_rows`. The version 1 to 2 `commission_minor` upgrade remains. `AccountModel.toJson` writes `default_commission_minor`. A missing key reads as 0. `toCompanion` must pass `Value(defaultCommissionMinor)` so a non-zero usual fee is not dropped by the insert default. `saveAccount` rejects a negative value and does not write. More than two decimal places is rejected by the existing money parser. Changing the account type does not clear this field. `saveMovement` does not read it.
+- **Rationale**: The spec asks for a usual amount on the account that starts the next qualifying record and can still be cleared. If `saveMovement` copied the usual fee whenever the sent fee was 0, the person could not save a zero fee on an account whose usual fee is greater than zero. The form is the place that fills the field: a new bank or e-wallet expense uses the paying account, a new transfer uses the source only, and changing that account before save replaces the starting fee when a fee is allowed. A saved row opens with its own `commissionMinor`. Cash and `other` expenses keep the field hidden. The usual fee is not added to the balance formula.
+- **Alternatives considered**: A percentage of the payment (the spec says an amount). Adding the source and destination usual fees (the fee is taken from the source only). Rewriting saved rows when the usual fee changes (the spec keeps history). A new cubit or feature (the account save path already exists).

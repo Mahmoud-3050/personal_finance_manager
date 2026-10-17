@@ -46,7 +46,9 @@ class DashboardShares extends StatelessWidget {
             ),
             onTap: () => openMonth(
               context,
-              type: MoneyTransactionType.expense,
+              type: share.id == transferCommissionCategoryId
+                  ? null
+                  : MoneyTransactionType.expense,
               categoryId: share.id,
             ),
           ),
@@ -119,8 +121,12 @@ String _subtitle(MoneyTransaction item, FinanceRecords? book) {
     category,
     subcategory,
   ].whereType<String>().join(' / ');
-  if (names.isEmpty) {
-    return item.date.toIso();
-  }
-  return '${item.date.toIso()} · $names';
+  final String fee = item.commissionMinor > 0
+      ? '${Strings.fenzoTransferCommission} ${Money(item.commissionMinor).format()}'
+      : '';
+  return <String>[
+    item.date.toIso(),
+    if (names.isNotEmpty) names,
+    if (fee.isNotEmpty) fee,
+  ].join(' · ');
 }

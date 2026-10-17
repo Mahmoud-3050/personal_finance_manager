@@ -31,6 +31,7 @@ class AccountsRepositoryImpl
     String? bankName,
     String? accountNumber,
     String? phoneNumber,
+    int defaultCommissionMinor = 0,
   }) {
     return changeRecords(
       'saveAccount',
@@ -45,6 +46,7 @@ class AccountsRepositoryImpl
         bankName: bankName,
         accountNumber: accountNumber,
         phoneNumber: phoneNumber,
+        defaultCommissionMinor: defaultCommissionMinor,
       ),
     );
   }

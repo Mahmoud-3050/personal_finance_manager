@@ -1,0 +1,1545 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Finzo Manager — Business Requirements Document v1.0" />
+  <title>Finzo Manager | BRD v1.0</title>
+
+  <style>
+    :root {
+      --primary: #177d66;
+      --primary-dark: #105c4b;
+      --primary-light: #e7f5ef;
+      --background: #f6f8fa;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --muted: #667085;
+      --border: #e4e7ec;
+      --sidebar-width: 270px;
+      --radius: 12px;
+      --shadow: 0 3px 15px rgba(16, 24, 40, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: var(--background);
+      line-height: 1.75;
+    }
+
+    button, select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .topbar {
+      height: 68px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: var(--primary);
+      border-radius: 11px;
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: -5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .btn:hover {
+      background: #f2f4f7;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      color: white;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      max-width: 1600px;
+      margin: auto;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 68px;
+      height: calc(100vh - 68px);
+      overflow-y: auto;
+      padding: 25px 16px 35px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+    }
+
+    .sidebar-heading {
+      padding: 0 12px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 8px 12px;
+      margin: 3px 0;
+      border-radius: 7px;
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.5;
+      transition: 0.15s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      text-decoration: none;
+    }
+
+    .nav-number {
+      display: inline-block;
+      width: 27px;
+      color: #98a2b3;
+      font-size: 11px;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 35px clamp(18px, 4vw, 58px) 70px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 38px;
+      color: white;
+      background: linear-gradient(120deg, #105c4b, #177d66 62%, #30a080);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      border: 35px solid rgba(255,255,255,0.07);
+      border-radius: 50%;
+      right: -55px;
+      top: -90px;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 5px 10px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      font-size: clamp(28px, 4vw, 43px);
+      line-height: 1.2;
+      letter-spacing: -1px;
+    }
+
+    .hero p {
+      position: relative;
+      z-index: 1;
+      max-width: 650px;
+      margin: 15px 0 0;
+      color: rgba(255,255,255,0.86);
+      font-size: 15px;
+    }
+
+    .hero-meta {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .meta-chip {
+      padding: 7px 11px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.12);
+      font-size: 12px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+      margin: 22px 0 35px;
+    }
+
+    .stat {
+      padding: 19px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 5px;
+      font-size: 25px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .stat-note {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .section {
+      margin: 0 0 24px;
+      padding: 30px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      scroll-margin-top: 90px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-number {
+      flex: 0 0 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.4;
+    }
+
+    h3 {
+      margin: 25px 0 10px;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .callout {
+      padding: 16px 18px;
+      margin: 18px 0;
+      background: #f0f9f5;
+      border-left: 4px solid var(--primary);
+      border-radius: 7px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 7px 0;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
+    .mini-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      margin: 16px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475467;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    tbody tr:hover {
+      background: #fafdfb;
+    }
+
+    .id {
+      white-space: nowrap;
+      color: var(--primary-dark);
+      font-weight: 800;
+    }
+
+    .priority {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .must {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .should {
+      color: #92400e;
+      background: #fef3c7;
+    }
+
+    .could {
+      color: #475467;
+      background: #eaecf0;
+    }
+
+    .phase {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 14px;
+      padding: 17px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .phase:last-child {
+      border-bottom: 0;
+    }
+
+    .phase-number {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      font-weight: 800;
+    }
+
+    .phase h3 {
+      margin: 0 0 4px;
+    }
+
+    .phase p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .duration {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f1f3;
+    }
+
+    .checklist li::before {
+      content: "✓";
+      flex: 0 0 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .scenario {
+      padding: 18px;
+      margin: 14px 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .scenario h3 {
+      margin: 0 0 8px;
+    }
+
+    .scenario ol {
+      margin-bottom: 0;
+    }
+
+    .footer {
+      padding: 25px 0 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .mobile-menu {
+      display: none;
+    }
+
+    [dir="rtl"] body {
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    [dir="rtl"] .sidebar {
+      border-right: 0;
+      border-left: 1px solid var(--border);
+    }
+
+    [dir="rtl"] .nav-number {
+      margin-left: 5px;
+      margin-right: 0;
+    }
+
+    [dir="rtl"] .callout {
+      border-left: 0;
+      border-right: 4px solid var(--primary);
+    }
+
+    [dir="rtl"] th,
+    [dir="rtl"] td {
+      text-align: right;
+    }
+
+    [dir="rtl"] ul,
+    [dir="rtl"] ol {
+      padding-left: 0;
+      padding-right: 24px;
+    }
+
+    [dir="rtl"] .checklist {
+      padding-right: 0;
+    }
+
+    @media (max-width: 950px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+        position: fixed;
+        top: 68px;
+        bottom: 0;
+        left: 0;
+        width: min(320px, 88vw);
+        height: auto;
+        z-index: 90;
+        box-shadow: 8px 0 25px rgba(0,0,0,.08);
+      }
+
+      [dir="rtl"] .sidebar {
+        left: auto;
+        right: 0;
+      }
+
+      .sidebar.open {
+        display: block;
+      }
+
+      .mobile-menu {
+        display: inline-block;
+      }
+
+      .main {
+        padding: 22px 16px 50px;
+      }
+
+      .hero {
+        padding: 28px 23px;
+      }
+
+      .section {
+        padding: 23px 19px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .topbar {
+        height: 62px;
+        padding: 0 13px;
+      }
+
+      .brand {
+        gap: 8px;
+        font-size: 15px;
+      }
+
+      .brand-logo {
+        width: 34px;
+        height: 34px;
+      }
+
+      .top-actions {
+        gap: 5px;
+      }
+
+      .btn {
+        padding: 7px 9px;
+        font-size: 12px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .stat {
+        padding: 14px 16px;
+      }
+
+      .stat-value {
+        font-size: 22px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        gap: 10px;
+      }
+
+      h2 {
+        font-size: 19px;
+      }
+
+      .phase {
+        grid-template-columns: 40px minmax(0, 1fr);
+      }
+
+      .phase-number {
+        width: 36px;
+        height: 36px;
+      }
+
+      .duration {
+        grid-column: 2;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: #111827;
+        font-size: 10pt;
+      }
+
+      .topbar,
+      .sidebar,
+      .top-actions,
+      .mobile-menu {
+        display: none !important;
+      }
+
+      .layout {
+        display: block;
+        max-width: none;
+      }
+
+      .main {
+        padding: 0;
+      }
+
+      .hero {
+        background: #177d66 !important;
+        color: white !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .section,
+      .stat {
+        box-shadow: none;
+        break-inside: avoid;
+        border-color: #d1d5db;
+      }
+
+      .section {
+        margin-bottom: 14px;
+        padding: 20px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th, td {
+        padding: 7px;
+      }
+
+      .footer {
+        padding-top: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">F</div>
+      <div>
+        Finzo Manager
+        <small data-i18n="subtitle">Business Requirements Document</small>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn mobile-menu" id="menuButton" aria-label="Toggle navigation">☰</button>
+      <button class="btn" id="languageButton">العربية</button>
+      <button class="btn btn-primary" id="printButton">Print / PDF</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-heading" data-i18n="contents">Document Contents</div>
+      <nav id="navigation">
+        <a class="nav-link active" href="#overview"><span class="nav-number">01</span><span data-i18n="nav1">Executive Summary</span></a>
+        <a class="nav-link" href="#goals"><span class="nav-number">02</span><span data-i18n="nav2">Goals & Vision</span></a>
+        <a class="nav-link" href="#stakeholders"><span class="nav-number">03</span><span data-i18n="nav3">Stakeholders</span></a>
+        <a class="nav-link" href="#strategy"><span class="nav-number">04</span><span data-i18n="nav4">Platforms & Strategy</span></a>
+        <a class="nav-link" href="#scope"><span class="nav-number">05</span><span data-i18n="nav5">MVP Scope</span></a>
+        <a class="nav-link" href="#out-of-scope"><span class="nav-number">06</span><span data-i18n="nav6">Out of Scope</span></a>
+        <a class="nav-link" href="#requirements"><span class="nav-number">07</span><span data-i18n="nav7">Functional Requirements</span></a>
+        <a class="nav-link" href="#business-rules"><span class="nav-number">08</span><span data-i18n="nav8">Business Rules</span></a>
+        <a class="nav-link" href="#nonfunctional"><span class="nav-number">09</span><span data-i18n="nav9">Non-Functional Requirements</span></a>
+        <a class="nav-link" href="#data"><span class="nav-number">10</span><span data-i18n="nav10">Data Requirements</span></a>
+        <a class="nav-link" href="#acceptance"><span class="nav-number">11</span><span data-i18n="nav11">Acceptance Criteria</span></a>
+        <a class="nav-link" href="#scenarios"><span class="nav-number">12</span><span data-i18n="nav12">User Scenarios</span></a>
+        <a class="nav-link" href="#roadmap"><span class="nav-number">13</span><span data-i18n="nav13">Roadmap</span></a>
+        <a class="nav-link" href="#risks"><span class="nav-number">14</span><span data-i18n="nav14">Risks & Mitigations</span></a>
+        <a class="nav-link" href="#decisions"><span class="nav-number">15</span><span data-i18n="nav15">Open Decisions</span></a>
+        <a class="nav-link" href="#next-steps"><span class="nav-number">16</span><span data-i18n="nav16">Next Steps</span></a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <section class="hero" id="top">
+        <span class="eyebrow" data-i18n="eyebrow">PRODUCT DOCUMENTATION</span>
+        <h1 data-i18n="heroTitle">Finzo Manager</h1>
+        <p data-i18n="heroDescription">
+          Business Requirements Document — defining the product scope, business rules,
+          requirements, acceptance criteria, and delivery roadmap.
+        </p>
+        <div class="hero-meta">
+          <span class="meta-chip" data-i18n="version">Version 1.0</span>
+          <span class="meta-chip" data-i18n="status">Status: Draft for Review</span>
+          <span class="meta-chip" data-i18n="platforms">Android + iOS</span>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Document summary">
+        <div class="stat">
+          <span class="stat-label" data-i18n="stat1Label">Functional Requirements</span>
+          <span class="stat-value">19</span>
+          <span class="stat-note" data-i18n="stat1Note">Must, Should, and Could</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="stat2Label">MVP Priorities</span>
+          <span class="stat-value">15</span>
+          <span class="stat-note" data-i18n="stat2Note">Core requirements</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="stat3Label">Estimated Delivery</span>
+          <span class="stat-value">14–20</span>
+          <span class="stat-note" data-i18n="stat3Note">Weeks · one full-time developer</span>
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div><h2 data-i18n="hOverview">Executive Summary</h2></div>
+        </div>
+        <p data-i18n="overviewP1">
+          Finzo Manager is a personal finance management application for Android and iOS.
+          It enables users to record income, expenses, and internal transfers; manage
+          accounts, obligations, and savings goals; and use smart transaction capture
+          from receipts and voice.
+        </p>
+        <div class="callout">
+          <strong data-i18n="localFirstTitle">Local-first principle</strong>
+          <span data-i18n="localFirstText">
+            The local database is the primary operational source of truth. Firebase is
+            used for backup and restore. The app does not execute payments or real
+            financial transfers.
+          </span>
+        </div>
+      </section>
+
+      <section class="section" id="goals">
+        <div class="section-heading"><span class="section-number">02</span><h2 data-i18n="hGoals">Goals & Product Vision</h2></div>
+        <ul>
+          <li data-i18n="goal1">Provide a reliable, understandable view of personal finances.</li>
+          <li data-i18n="goal2">Reduce transaction-entry effort while keeping the user in control.</li>
+          <li data-i18n="goal3">Provide Safe-to-Spend after considering obligations, savings, and reserves.</li>
+          <li data-i18n="goal4">Use AI to interpret and explain information, not to perform core financial arithmetic.</li>
+          <li data-i18n="goal5">Keep core account and transaction management available offline.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="stakeholders">
+        <div class="section-heading"><span class="section-number">03</span><h2 data-i18n="hStakeholders">Stakeholders & Users</h2></div>
+        <div class="cards">
+          <div class="mini-card"><h3 data-i18n="stakeholder1Title">End User</h3><p data-i18n="stakeholder1Text">Records transactions and manages accounts, obligations, and savings goals.</p></div>
+          <div class="mini-card"><h3 data-i18n="stakeholder2Title">Product Owner</h3><p data-i18n="stakeholder2Text">Defines scope, priorities, and business rules.</p></div>
+          <div class="mini-card"><h3 data-i18n="stakeholder3Title">Developer</h3><p data-i18n="stakeholder3Text">Implements, tests, and releases the product; initial plan assumes one developer.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="strategy">
+        <div class="section-heading"><span class="section-number">04</span><h2 data-i18n="hStrategy">Platforms & Product Strategy</h2></div>
+        <ul>
+          <li data-i18n="strategy1">Platforms: Android and iOS, using one shared application.</li>
+          <li data-i18n="strategy2">Balanced MVP: dependable financial core plus smart transaction capture.</li>
+          <li data-i18n="strategy3">Hybrid AI: local rules and user history, with cloud AI when needed.</li>
+          <li data-i18n="strategy4">Backup is available from the first release, including backup-now and restore.</li>
+          <li data-i18n="strategy5">Arabic and English, including RTL support for Arabic.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="scope">
+        <div class="section-heading"><span class="section-number">05</span><h2 data-i18n="hScope">MVP Scope — In Scope</h2></div>
+        <ul>
+          <li data-i18n="scope1">Multiple accounts: bank accounts, e-wallets, and physical cash.</li>
+          <li data-i18n="scope2">Opening balance for each account.</li>
+          <li data-i18n="scope3">Income, expenses, and internal transfers.</li>
+          <li data-i18n="scope4">Categories and subcategories.</li>
+          <li data-i18n="scope5">Manual transaction entry.</li>
+          <li data-i18n="scope6">Preliminary transaction-data extraction from receipt photos.</li>
+          <li data-i18n="scope7">Voice-to-text and extraction of transaction fields.</li>
+          <li data-i18n="scope8">Review and edit screen before saving extracted information.</li>
+          <li data-i18n="scope9">Category suggestions using local rules and history, with cloud AI when needed.</li>
+          <li data-i18n="scope10">Dashboard and reports for a week, month, or selected date range.</li>
+          <li data-i18n="scope11">Basic recurring obligations and savings goals.</li>
+          <li data-i18n="scope12">Safe-to-Spend indicator with an explanation.</li>
+          <li data-i18n="scope13">Local storage and offline operation.</li>
+          <li data-i18n="scope14">Firebase backup and restore.</li>
+          <li data-i18n="scope15">Warnings for potentially duplicate transactions.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="out-of-scope">
+        <div class="section-heading"><span class="section-number">06</span><h2 data-i18n="hOutScope">Out of Scope for MVP</h2></div>
+        <ul>
+          <li data-i18n="out1">Executing payments, bank transfers, or Instapay transfers.</li>
+          <li data-i18n="out2">Bank connectivity for executing transactions or directly reading balances.</li>
+          <li data-i18n="out3">Automatic reading of bank SMS messages or notifications.</li>
+          <li data-i18n="out4">Full real-time synchronization across multiple devices.</li>
+          <li data-i18n="out5">Training a proprietary AI model from scratch.</li>
+          <li data-i18n="out6">Investment management or investment recommendations.</li>
+          <li data-i18n="out7">Business accounting or shared multi-user accounts.</li>
+          <li data-i18n="out8">Advanced forecasting, decision simulation, and a comprehensive AI financial coach.</li>
+        </ul>
+      </section>
+
+      <section class="section" id="requirements">
+        <div class="section-heading"><span class="section-number">07</span><h2 data-i18n="hRequirements">Functional Requirements</h2></div>
+        <p class="muted" data-i18n="requirementsIntro">Priorities indicate what must be included in the MVP and what may be deferred.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th data-i18n="thRequirement">Requirement</th><th data-i18n="thPriority">Priority</th></tr></thead>
+            <tbody id="requirementsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="business-rules">
+        <div class="section-heading"><span class="section-number">08</span><h2 data-i18n="hRules">Business Rules</h2></div>
+        <div id="rulesList"></div>
+      </section>
+
+      <section class="section" id="nonfunctional">
+        <div class="section-heading"><span class="section-number">09</span><h2 data-i18n="hNfr">Non-Functional Requirements</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th data-i18n="thRequirement">Requirement</th></tr></thead>
+            <tbody id="nfrBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="data">
+        <div class="section-heading"><span class="section-number">10</span><h2 data-i18n="hData">Initial Data Requirements</h2></div>
+        <p data-i18n="dataIntro">These are preliminary business-analysis entities, not a finalized database schema. Relationships, constraints, indexes, and integrity rules belong in the separate Database Design document.</p>
+        <div class="cards" id="dataCards"></div>
+      </section>
+
+      <section class="section" id="acceptance">
+        <div class="section-heading"><span class="section-number">11</span><h2 data-i18n="hAcceptance">Acceptance Criteria</h2></div>
+        <ul class="checklist" id="acceptanceList"></ul>
+      </section>
+
+      <section class="section" id="scenarios">
+        <div class="section-heading"><span class="section-number">12</span><h2 data-i18n="hScenarios">Main User Scenarios</h2></div>
+        <div id="scenarioList"></div>
+      </section>
+
+      <section class="section" id="roadmap">
+        <div class="section-heading"><span class="section-number">13</span><h2 data-i18n="hRoadmap">Indicative Implementation Roadmap</h2></div>
+        <div id="roadmapList"></div>
+        <div class="callout">
+          <strong data-i18n="estimateTitle">Estimate disclaimer</strong>
+          <span data-i18n="estimateText">These are rough estimates for one full-time developer. Actual duration depends on extraction quality, provider selection, security, and release requirements.</span>
+        </div>
+      </section>
+
+      <section class="section" id="risks">
+        <div class="section-heading"><span class="section-number">14</span><h2 data-i18n="hRisks">Risks & Mitigations</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th data-i18n="thRisk">Risk</th><th data-i18n="thMitigation">Mitigation</th></tr></thead>
+            <tbody id="risksBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="decisions">
+        <div class="section-heading"><span class="section-number">15</span><h2 data-i18n="hDecisions">Decisions to Confirm</h2></div>
+        <ul id="decisionsList"></ul>
+      </section>
+
+      <section class="section" id="next-steps">
+        <div class="section-heading"><span class="section-number">16</span><h2 data-i18n="hNextSteps">Recommended Next Steps</h2></div>
+        <ol>
+          <li data-i18n="next1">Review and approve the MVP scope and outstanding decisions.</li>
+          <li data-i18n="next2">Finalize the BRD with requirements, business rules, scenarios, and acceptance criteria.</li>
+          <li data-i18n="next3">Create Database Design with relationships, constraints, indexes, integrity, and backup/restore rules.</li>
+          <li data-i18n="next4">Create a prioritized implementation backlog with estimates and acceptance criteria.</li>
+          <li data-i18n="next5">Begin implementation after the requirements and financial calculation rules are agreed; test Android and iOS early.</li>
+        </ol>
+        <div class="callout">
+          <strong data-i18n="documentNoteTitle">Document note</strong>
+          <span data-i18n="documentNoteText">This BRD captures the current proposed scope and assumptions. Should/Could requirements and open decisions may change after product-owner review.</span>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span data-i18n="footerText">Finzo Manager · Business Requirements Document · Version 1.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const translations = {
+      en: {
+        subtitle: "Business Requirements Document",
+        contents: "Document Contents",
+        nav1: "Executive Summary", nav2: "Goals & Vision", nav3: "Stakeholders",
+        nav4: "Platforms & Strategy", nav5: "MVP Scope", nav6: "Out of Scope",
+        nav7: "Functional Requirements", nav8: "Business Rules",
+        nav9: "Non-Functional Requirements", nav10: "Data Requirements",
+        nav11: "Acceptance Criteria", nav12: "User Scenarios", nav13: "Roadmap",
+        nav14: "Risks & Mitigations", nav15: "Open Decisions", nav16: "Next Steps",
+        eyebrow: "PRODUCT DOCUMENTATION", heroTitle: "Finzo Manager",
+        heroDescription: "Business Requirements Document — defining the product scope, business rules, requirements, acceptance criteria, and delivery roadmap.",
+        version: "Version 1.0", status: "Status: Draft for Review", platforms: "Android + iOS",
+        stat1Label: "Functional Requirements", stat1Note: "Must, Should, and Could",
+        stat2Label: "MVP Priorities", stat2Note: "Core requirements",
+        stat3Label: "Estimated Delivery", stat3Note: "Weeks · one full-time developer",
+        hOverview: "Executive Summary",
+        overviewP1: "Finzo Manager is a personal finance management application for Android and iOS. It enables users to record income, expenses, and internal transfers; manage accounts, obligations, and savings goals; and use smart transaction capture from receipts and voice.",
+        localFirstTitle: "Local-first principle",
+        localFirstText: "The local database is the primary operational source of truth. Firebase is used for backup and restore. The app does not execute payments or real financial transfers.",
+        hGoals: "Goals & Product Vision",
+        goal1: "Provide a reliable, understandable view of personal finances.",
+        goal2: "Reduce transaction-entry effort while keeping the user in control.",
+        goal3: "Provide Safe-to-Spend after considering obligations, savings, and reserves.",
+        goal4: "Use AI to interpret and explain information, not to perform core financial arithmetic.",
+        goal5: "Keep core account and transaction management available offline.",
+        hStakeholders: "Stakeholders & Users",
+        stakeholder1Title: "End User", stakeholder1Text: "Records transactions and manages accounts, obligations, and savings goals.",
+        stakeholder2Title: "Product Owner", stakeholder2Text: "Defines scope, priorities, and business rules.",
+        stakeholder3Title: "Developer", stakeholder3Text: "Implements, tests, and releases the product; initial plan assumes one developer.",
+        hStrategy: "Platforms & Product Strategy",
+        strategy1: "Platforms: Android and iOS, using one shared application.",
+        strategy2: "Balanced MVP: dependable financial core plus smart transaction capture.",
+        strategy3: "Hybrid AI: local rules and user history, with cloud AI when needed.",
+        strategy4: "Backup is available from the first release, including backup-now and restore.",
+        strategy5: "Arabic and English, including RTL support for Arabic.",
+        hScope: "MVP Scope — In Scope",
+        scope1: "Multiple accounts: bank accounts, e-wallets, and physical cash.",
+        scope2: "Opening balance for each account.",
+        scope3: "Income, expenses, and internal transfers.",
+        scope4: "Categories and subcategories.",
+        scope5: "Manual transaction entry.",
+        scope6: "Preliminary transaction-data extraction from receipt photos.",
+        scope7: "Voice-to-text and extraction of transaction fields.",
+        scope8: "Review and edit screen before saving extracted information.",
+        scope9: "Category suggestions using local rules and history, with cloud AI when needed.",
+        scope10: "Dashboard and reports for a week, month, or selected date range.",
+        scope11: "Basic recurring obligations and savings goals.",
+        scope12: "Safe-to-Spend indicator with an explanation.",
+        scope13: "Local storage and offline operation.",
+        scope14: "Firebase backup and restore.",
+        scope15: "Warnings for potentially duplicate transactions.",
+        hOutScope: "Out of Scope for MVP",
+        out1: "Executing payments, bank transfers, or Instapay transfers.",
+        out2: "Bank connectivity for executing transactions or directly reading balances.",
+        out3: "Automatic reading of bank SMS messages or notifications.",
+        out4: "Full real-time synchronization across multiple devices.",
+        out5: "Training a proprietary AI model from scratch.",
+        out6: "Investment management or investment recommendations.",
+        out7: "Business accounting or shared multi-user accounts.",
+        out8: "Advanced forecasting, decision simulation, and a comprehensive AI financial coach.",
+        hRequirements: "Functional Requirements",
+        requirementsIntro: "Priorities indicate what must be included in the MVP and what may be deferred.",
+        thRequirement: "Requirement", thPriority: "Priority",
+        hRules: "Business Rules", hNfr: "Non-Functional Requirements",
+        hData: "Initial Data Requirements",
+        dataIntro: "These are preliminary business-analysis entities, not a finalized database schema. Relationships, constraints, indexes, and integrity rules belong in the separate Database Design document.",
+        hAcceptance: "Acceptance Criteria", hScenarios: "Main User Scenarios",
+        hRoadmap: "Indicative Implementation Roadmap",
+        estimateTitle: "Estimate disclaimer",
+        estimateText: "These are rough estimates for one full-time developer. Actual duration depends on extraction quality, provider selection, security, and release requirements.",
+        hRisks: "Risks & Mitigations", thRisk: "Risk", thMitigation: "Mitigation",
+        hDecisions: "Decisions to Confirm", hNextSteps: "Recommended Next Steps",
+        next1: "Review and approve the MVP scope and outstanding decisions.",
+        next2: "Finalize the BRD with requirements, business rules, scenarios, and acceptance criteria.",
+        next3: "Create Database Design with relationships, constraints, indexes, integrity, and backup/restore rules.",
+        next4: "Create a prioritized implementation backlog with estimates and acceptance criteria.",
+        next5: "Begin implementation after the requirements and financial calculation rules are agreed; test Android and iOS early.",
+        documentNoteTitle: "Document note",
+        documentNoteText: "This BRD captures the current proposed scope and assumptions. Should/Could requirements and open decisions may change after product-owner review.",
+        footerText: "Finzo Manager · Business Requirements Document · Version 1.0"
+      },
+      ar: {
+        subtitle: "وثيقة متطلبات العمل",
+        contents: "محتويات الوثيقة",
+        nav1: "الملخص التنفيذي", nav2: "الأهداف والرؤية", nav3: "أصحاب المصلحة",
+        nav4: "المنصات والاستراتيجية", nav5: "نطاق MVP", nav6: "خارج النطاق",
+        nav7: "المتطلبات الوظيفية", nav8: "قواعد العمل",
+        nav9: "المتطلبات غير الوظيفية", nav10: "متطلبات البيانات",
+        nav11: "معايير القبول", nav12: "سيناريوهات الاستخدام", nav13: "خطة التنفيذ",
+        nav14: "المخاطر والمعالجة", nav15: "قرارات معلقة", nav16: "الخطوات التالية",
+        eyebrow: "توثيق المنتج", heroTitle: "Finzo Manager",
+        heroDescription: "وثيقة متطلبات العمل — تحدد نطاق المنتج وقواعد العمل والمتطلبات ومعايير القبول وخطة التنفيذ.",
+        version: "الإصدار 1.0", status: "الحالة: مسودة للمراجعة", platforms: "Android + iOS",
+        stat1Label: "المتطلبات الوظيفية", stat1Note: "Must وShould وCould",
+        stat2Label: "أولويات MVP", stat2Note: "المتطلبات الأساسية",
+        stat3Label: "مدة التنفيذ المقدرة", stat3Note: "أسبوع · مطور بدوام كامل",
+        hOverview: "الملخص التنفيذي",
+        overviewP1: "Finzo Manager تطبيق لإدارة الأموال الشخصية على Android وiOS. يتيح تسجيل الدخل والمصروفات والتحويلات الداخلية، وإدارة الحسابات والالتزامات وأهداف الادخار، مع إدخال ذكي للعمليات من الإيصالات والصوت.",
+        localFirstTitle: "مبدأ التخزين المحلي أولاً",
+        localFirstText: "قاعدة البيانات المحلية هي المصدر التشغيلي الأساسي. تُستخدم Firebase للنسخ الاحتياطي والاستعادة. لا ينفذ التطبيق مدفوعات أو تحويلات مالية حقيقية.",
+        hGoals: "الأهداف ورؤية المنتج",
+        goal1: "تقديم صورة موثوقة وواضحة عن الوضع المالي الشخصي.",
+        goal2: "تقليل الوقت اللازم لتسجيل العمليات مع إبقاء التحكم بيد المستخدم.",
+        goal3: "تقديم مؤشر Safe-to-Spend بعد احتساب الالتزامات والادخار والاحتياطي.",
+        goal4: "استخدام الذكاء الاصطناعي لفهم البيانات وشرحها، وليس لإجراء الحسابات المالية الأساسية.",
+        goal5: "إتاحة إدارة الحسابات والعمليات الأساسية دون اتصال بالإنترنت.",
+        hStakeholders: "أصحاب المصلحة والمستخدمون",
+        stakeholder1Title: "المستخدم النهائي", stakeholder1Text: "يسجل العمليات ويدير الحسابات والالتزامات وأهداف الادخار.",
+        stakeholder2Title: "مالك المنتج", stakeholder2Text: "يحدد النطاق والأولويات وقواعد العمل.",
+        stakeholder3Title: "المطور", stakeholder3Text: "ينفذ المنتج ويختبره ويجهزه للإصدار؛ والخطة تفترض مطوراً واحداً.",
+        hStrategy: "المنصات واستراتيجية المنتج",
+        strategy1: "المنصات: Android وiOS من خلال تطبيق مشترك.",
+        strategy2: "إصدار MVP متوازن يجمع النواة المالية الموثوقة والإدخال الذكي للعمليات.",
+        strategy3: "ذكاء اصطناعي هجين: قواعد وسجل محليان مع AI سحابي عند الحاجة.",
+        strategy4: "النسخ الاحتياطي متاح من الإصدار الأول، مع النسخ الآن والاستعادة.",
+        strategy5: "دعم العربية والإنجليزية واتجاه RTL للغة العربية.",
+        hScope: "نطاق MVP — المشمول",
+        scope1: "إدارة حسابات متعددة: حسابات بنكية ومحافظ إلكترونية ونقد يدوي.",
+        scope2: "تحديد رصيد افتتاحي لكل حساب.",
+        scope3: "تسجيل الدخل والمصروفات والتحويلات الداخلية.",
+        scope4: "إدارة التصنيفات والتصنيفات الفرعية.",
+        scope5: "إدخال العمليات يدوياً.",
+        scope6: "استخراج أولي لبيانات العمليات من صور الإيصالات.",
+        scope7: "تحويل الصوت إلى نص واستخراج حقول العملية.",
+        scope8: "شاشة لمراجعة البيانات المستخرجة وتعديلها قبل الحفظ.",
+        scope9: "اقتراح التصنيفات بالقواعد والسجل المحليين، مع AI سحابي عند الحاجة.",
+        scope10: "لوحة معلومات وتقارير لأسبوع أو شهر أو فترة يحددها المستخدم.",
+        scope11: "إدارة الالتزامات المتكررة وأهداف الادخار الأساسية.",
+        scope12: "مؤشر Safe-to-Spend مع شرح طريقة الحساب.",
+        scope13: "التخزين المحلي والعمل دون اتصال.",
+        scope14: "النسخ الاحتياطي والاستعادة عبر Firebase.",
+        scope15: "تنبيهات للعمليات المحتمل تكرارها.",
+        hOutScope: "خارج نطاق MVP",
+        out1: "تنفيذ المدفوعات أو التحويلات البنكية أو تحويلات Instapay.",
+        out2: "الاتصال بالبنوك لتنفيذ العمليات أو قراءة الأرصدة مباشرة.",
+        out3: "قراءة رسائل SMS البنكية أو الإشعارات تلقائياً.",
+        out4: "المزامنة الفورية الكاملة بين عدة أجهزة.",
+        out5: "تدريب نموذج ذكاء اصطناعي خاص من الصفر.",
+        out6: "إدارة الاستثمارات أو تقديم توصيات استثمارية.",
+        out7: "المحاسبة التجارية أو الحسابات المشتركة متعددة المستخدمين.",
+        out8: "التوقع المالي المتقدم ومحاكاة القرارات والمساعد المالي الشامل.",
+        hRequirements: "المتطلبات الوظيفية",
+        requirementsIntro: "توضح الأولويات ما يجب أن يتضمنه الإصدار الأول وما يمكن تأجيله.",
+        thRequirement: "المتطلب", thPriority: "الأولوية",
+        hRules: "قواعد العمل", hNfr: "المتطلبات غير الوظيفية",
+        hData: "متطلبات البيانات الأولية",
+        dataIntro: "هذه كيانات أولية للتحليل وليست مخطط قاعدة بيانات نهائياً. ستُحدد العلاقات والقيود والفهارس وقواعد سلامة البيانات في وثيقة مستقلة لتصميم قاعدة البيانات.",
+        hAcceptance: "معايير القبول", hScenarios: "سيناريوهات الاستخدام الرئيسية",
+        hRoadmap: "خطة التنفيذ التقديرية",
+        estimateTitle: "تنويه حول التقديرات",
+        estimateText: "هذه تقديرات تقريبية لمطور واحد بدوام كامل. تعتمد المدة الفعلية على جودة استخراج البيانات ومزودي الخدمات ومتطلبات الأمان والإصدار.",
+        hRisks: "المخاطر وطرق المعالجة", thRisk: "الخطر", thMitigation: "طريقة المعالجة",
+        hDecisions: "قرارات مطلوب حسمها", hNextSteps: "الخطوات التالية المقترحة",
+        next1: "مراجعة نطاق MVP والقرارات المعلقة واعتمادهما.",
+        next2: "اعتماد BRD نهائياً متضمناً المتطلبات وقواعد العمل والسيناريوهات ومعايير القبول.",
+        next3: "إعداد تصميم قاعدة البيانات شاملاً العلاقات والقيود والفهارس وسلامة البيانات والنسخ والاستعادة.",
+        next4: "إعداد قائمة تنفيذ مرتبة حسب الأولوية مع التقديرات ومعايير القبول.",
+        next5: "بدء التنفيذ بعد اعتماد المتطلبات وقواعد الحساب المالي، مع اختبار Android وiOS مبكراً.",
+        documentNoteTitle: "ملاحظة الوثيقة",
+        documentNoteText: "تعكس هذه الوثيقة النطاق والافتراضات المقترحة حالياً. قد تتغير متطلبات Should وCould والقرارات المفتوحة بعد مراجعة مالك المنتج.",
+        footerText: "Finzo Manager · وثيقة متطلبات العمل · الإصدار 1.0"
+      }
+    };
+
+    const dataset = {
+      requirements: [
+        ["FR-001","Manage multiple financial accounts.","Must"],
+        ["FR-002","Support bank accounts, e-wallets, and physical cash.","Must"],
+        ["FR-003","Set an opening balance for each account.","Must"],
+        ["FR-004","Record income, expenses, and internal transfers.","Must"],
+        ["FR-005","Manage categories and subcategories.","Must"],
+        ["FR-006","Enter transactions manually.","Must"],
+        ["FR-007","Extract preliminary transaction data from receipt images.","Must"],
+        ["FR-008","Convert voice input into proposed transaction data.","Must"],
+        ["FR-009","Review and edit extracted data before saving.","Must"],
+        ["FR-010","Suggest categories using local rules and AI when needed.","Must"],
+        ["FR-011","Show a dashboard and reports for a selected date range.","Must"],
+        ["FR-012","Manage basic obligations and savings goals.","Must"],
+        ["FR-013","Calculate Safe-to-Spend and explain the result.","Must"],
+        ["FR-014","Store data locally and support offline operation.","Must"],
+        ["FR-015","Support backup and restore through Firebase.","Must"],
+        ["FR-016","Detect and warn about potentially duplicate transactions.","Should"],
+        ["FR-017","Forecast cash flow until the next salary date.","Should"],
+        ["FR-018","Simulate the potential impact of a hypothetical financial decision.","Could"],
+        ["FR-019","Provide an AI financial assistant.","Could"]
+      ],
+      rules: [
+        ["BR-001","Local-first","Transactions must be saved locally first. Recording must not require an external service connection."],
+        ["BR-002","Account balance","Opening balance + income + incoming transfers − expenses − outgoing transfers, following defined date and status rules."],
+        ["BR-003","Internal transfers","A transfer links source and destination accounts. It is not income or expense when calculating the user's overall money position."],
+        ["BR-004","Safe-to-Spend","Show the starting balance and account for obligations, planned savings, and reserves without double-counting; explain excluded or uncertain balances."],
+        ["BR-005","Human review","Any amount, date, account, or category extracted from image, voice, or AI must be reviewed before saving."],
+        ["BR-006","No real transactions","The application records financial information only and does not execute payments or transfers."],
+        ["BR-007","Sensitive credentials","Do not store bank passwords, PINs, CVVs, or bank login credentials."],
+        ["BR-008","Restore safety","Validate backups and explain restore impact. Do not merge data arbitrarily."],
+        ["BR-009","Accounting is authoritative","The accounting engine is the source of truth; AI extracts, suggests, classifies, or explains information but does not determine final balances."]
+      ],
+      nfr: [
+        ["NFR-001","Offline operation","Core account and transaction functions remain available without internet access."],
+        ["NFR-002","Data integrity","Account balances, transfer links, and transaction records remain consistent."],
+        ["NFR-003","Privacy","Minimize data sent to cloud services and explain when external services are used."],
+        ["NFR-004","Backup protection","Apply appropriate protection to backup data in transit and at rest."],
+        ["NFR-005","Compatibility","Support the Android and iOS versions selected during implementation planning."],
+        ["NFR-006","Usability","Minimize entry steps and clearly identify errors and fields requiring review."],
+        ["NFR-007","AI cost control","Prefer local rules, use cloud AI only when needed, and provide a fallback when unavailable."],
+        ["NFR-008","Provider flexibility","Avoid tightly coupling business logic to a single AI provider."],
+        ["NFR-009","Restore verification","Validate restored data and clearly report the result."]
+      ],
+      data: [
+        ["Accounts","Account name, type, associated institution or phone number where relevant, and opening balance."],
+        ["Transactions","Income, expenses, and transfers, including amount, date, account links, category, and status."],
+        ["Categories","Categories and subcategories."],
+        ["Recurring Obligations","Recurring obligations and due dates."],
+        ["Savings Goals","Target amounts and progress."],
+        ["Capture Records","Receipt or voice extraction records and review status."],
+        ["AI Rules & Feedback","Categorization rules and optional user feedback."],
+        ["Backup Metadata","Backup versions, timestamps, and status information."]
+      ],
+      acceptance: [
+        ["AC-001","Each account balance matches its opening balance and recorded transactions under the defined rules."],
+        ["AC-002","An internal transfer updates both account balances without changing the user's total money position."],
+        ["AC-003","A user can record a transaction while offline."],
+        ["AC-004","Extracted receipt or voice data is not saved until reviewed and confirmed."],
+        ["AC-005","Reports consistently include transactions within the selected date range."],
+        ["AC-006","Safe-to-Spend explains which amounts were included or excluded."],
+        ["AC-007","Backup and restore succeed, and restored data is validated."],
+        ["AC-008","Potential duplicates trigger a warning without unauthorized automatic deletion or merging."],
+        ["AC-009","Service secret keys are not exposed insecurely inside the client application."],
+        ["AC-010","Core financial functions are tested on Android and iOS before release."]
+      ],
+      scenarios: [
+        ["Add an account",["The user chooses an account type.","The user enters an account name and, where relevant, the institution or associated phone number.","The user enters an opening balance.","The app saves the account locally and displays it."]],
+        ["Record an expense manually",["The user opens transaction entry.","The user selects an account, amount, date, and category.","The user confirms and saves the transaction.","The app updates the relevant balance and reports."]],
+        ["Record an expense from a receipt",["The user captures or selects a receipt image.","The app extracts possible transaction fields.","The app displays extracted data for review.","The user edits and confirms the data.","The app saves the transaction locally."]],
+        ["Record a transaction by voice",["The user speaks a transaction description.","The app converts speech into text and proposed fields.","The user reviews and edits the proposed data.","The app saves only after confirmation."]],
+        ["Transfer between accounts",["The user selects source and destination accounts.","The user enters amount and date.","The app creates a linked internal transfer.","Both account balances update without counting the transfer as income or expense overall."]],
+        ["Create a backup",["The user selects “Back up now.”","The app creates and uploads the backup.","The app reports whether the operation succeeded."]],
+        ["Restore a backup",["The user selects an available backup.","The app validates it and displays its information and expected impact.","The user confirms the restore.","The app restores the data and reports the result."]]
+      ],
+      roadmap: [
+        ["A","Requirements, UX, data concepts, and accounting rules","1–2 weeks"],
+        ["B","Financial core: accounts, transactions, categories, reports, and tests","Weeks 3–6"],
+        ["C","Smart capture: voice, receipts, review flow, and local categorization","Weeks 7–10"],
+        ["D","Safe-to-Spend, obligations, and savings goals","Weeks 11–13"],
+        ["E","Backup/restore and AI integration where needed","Weeks 14–16"],
+        ["F","End-to-end testing, refinement, and release preparation","Weeks 17–20"]
+      ],
+      risks: [
+        ["MVP scope grows too large","Freeze Must-have scope and defer advanced features."],
+        ["AI service costs rise","Prefer local rules, set usage limits, and monitor costs."],
+        ["Receipt or voice extraction is inaccurate","Require review before saving and highlight uncertain fields."],
+        ["Financial forecasts mislead users","Explain assumptions and distinguish actual figures from estimates."],
+        ["Data is lost","Provide verifiable backups and test restore regularly."],
+        ["Backup versions conflict","Define restore and versioning rules before introducing multi-device sync."],
+        ["Privacy is compromised","Minimize off-device data and never store sensitive bank credentials."]
+      ],
+      decisions: [
+        "Which currencies must be supported in the first release?",
+        "Should balances and reports support multiple currencies, and how should exchange rates be handled?",
+        "Which receipt languages and formats must be supported initially?",
+        "Should receipt images and voice recordings be retained after extraction, or deleted by default?",
+        "What encryption and authentication requirements apply to backups?",
+        "What should happen when restoring over existing local data: replace, create a recovery copy first, or offer a controlled merge?",
+        "Which recurring obligation types and reminder options are required for MVP?",
+        "How should Safe-to-Spend treat pending transactions, overdue obligations, savings allocations, and cash reserves?",
+        "Which minimum Android and iOS versions will be supported?",
+        "Which AI and OCR providers are acceptable based on cost, privacy, and availability?"
+      ]
+    };
+
+    const arabicData = {
+      requirements: [
+        ["FR-001","إدارة عدة حسابات مالية.","Must"],["FR-002","دعم الحسابات البنكية والمحافظ الإلكترونية والنقد.","Must"],
+        ["FR-003","تحديد رصيد افتتاحي لكل حساب.","Must"],["FR-004","تسجيل الدخل والمصروفات والتحويلات الداخلية.","Must"],
+        ["FR-005","إدارة التصنيفات والتصنيفات الفرعية.","Must"],["FR-006","إدخال العمليات يدوياً.","Must"],
+        ["FR-007","استخراج بيانات أولية من صور الإيصالات.","Must"],["FR-008","تحويل الصوت إلى بيانات عملية مقترحة.","Must"],
+        ["FR-009","مراجعة وتعديل البيانات المستخرجة قبل الحفظ.","Must"],["FR-010","اقتراح التصنيفات بالقواعد المحلية وAI عند الحاجة.","Must"],
+        ["FR-011","عرض لوحة معلومات وتقارير لفترة محددة.","Must"],["FR-012","إدارة الالتزامات وأهداف الادخار الأساسية.","Must"],
+        ["FR-013","حساب Safe-to-Spend وشرح النتيجة.","Must"],["FR-014","التخزين المحلي والعمل دون اتصال.","Must"],
+        ["FR-015","دعم النسخ الاحتياطي والاستعادة عبر Firebase.","Must"],["FR-016","كشف العمليات المحتمل تكرارها والتنبيه بشأنها.","Should"],
+        ["FR-017","توقع التدفق النقدي حتى موعد الراتب التالي.","Should"],["FR-018","محاكاة أثر قرار مالي افتراضي.","Could"],
+        ["FR-019","تقديم مساعد مالي بالذكاء الاصطناعي.","Could"]
+      ],
+      rules: [
+        ["BR-001","التخزين المحلي أولاً","يجب حفظ العمليات محلياً أولاً، ولا يتطلب تسجيل العملية اتصالاً بخدمة خارجية."],
+        ["BR-002","رصيد الحساب","الرصيد الافتتاحي + الدخل + التحويلات الواردة − المصروفات − التحويلات الصادرة، وفق قواعد التاريخ والحالة المحددة."],
+        ["BR-003","التحويلات الداخلية","يربط التحويل بين حساب مصدر وحساب وجهة، ولا يُحتسب دخلاً أو مصروفاً عند حساب إجمالي أموال المستخدم."],
+        ["BR-004","Safe-to-Spend","يوضح الرصيد الأساسي ويحتسب الالتزامات والادخار والاحتياطي دون ازدواجية، مع شرح الأرصدة المستبعدة أو غير المؤكدة."],
+        ["BR-005","مراجعة المستخدم","يجب مراجعة أي مبلغ أو تاريخ أو حساب أو تصنيف مستخرج من صورة أو صوت أو AI قبل الحفظ."],
+        ["BR-006","عدم تنفيذ عمليات حقيقية","يسجل التطبيق المعلومات المالية فقط ولا ينفذ المدفوعات أو التحويلات."],
+        ["BR-007","بيانات الاعتماد الحساسة","يُمنع تخزين كلمات المرور أو PIN أو CVV أو بيانات الدخول البنكية."],
+        ["BR-008","أمان الاستعادة","التحقق من النسخة وشرح أثر الاستعادة، وعدم دمج البيانات عشوائياً."],
+        ["BR-009","محرك الحسابات هو المرجع","محرك الحسابات هو مصدر الحقيقة؛ يساعد AI في الاستخراج والاقتراح والتصنيف والشرح دون تحديد الأرصدة النهائية."]
+      ],
+      nfr: [
+        ["NFR-001","العمل دون اتصال","تظل الوظائف الأساسية للحسابات والعمليات متاحة دون إنترنت."],
+        ["NFR-002","سلامة البيانات","الحفاظ على اتساق الأرصدة وروابط التحويلات وسجلات العمليات."],
+        ["NFR-003","الخصوصية","تقليل البيانات المرسلة إلى الخدمات السحابية وتوضيح استخدام الخدمات الخارجية."],
+        ["NFR-004","حماية النسخ الاحتياطية","تطبيق حماية مناسبة للنسخ أثناء النقل والتخزين."],
+        ["NFR-005","التوافق","دعم إصدارات Android وiOS التي يتم تحديدها في التخطيط."],
+        ["NFR-006","سهولة الاستخدام","تقليل خطوات الإدخال وتوضيح الأخطاء والحقول التي تحتاج إلى مراجعة."],
+        ["NFR-007","التحكم في تكلفة AI","تفضيل القواعد المحلية واستخدام AI السحابي عند الحاجة مع بديل عند تعطل الخدمة."],
+        ["NFR-008","مرونة المزود","تجنب ربط منطق العمل بمزود AI واحد بصورة يصعب تغييرها."],
+        ["NFR-009","التحقق من الاستعادة","التحقق من البيانات المستعادة وإبلاغ المستخدم بالنتيجة."]
+      ],
+      data: [
+        ["Accounts — الحسابات","اسم الحساب ونوعه والجهة أو رقم الهاتف عند الحاجة والرصيد الافتتاحي."],
+        ["Transactions — العمليات","الدخل والمصروفات والتحويلات والمبلغ والتاريخ والحسابات والتصنيف والحالة."],
+        ["Categories — التصنيفات","التصنيفات والتصنيفات الفرعية."],
+        ["Recurring Obligations — الالتزامات","الالتزامات المتكررة ومواعيد الاستحقاق."],
+        ["Savings Goals — أهداف الادخار","المبالغ المستهدفة والتقدم."],
+        ["Capture Records — سجلات الاستخراج","سجلات استخراج بيانات الإيصالات أو الصوت وحالة المراجعة."],
+        ["AI Rules & Feedback — قواعد AI","قواعد التصنيف وملاحظات المستخدم الاختيارية."],
+        ["Backup Metadata — بيانات النسخ","إصدارات النسخ الاحتياطية وتواريخها وحالتها."]
+      ],
+      acceptance: [
+        ["AC-001","يتطابق رصيد كل حساب مع رصيده الافتتاحي والعمليات المسجلة وفق القواعد المحددة."],
+        ["AC-002","يحدّث التحويل الداخلي الحسابين دون تغيير إجمالي أموال المستخدم."],
+        ["AC-003","يستطيع المستخدم تسجيل عملية دون اتصال بالإنترنت."],
+        ["AC-004","لا تُحفظ بيانات الإيصال أو الصوت قبل مراجعتها وتأكيدها."],
+        ["AC-005","تعرض التقارير العمليات الواقعة ضمن الفترة المختارة بصورة متسقة."],
+        ["AC-006","يوضح Safe-to-Spend المبالغ التي أُضيفت أو استُبعدت من الحساب."],
+        ["AC-007","تنجح عملية النسخ والاستعادة مع التحقق من البيانات المستعادة."],
+        ["AC-008","يصدر تحذير عند الاشتباه بالتكرار دون حذف أو دمج تلقائي غير مصرح به."],
+        ["AC-009","لا تُكشف مفاتيح الخدمات السرية بصورة غير آمنة داخل التطبيق."],
+        ["AC-010","تُختبر الوظائف المالية الأساسية على Android وiOS قبل الإصدار."]
+      ],
+      scenarios: [
+        ["إضافة حساب",["يختار المستخدم نوع الحساب.","يدخل اسم الحساب والجهة أو رقم الهاتف عند الحاجة.","يدخل الرصيد الافتتاحي.","يحفظ التطبيق الحساب محلياً ويعرضه."]],
+        ["تسجيل مصروف يدوياً",["يفتح المستخدم شاشة تسجيل العملية.","يحدد الحساب والمبلغ والتاريخ والتصنيف.","يؤكد المستخدم الحفظ.","يحدّث التطبيق الرصيد والتقارير المرتبطة."]],
+        ["تسجيل مصروف من إيصال",["يلتقط المستخدم صورة الإيصال أو يختار صورة.","يستخرج التطبيق الحقول المحتملة.","يعرض التطبيق البيانات للمراجعة.","يعدل المستخدم البيانات ويؤكدها.","يحفظ التطبيق العملية محلياً."]],
+        ["تسجيل عملية بالصوت",["ينطق المستخدم وصف العملية.","يحول التطبيق الصوت إلى نص وحقول مقترحة.","يراجع المستخدم البيانات ويعدلها.","يحفظ التطبيق العملية بعد التأكيد فقط."]],
+        ["التحويل بين الحسابات",["يحدد المستخدم حساب المصدر والوجهة.","يدخل المبلغ والتاريخ.","ينشئ التطبيق تحويلاً داخلياً مرتبطاً.","يحدّث الحسابين دون احتساب التحويل دخلاً أو مصروفاً إجمالياً."]],
+        ["إنشاء نسخة احتياطية",["يختار المستخدم «نسخ احتياطي الآن».","ينشئ التطبيق النسخة ويرفعها.","يعرض التطبيق نتيجة العملية."]],
+        ["استعادة نسخة احتياطية",["يختار المستخدم نسخة متاحة.","يتحقق التطبيق منها ويعرض معلوماتها وأثر الاستعادة.","يؤكد المستخدم الاستعادة.","يستعيد التطبيق البيانات ويعرض النتيجة."]]
+      ],
+      roadmap: [
+        ["A","تحليل المتطلبات وتجربة المستخدم ومفاهيم البيانات وقواعد الحساب","1–2 أسبوع"],
+        ["B","النواة المالية: الحسابات والعمليات والتصنيفات والتقارير والاختبارات","الأسبوع 3–6"],
+        ["C","الإدخال الذكي: الصوت والإيصالات والمراجعة والتصنيف المحلي","الأسبوع 7–10"],
+        ["D","Safe-to-Spend والالتزامات وأهداف الادخار","الأسبوع 11–13"],
+        ["E","النسخ والاستعادة ودمج AI عند الحاجة","الأسبوع 14–16"],
+        ["F","الاختبارات الشاملة والتحسين وتجهيز الإصدار","الأسبوع 17–20"]
+      ],
+      risks: [
+        ["اتساع نطاق MVP","تثبيت متطلبات Must وتأجيل الميزات المتقدمة."],
+        ["ارتفاع تكلفة AI","تفضيل القواعد المحلية ووضع حدود للاستخدام ومراقبة التكلفة."],
+        ["عدم دقة استخراج الإيصالات أو الصوت","إلزام المراجعة قبل الحفظ وإبراز الحقول غير المؤكدة."],
+        ["تضليل المستخدم بتوقعات مالية","شرح الافتراضات والتمييز بين القيم الفعلية والتقديرية."],
+        ["فقدان البيانات","توفير نسخ قابلة للتحقق واختبار الاستعادة بانتظام."],
+        ["تعارض النسخ الاحتياطية","تعريف قواعد الاستعادة والإصدارات قبل إضافة المزامنة بين الأجهزة."],
+        ["مخاطر الخصوصية","تقليل البيانات الخارجة من الجهاز وعدم تخزين بيانات الاعتماد البنكية الحساسة."]
+      ],
+      decisions: [
+        "ما العملات المطلوب دعمها في الإصدار الأول؟",
+        "هل ستدعم الأرصدة والتقارير عملات متعددة؟ وكيف ستُعالج أسعار الصرف؟",
+        "ما لغات وأشكال الإيصالات المطلوب دعمها أولاً؟",
+        "هل تُحفظ صور الإيصالات والتسجيلات الصوتية بعد الاستخراج أم تُحذف افتراضياً؟",
+        "ما متطلبات التشفير والمصادقة للنسخ الاحتياطية؟",
+        "ماذا يحدث عند الاستعادة فوق بيانات موجودة: استبدال أم إنشاء نسخة استرداد أم دمج مضبوط؟",
+        "ما أنواع الالتزامات المتكررة والتنبيهات المطلوبة في MVP؟",
+        "كيف يعالج Safe-to-Spend العمليات المعلقة والالتزامات المتأخرة ومخصصات الادخار والاحتياطي النقدي؟",
+        "ما أقل إصدارات Android وiOS التي ستُدعم؟",
+        "ما مزودو AI وOCR المقبولون من حيث التكلفة والخصوصية والتوفر؟"
+      ]
+    };
+
+    const priorityLabels = {
+      en: { Must: "Must", Should: "Should", Could: "Could" },
+      ar: { Must: "أساسي", Should: "مهم", Could: "اختياري" }
+    };
+
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function renderTableRows(targetId, rows, kind) {
+      const target = document.getElementById(targetId);
+      target.replaceChildren();
+
+      rows.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach((value, index) => {
+          const td = document.createElement("td");
+          if (kind === "requirements" && index === 0) {
+            td.className = "id";
+          }
+          if (kind === "requirements" && index === 2) {
+            const badge = el("span", "priority " + value.toLowerCase(), priorityLabels[currentLang][value]);
+            td.appendChild(badge);
+          } else {
+            td.textContent = value;
+          }
+          tr.appendChild(td);
+        });
+        target.appendChild(tr);
+      });
+    }
+
+    function renderRules(rows) {
+      const target = document.getElementById("rulesList");
+      target.replaceChildren();
+      rows.forEach(([id, title, description]) => {
+        const box = el("div", "scenario");
+        const heading = el("h3");
+        const code = el("span", "id", id + " — ");
+        heading.append(code, document.createTextNode(title));
+        box.append(heading, el("p", "", description));
+        target.appendChild(box);
+      });
+    }
+
+    function renderDataCards(rows) {
+      const target = document.getElementById("dataCards");
+      target.replaceChildren();
+      rows.forEach(([title, description]) => {
+        const card = el("div", "mini-card");
+        card.append(el("h3", "", title), el("p", "", description));
+        target.appendChild(card);
+      });
+    }
+
+    function renderAcceptance(rows) {
+      const target = document.getElementById("acceptanceList");
+      target.replaceChildren();
+      rows.forEach(([id, description]) => {
+        const li = el("li");
+        const strong = el("strong", "id", id + ": ");
+        li.append(strong, document.createTextNode(description));
+        target.appendChild(li);
+      });
+    }
+
+    function renderScenarios(rows) {
+      const target = document.getElementById("scenarioList");
+      target.replaceChildren();
+      rows.forEach(([title, steps]) => {
+        const box = el("div", "scenario");
+        box.appendChild(el("h3", "", title));
+        const list = document.createElement("ol");
+        steps.forEach(step => list.appendChild(el("li", "", step)));
+        box.appendChild(list);
+        target.appendChild(box);
+      });
+    }
+
+    function renderRoadmap(rows) {
+      const target = document.getElementById("roadmapList");
+      target.replaceChildren();
+      rows.forEach(([number, title, duration]) => {
+        const phase = el("div", "phase");
+        phase.appendChild(el("div", "phase-number", number));
+        phase.appendChild(el("div", ""));
+        phase.children[1].appendChild(el("h3", "", title));
+        phase.children[1].appendChild(el("p", "", duration));
+        phase.appendChild(el("span", "duration", duration));
+        // Avoid showing the duration twice on wide screens.
+        phase.children[1].lastChild.remove();
+        target.appendChild(phase);
+      });
+    }
+
+    function renderRisks(rows) {
+      const target = document.getElementById("risksBody");
+      target.replaceChildren();
+      rows.forEach(([risk, mitigation]) => {
+        const tr = document.createElement("tr");
+        tr.append(el("td", "", risk), el("td", "", mitigation));
+        target.appendChild(tr);
+      });
+    }
+
+    function renderDecisions(rows) {
+      const target = document.getElementById("decisionsList");
+      target.replaceChildren();
+      rows.forEach(item => target.appendChild(el("li", "", item)));
+    }
+
+    let currentLang = "en";
+
+    function renderDynamicContent() {
+      const d = currentLang === "ar" ? arabicData : dataset;
+      renderTableRows("requirementsBody", d.requirements, "requirements");
+      renderRules(d.rules);
+      renderTableRows("nfrBody", d.nfr, "nfr");
+      renderDataCards(d.data);
+      renderAcceptance(d.acceptance);
+      renderScenarios(d.scenarios);
+      renderRoadmap(d.roadmap);
+      renderRisks(d.risks);
+      renderDecisions(d.decisions);
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+      document.querySelectorAll("[data-i18n]").forEach(node => {
+        const key = node.dataset.i18n;
+        if (translations[lang][key]) node.textContent = translations[lang][key];
+      });
+
+      document.getElementById("languageButton").textContent = lang === "en" ? "العربية" : "English";
+      document.getElementById("printButton").textContent = lang === "en" ? "Print / PDF" : "طباعة / PDF";
+      renderDynamicContent();
+    }
+
+    document.getElementById("languageButton").addEventListener("click", () => {
+      setLanguage(currentLang === "en" ? "ar" : "en");
+    });
+
+    document.getElementById("printButton").addEventListener("click", () => window.print());
+
+    document.getElementById("menuButton").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+
+    document.querySelectorAll(".nav-link").forEach(link => {
+      link.addEventListener("click", () => {
+        document.querySelectorAll(".nav-link").forEach(item => item.classList.remove("active"));
+        link.classList.add("active");
+        document.getElementById("sidebar").classList.remove("open");
+      });
+    });
+
+    renderDynamicContent();
+
+    // Switch to Arabic with ?lang=ar in the URL.
+    if (new URLSearchParams(window.location.search).get("lang") === "ar") {
+      setLanguage("ar");
+    }
+  </script>
+</body>
+</html>

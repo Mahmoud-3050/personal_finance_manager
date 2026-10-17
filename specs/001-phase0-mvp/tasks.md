@@ -10,6 +10,10 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 **Tests**: Included. plan.md requires use-case, repository, and cubit tests before the feature is done, and quickstart.md names the automated checks. Write each story’s tests first and confirm they fail before the implementation tasks for that story.
 
+**Amendment 2026-10-16**: Phases 17–23 are the transfer commission. Tasks T001–T114 stay the shipped baseline. Any task marked SUPERSEDED pointed at the retired `lib/features/fenzo/` paths and must not be implemented again.
+
+**Amendment 2026-10-17**: Phases 24–29 are the usual fee stored on each account. Tasks T001–T139 stay as they are. Do not add a new feature folder or a new cubit.
+
 **Organization**: Tasks are grouped by user story so each story can be implemented and tested as its own increment.
 
 ## Format: `[ID] [P?] [Story] Description`
@@ -57,7 +61,7 @@ description: "Task list for Phase 0 MVP personal money tracking"
 - [X] T018 Implement period figures, including `0%` when the denominator is zero and one decimal place otherwise, in `lib/features/fenzo/domain/services/report_calculator.dart` so `test/features/fenzo/domain/report_calculator_test.dart` passes
 - [X] T019 Declare `FenzoRepository` returning `Either<Failure, T>` in `lib/features/fenzo/domain/repositories/fenzo_repository.dart`
 - [X] T020 [P] Define the Drift tables for accounts, categories, subcategories, and transactions in `lib/features/fenzo/data/datasources/fenzo_database.dart`
-- [ ] T021 [P] Map those rows to entities in `lib/features/fenzo/data/models/account_model.dart`, `lib/features/fenzo/data/models/category_model.dart`, and `lib/features/fenzo/data/models/transaction_model.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T021 [P] Map those rows to entities in `lib/features/fenzo/data/models/account_model.dart`, `lib/features/fenzo/data/models/category_model.dart`, and `lib/features/fenzo/data/models/transaction_model.dart`
 - [X] T022 Implement `FenzoLocalDataSource`, including the one-time Arabic category seed, in `lib/features/fenzo/data/datasources/fenzo_local_data_source.dart` so `test/features/fenzo/data/category_seed_test.dart` passes. Open a file under the app documents directory with `path_provider`, not an in-memory database.
 - [X] T023 Map `AppException` to `Failure` with `RepositoryGuard` from `lib/core/data/repository_guard.dart` in `lib/features/fenzo/data/repositories/fenzo_repository_impl.dart`
 - [X] T024 Register only the fenzo data layer in `lib/features/fenzo/fenzo_injection.dart`
@@ -90,7 +94,7 @@ description: "Task list for Phase 0 MVP personal money tracking"
 - [X] T035 [US1] Register the account use cases and cubits in `lib/features/fenzo/fenzo_injection.dart`
 - [X] T036 [US1] Build the confirm dialog in `lib/features/fenzo/presentation/widgets/confirm_action_dialog.dart`
 - [X] T037 [US1] Build the account form and account list in `lib/features/fenzo/presentation/pages/account_form_page.dart` and `lib/features/fenzo/presentation/pages/account_list_page.dart`
-- [ ] T038 [US1] Route the first-account empty state and the account list in `lib/features/fenzo/presentation/navigation/fenzo_router.dart`, and block transaction entry until an account exists
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T038 [US1] Route the first-account empty state and the account list in `lib/features/fenzo/presentation/navigation/fenzo_router.dart`, and block transaction entry until an account exists
 
 **Checkpoint**: User Story 1 works alone. Opening balances, inclusion, deactivation, and empty-account delete match the account contract.
 
@@ -104,9 +108,9 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 2
 
-- [ ] T039 [P] [US2] Write failing income and expense use-case tests in `test/features/fenzo/domain/income_expense_use_cases_test.dart`
-- [ ] T040 [P] [US2] Write failing income and expense repository tests in `test/features/fenzo/data/income_expense_repository_test.dart`
-- [ ] T041 [P] [US2] Write failing income and expense cubit tests for success and error in `test/features/fenzo/presentation/income_expense_cubits_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T039 [P] [US2] Write failing income and expense use-case tests in `test/features/fenzo/domain/income_expense_use_cases_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T040 [P] [US2] Write failing income and expense repository tests in `test/features/fenzo/data/income_expense_repository_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T041 [P] [US2] Write failing income and expense cubit tests for success and error in `test/features/fenzo/presentation/income_expense_cubits_test.dart`
 
 ### Implementation for User Story 2
 
@@ -116,7 +120,7 @@ description: "Task list for Phase 0 MVP personal money tracking"
 - [X] T045 [US2] Register the income and expense use cases and cubits in `lib/features/fenzo/fenzo_injection.dart`
 - [X] T046 [US2] Build the income and expense form, using the seed categories and active accounts only, in `lib/features/fenzo/presentation/pages/transaction_form_page.dart`
 - [X] T047 [US2] Build the transaction history page in `lib/features/fenzo/presentation/pages/transaction_list_page.dart`
-- [ ] T048 [US2] Add income, expense, edit, and history routes in `lib/features/fenzo/presentation/navigation/fenzo_router.dart`, and call delete only after `lib/features/fenzo/presentation/widgets/confirm_action_dialog.dart` confirms
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T048 [US2] Add income, expense, edit, and history routes in `lib/features/fenzo/presentation/navigation/fenzo_router.dart`, and call delete only after `lib/features/fenzo/presentation/widgets/confirm_action_dialog.dart` confirms
 
 **Checkpoint**: User Stories 1 and 2 together replace a notebook for income and spending.
 
@@ -130,9 +134,9 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 3
 
-- [ ] T049 [P] [US3] Write failing transfer use-case tests in `test/features/fenzo/domain/transfer_use_case_test.dart`, including an edit of the amount or either account, and a rejection when the source and destination are the same
-- [ ] T050 [P] [US3] Write failing transfer repository tests in `test/features/fenzo/data/transfer_repository_test.dart`
-- [ ] T051 [P] [US3] Write failing transfer cubit tests for success and error in `test/features/fenzo/presentation/transfer_cubit_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T049 [P] [US3] Write failing transfer use-case tests in `test/features/fenzo/domain/transfer_use_case_test.dart`, including an edit of the amount or either account, and a rejection when the source and destination are the same
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T050 [P] [US3] Write failing transfer repository tests in `test/features/fenzo/data/transfer_repository_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T051 [P] [US3] Write failing transfer cubit tests for success and error in `test/features/fenzo/presentation/transfer_cubit_test.dart`
 
 ### Implementation for User Story 3
 
@@ -155,9 +159,9 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 4
 
-- [ ] T058 [P] [US4] Write failing category use-case tests in `test/features/fenzo/domain/category_use_cases_test.dart`
-- [ ] T059 [P] [US4] Write failing category repository tests in `test/features/fenzo/data/category_repository_test.dart`
-- [ ] T060 [P] [US4] Write failing category cubit tests for success and error in `test/features/fenzo/presentation/category_cubits_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T058 [P] [US4] Write failing category use-case tests in `test/features/fenzo/domain/category_use_cases_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T059 [P] [US4] Write failing category repository tests in `test/features/fenzo/data/category_repository_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T060 [P] [US4] Write failing category cubit tests for success and error in `test/features/fenzo/presentation/category_cubits_test.dart`
 
 ### Implementation for User Story 4
 
@@ -180,8 +184,8 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 5
 
-- [ ] T067 [P] [US5] Write failing dashboard use-case tests in `test/features/fenzo/domain/get_dashboard_use_case_test.dart`
-- [ ] T068 [P] [US5] Write failing dashboard cubit tests for success and error in `test/features/fenzo/presentation/get_dashboard_cubit_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T067 [P] [US5] Write failing dashboard use-case tests in `test/features/fenzo/domain/get_dashboard_use_case_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T068 [P] [US5] Write failing dashboard cubit tests for success and error in `test/features/fenzo/presentation/get_dashboard_cubit_test.dart`
 
 ### Implementation for User Story 5
 
@@ -202,8 +206,8 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 6
 
-- [ ] T073 [P] [US6] Write failing report use-case tests in `test/features/fenzo/domain/get_report_use_case_test.dart`
-- [ ] T074 [P] [US6] Write failing report cubit tests for success and error in `test/features/fenzo/presentation/get_report_cubit_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T073 [P] [US6] Write failing report use-case tests in `test/features/fenzo/domain/get_report_use_case_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T074 [P] [US6] Write failing report cubit tests for success and error in `test/features/fenzo/presentation/get_report_cubit_test.dart`
 
 ### Implementation for User Story 6
 
@@ -224,8 +228,8 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 ### Tests for User Story 7
 
-- [ ] T079 [P] [US7] Write failing search use-case tests in `test/features/fenzo/domain/search_transactions_use_case_test.dart`
-- [ ] T080 [P] [US7] Write failing search cubit tests for success and empty results in `test/features/fenzo/presentation/search_transactions_cubit_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T079 [P] [US7] Write failing search use-case tests in `test/features/fenzo/domain/search_transactions_use_case_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T080 [P] [US7] Write failing search cubit tests for success and empty results in `test/features/fenzo/presentation/search_transactions_cubit_test.dart`
 
 ### Implementation for User Story 7
 
@@ -243,9 +247,9 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 **Purpose**: Static analysis, the scale check, and the manual quickstart
 
-- [ ] T086 Run `flutter analyze` and clear every issue in `lib/`, `test/`, and `packages/either/`
-- [ ] T087 [P] Add a 5,000-transaction report timing assertion in `test/features/fenzo/domain/report_calculator_test.dart`
-- [ ] T088 Walk the manual pass in `specs/001-phase0-mvp/quickstart.md` on a device in airplane mode and fix any miss against `specs/001-phase0-mvp/contracts/`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T086 Run `flutter analyze` and clear every issue in `lib/`, `test/`, and `packages/either/`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T087 [P] Add a 5,000-transaction report timing assertion in `test/features/fenzo/domain/report_calculator_test.dart`
+- [X] SUPERSEDED (shipped outside `lib/features/fenzo`; do not redo): T088 Walk the manual pass in `specs/001-phase0-mvp/quickstart.md` on a device in airplane mode and fix any miss against `specs/001-phase0-mvp/contracts/`
 
 ---
 
@@ -384,3 +388,284 @@ description: "Task list for Phase 0 MVP personal money tracking"
 ## Phase 16: Convergence
 
 - [X] T114 After a saved edit in `lib/features/transactions/presentation/pages/transaction_form_page.dart` and after a confirmed delete in `lib/features/transactions/presentation/pages/transaction_list_page.dart`, reload the transaction search and `GetReportCubit` so the list and the open report match the saved records per FR-019 (partial)
+
+---
+
+## Phase 17: Setup — Transfer commission
+
+**Purpose**: Labels for the fee field. No new package and no new feature folder.
+
+- [X] T115 [P] Add `fenzo_transfer_commission` and `fenzo_commission_not_allowed` to `assets/lang/en.json` and `assets/lang/ar.json`, and add the matching getters in `lib/config/language/strings.dart`. Do not add a second string table.
+
+---
+
+## Phase 18: Foundational — Transfer commission
+
+**Purpose**: The fee exists on the transaction, older rows stay at zero, and balances come from the calculators. No story screen starts before this phase.
+
+**Independent check**: A book saved before this phase still opens, every existing balance is unchanged, and a fee cannot be stored on income, cash, or an `other` account.
+
+### Tests first
+
+- [X] T116 [P] Write failing `saveMovement` tests in `test/shared/domain/finance_records_commission_test.dart`: a blank commission is 0; a negative commission is rejected; a commission larger than the principal is allowed; income, cash, and `other` reject a commission greater than zero and leave the book unchanged; a bank or e-wallet expense and any transfer accept it; the expense `categoryId` is not replaced by the fee category.
+- [X] T117 [P] Extend `test/shared/domain/balance_calculator_test.dart` with failing cases: a transfer with no commission does not change total money; with a commission the destination changes by the moved amount only, the source changes by the moved amount plus the commission, and total money changes by the commission only when the source is included; a bank expense decreases that account by the payment plus the commission.
+- [X] T118 [P] Extend `test/shared/domain/report_calculator_test.dart` with failing cases: period expenses and net result include `commissionMinor`; the chosen expense category changes by `amountMinor` only; `رسوم تحويل` receives the commissions; transfers in and transfers out stay the moved amount.
+- [X] T119 [P] Write failing mapping tests in `test/features/transactions/data/money_transaction_model_test.dart`: `toJson` writes `commission_minor`, and a JSON object without that key reads as 0.
+- [X] T120 [P] Extend `test/features/categories/data/category_seed_test.dart` so a book that already has categories gains `رسوم تحويل` with id `seed-expense-رسوم تحويل` and does not rename the other categories.
+
+### Implementation
+
+- [X] T121 Add `commissionMinor` to `lib/shared/domain/entities/money_transaction.dart`, defaulting to 0, and include it in `props`.
+- [X] T122 [P] Add `commissionMinor` as a non-null integer with default 0 on `TransactionRows` in `lib/core/database/finance_database.dart`, raise `schemaVersion` to 2, and add an `onUpgrade` from 1 to 2 that adds the column with default 0. Regenerate `lib/core/database/finance_database.g.dart` with `dart run build_runner build --delete-conflicting-outputs`.
+- [X] T123 Map `commissionMinor` in `lib/features/transactions/data/models/money_transaction_model.dart` (`fromEntity`, `fromRow`, `fromJson`, `toJson`, `toCompanion`) so a missing `commission_minor` key is 0, making `test/features/transactions/data/money_transaction_model_test.dart` pass.
+- [X] T124 In `lib/shared/domain/finance_records.dart`, insert category id `seed-expense-رسوم تحويل` and name `رسوم تحويل` when that id is missing, reject a normal expense that uses that id, and accept or reject `commissionMinor` in `saveMovement` per `specs/001-phase0-mvp/data-model.md`, making `test/shared/domain/finance_records_commission_test.dart` and the new seed case in `test/features/categories/data/category_seed_test.dart` pass.
+- [X] T125 [P] Apply `commissionMinor` in `lib/shared/domain/services/balance_calculator.dart` so `test/shared/domain/balance_calculator_test.dart` passes. Do not store a balance.
+- [X] T126 [P] Apply `commissionMinor` in `lib/shared/domain/services/report_calculator.dart` so `test/shared/domain/report_calculator_test.dart` passes. Attribute commissions to category id `seed-expense-رسوم تحويل`. Do not add them to transfers in or transfers out.
+- [X] T127 Pass `commissionMinor` through `lib/features/transactions/domain/repositories/transactions_repository.dart`, `lib/features/transactions/data/repositories/transactions_repository_impl.dart`, `lib/features/transactions/domain/usecases/save_expense_use_case.dart`, `lib/features/transactions/domain/usecases/save_transfer_use_case.dart`, and `lib/features/transactions/domain/usecases/update_transaction_use_case.dart`. Keep `lib/features/transactions/domain/usecases/save_income_use_case.dart` sending 0.
+
+**Checkpoint**: Calculators and `saveMovement` enforce the fee. Screens still do not show it.
+
+---
+
+## Phase 19: User Story 2 — Record a fee on a bank or wallet payment (Priority: P1)
+
+**Goal**: A payment from a bank account or digital wallet can include a transfer commission. Cash, other accounts, and income cannot.
+
+**Independent Test**: Record a 200 EGP payment from a bank account with a 3 EGP commission and confirm that account falls by 203 EGP, the chosen category rises by 200 EGP, and `رسوم تحويل` rises by 3 EGP. Record 200 EGP from cash and confirm there is no fee field and the account falls by 200 EGP.
+
+### Tests for User Story 2
+
+- [X] T128 [P] [US2] Write failing use-case tests in `test/features/transactions/domain/save_expense_use_case_test.dart` that pass `commissionMinor` through `SaveExpenseUseCase` and `UpdateTransactionUseCase` in `lib/features/transactions/domain/usecases/save_expense_use_case.dart` and `lib/features/transactions/domain/usecases/update_transaction_use_case.dart`.
+- [X] T129 [P] [US2] Write failing cubit tests for success and for `ValidationFailure` in `test/features/transactions/presentation/save_expense_cubit_test.dart`, covering `fSaveExpense` on `lib/features/transactions/presentation/controller/save_expense/save_expense_cubit.dart`.
+
+### Implementation for User Story 2
+
+- [X] T130 [US2] On an expense in `lib/features/transactions/presentation/pages/transaction_form_page.dart`, show the commission field only when the paying account is `bank` or `eWallet`, parse it with the existing money parser, send 0 when it is blank, and reject a save that still has a commission after the account changes to cash or `other`. Do not offer category id `seed-expense-رسوم تحويل` in the expense picker.
+- [X] T131 [US2] When `commissionMinor` is greater than zero, show the payment and the fee as separate figures in `lib/features/transactions/presentation/widgets/transaction_summary.dart`.
+
+**Checkpoint**: Bank and wallet payments record a fee. Transfers still have no fee field.
+
+---
+
+## Phase 20: User Story 3 — Record a fee on a move between accounts (Priority: P2)
+
+**Goal**: Every internal transfer can include a transfer commission. The destination receives the moved amount. The source pays the moved amount plus the fee.
+
+**Independent Test**: Move 1,000 EGP with a 5 EGP commission. The destination rises by 1,000 EGP, the source falls by 1,005 EGP, total money falls by 5 EGP, and expenses rise by 5 EGP. The same move with a blank commission leaves total money unchanged.
+
+### Tests for User Story 3
+
+- [X] T132 [P] [US3] Write failing use-case tests in `test/features/transactions/domain/save_transfer_use_case_test.dart` that pass `commissionMinor` through `SaveTransferUseCase` in `lib/features/transactions/domain/usecases/save_transfer_use_case.dart`.
+- [X] T133 [P] [US3] Write failing cubit tests for success and error in `test/features/transactions/presentation/save_transfer_cubit_test.dart`, covering `fSaveTransfer` on `lib/features/transactions/presentation/controller/save_transfer/save_transfer_cubit.dart`.
+
+### Implementation for User Story 3
+
+- [X] T134 [US3] Show the commission field for every transfer in `lib/features/transactions/presentation/pages/transaction_form_page.dart`, including an edit that changes the fee to 0. Keep the moved amount and the fee as separate figures in `lib/features/transactions/presentation/widgets/transaction_summary.dart`.
+
+**Checkpoint**: A transfer fee and a payment fee both save through the existing cubits. Deleting the row still removes both figures.
+
+---
+
+## Phase 21: User Story 5 — See the fee in this month (Priority: P2)
+
+**Goal**: This month’s expenses include transfer commissions, and a recent row shows the fee apart from the principal.
+
+**Independent Test**: With a 5 EGP commission dated this month, the home expense total includes 5 EGP and the recent row shows 5 EGP separately from the moved or paid amount.
+
+### Implementation for User Story 5
+
+- [X] T135 [US5] Show the fee as a separate figure on a recent row in `lib/features/dashboard/presentation/widgets/dashboard_activity.dart` when `commissionMinor` is greater than zero. Leave `lib/features/dashboard/presentation/widgets/dashboard_balance.dart` reading the period expense from the calculator. Do not add a second expense sum in the widget.
+
+**Checkpoint**: The home month expense matches the calculator. A zero commission row looks as it did before this amendment.
+
+---
+
+## Phase 22: User Story 6 — See the fee in a period report (Priority: P2)
+
+**Goal**: A period report counts the commission as spending and keeps transfers in and transfers out equal to the moved amount.
+
+**Independent Test**: For a range that contains one transfer with a 5 EGP commission and one bank payment of 200 EGP with a 3 EGP commission, expenses include 8 EGP of fees, the payment category includes 200 EGP, and transfers out equal the moved amount only.
+
+### Implementation for User Story 6
+
+- [X] T136 [US6] Keep `lib/features/reports/presentation/pages/report_page.dart` bound to `expenseMinor`, `transfersInMinor`, and `transfersOutMinor` from the calculator. Do not add `commissionMinor` to the transfer lines on the page. The `رسوم تحويل` share comes from `expenseShares`.
+
+**Checkpoint**: The account report ending balance still equals starting balance + income − expenses + transfers in − transfers out, with the fee inside expenses.
+
+---
+
+## Phase 23: Polish — Transfer commission
+
+**Purpose**: Older books, analysis, and the manual pass.
+
+- [X] T137 [P] Add `test/core/database/finance_schema_migration_test.dart` proving a schema-version-1 database gains `commission_minor` as 0 after `lib/core/database/finance_database.dart` upgrades to version 2.
+- [X] T138 Run `flutter analyze` and `flutter test` from the repository root and clear every issue this amendment causes in `lib/` and `test/`.
+- [X] T139 Walk steps 5, 5a, 5b, and 9 in `specs/001-phase0-mvp/quickstart.md` and fix any miss against `specs/001-phase0-mvp/contracts/transactions.md` and `specs/001-phase0-mvp/contracts/dashboard-and-reports.md`.
+
+---
+
+## Dependencies — Transfer commission
+
+### Phase dependencies
+
+- **Phase 17**: No dependency on other open tasks.
+- **Phase 18**: Depends on Phase 17 for the labels the later screens use. Blocks Phases 19–22.
+- **Phase 19 (US2)**: Depends on Phase 18. No dependency on US3.
+- **Phase 20 (US3)**: Depends on Phase 18 and on T130, because it edits the same form.
+- **Phase 21 (US5)**: Depends on Phase 18. Can run beside Phase 22. Does not require the form.
+- **Phase 22 (US6)**: Depends on Phase 18. Can run beside Phase 21.
+- **Phase 23**: Depends on Phases 19–22.
+
+### Within Phase 18
+
+- T116–T120 can run together, and they are written to fail before T121–T127.
+- T121 and T122 can run together.
+- T123 depends on T121 and T122.
+- T124 depends on T121.
+- T125 and T126 depend on T121 and can run together.
+- T127 depends on T124.
+
+### Parallel example after Phase 18
+
+```text
+T128 test/features/transactions/domain/save_expense_use_case_test.dart
+T129 test/features/transactions/presentation/save_expense_cubit_test.dart
+T135 lib/features/dashboard/presentation/widgets/dashboard_activity.dart
+T136 lib/features/reports/presentation/pages/report_page.dart
+```
+
+T134 waits until T130 has landed in `lib/features/transactions/presentation/pages/transaction_form_page.dart`.
+
+## Implementation strategy — Transfer commission
+
+1. Finish Phase 17 and Phase 18. Stop and confirm existing balances are unchanged when the fee is 0.
+2. Finish Phase 19 (US2). This is the MVP of the amendment: a bank or wallet payment can carry a fee.
+3. Finish Phase 20 (US3) so a move between accounts can carry the same fee.
+4. Finish Phases 21 and 22 so the home screen and period report show that fee as spending.
+5. Finish Phase 23.
+
+---
+
+## Phase 24: Setup — Usual fee
+
+**Purpose**: The label for the usual fee on an account. No new package and no new feature folder.
+
+- [X] T140 [P] Add `fenzo_usual_commission` to `assets/lang/en.json` and `assets/lang/ar.json`, and add the matching getter in `lib/config/language/strings.dart`. English: "Usual transfer commission". Arabic: "رسوم التحويل المعتادة". Do not add a second string table.
+
+---
+
+## Phase 25: Foundational — Usual fee
+
+**Purpose**: The usual fee exists on the account, older accounts stay at zero, and a saved transaction fee is not rewritten. No story screen starts before this phase.
+
+**Independent check**: An account saved with a blank usual fee has 0, its balance is unchanged, and a transaction that already stored a fee still has that fee after the account’s usual fee changes.
+
+### Tests first
+
+- [X] T141 [P] Write failing `saveAccount` tests in `test/shared/domain/finance_records_usual_fee_test.dart`: a blank usual fee is stored as 0 and the opening balance is unchanged; a negative usual fee is rejected and the book is unchanged; changing the type of an account with no transactions keeps the usual fee; changing the usual fee does not change `commissionMinor` on an already saved transaction.
+- [X] T142 [P] Write failing mapping tests in `test/features/accounts/data/account_model_test.dart`: `toJson` writes `default_commission_minor`, and a JSON object without that key reads as 0.
+- [X] T143 [P] Extend `test/core/database/finance_schema_migration_test.dart` with a failing case: a schema-version-2 database whose `account_rows` have no `default_commission_minor` gains that column as 0 after `lib/core/database/finance_database.dart` upgrades to version 3, and the existing `commission_minor` value on `transaction_rows` stays as it was.
+
+### Implementation
+
+- [X] T144 [P] Add `defaultCommissionMinor` to `lib/shared/domain/entities/account.dart`, defaulting to 0, and include it in `props` and `copyWith`.
+- [X] T145 [P] Add `defaultCommissionMinor` as a non-null integer with default 0 on `AccountRows` in `lib/core/database/finance_database.dart`, raise `schemaVersion` to 3, and add an `onUpgrade` from 2 to 3 that adds the column with default 0. Keep the version 1 to 2 `commission_minor` upgrade. Regenerate `lib/core/database/finance_database.g.dart` with `dart run build_runner build --delete-conflicting-outputs`.
+- [X] T146 Map `defaultCommissionMinor` in `lib/features/accounts/data/models/account_model.dart` (`fromEntity`, `fromRow`, `fromJson`, `toJson`, `toCompanion`) so a missing `default_commission_minor` key is 0 and `toCompanion` passes `Value(defaultCommissionMinor)`, making `test/features/accounts/data/account_model_test.dart` pass.
+- [X] T147 In `lib/shared/domain/finance_records.dart`, accept `defaultCommissionMinor` on `saveAccount`, reject a value below 0 as `commission_non_negative` without writing, keep the field when the account type changes, and do not change any transaction’s `commissionMinor`, making `test/shared/domain/finance_records_usual_fee_test.dart` pass.
+- [X] T148 Pass `defaultCommissionMinor` through `lib/features/accounts/domain/repositories/accounts_repository.dart`, `lib/features/accounts/data/repositories/accounts_repository_impl.dart`, and `lib/features/accounts/domain/usecases/save_account_use_case.dart` (`SaveAccountParams` and `props`). Update the `saveAccount` fakes in `test/features/accounts/domain/account_use_cases_test.dart` and `test/features/accounts/presentation/account_cubits_test.dart` so they accept the new argument with default 0.
+
+**Checkpoint**: Existing balances are unchanged. A usual fee of 0 is the same book as before this amendment.
+
+---
+
+## Phase 26: User Story 1 — Store a usual fee on the account (Priority: P1)
+
+**Goal**: The person can save a usual transfer commission on an account. It does not change the balance. Editing it does not ask for confirmation and does not rewrite saved records.
+
+**Independent Test**: Add Bank ABC with opening balance 25,000 EGP and usual fee 3 EGP. The balance is 25,000 EGP. Leave the usual fee blank on a second account and confirm it is 0. Change Bank ABC’s usual fee to 5 EGP and confirm a payment that already used 3 EGP still shows 3 EGP.
+
+### Tests for User Story 1
+
+- [X] T149 [P] [US1] Write failing use-case tests in `test/features/accounts/domain/save_account_usual_fee_test.dart` that pass `defaultCommissionMinor` through `SaveAccountUseCase` in `lib/features/accounts/domain/usecases/save_account_use_case.dart`, including a save that changes 300 piastres to 0.
+- [X] T150 [P] [US1] Write failing cubit tests for success and for `ValidationFailure` in `test/features/accounts/presentation/save_account_usual_fee_cubit_test.dart`, covering `fSaveAccount` on `lib/features/accounts/presentation/controller/save_account/save_account_cubit.dart`.
+
+### Implementation for User Story 1
+
+- [X] T151 [US1] On `lib/features/accounts/presentation/pages/account_form_page.dart`, show the usual-fee field labeled with `Strings.fenzoUsualCommission`, parse it with the existing money parser (`allowZero: true`, `allowNegative: false`), send 0 when it is blank, and reject more than two decimal places without saving. Do not ask for confirmation. Changing the account type must not clear the field. Pass `defaultCommissionMinor` on `SaveAccountParams`.
+
+**Checkpoint**: The account list balance is still the opening balance plus movements. The usual fee is not added to it.
+
+---
+
+## Phase 27: User Story 2 — Start a payment with the account’s usual fee (Priority: P1)
+
+**Goal**: A new bank or e-wallet payment starts with that account’s usual fee. The person can change or clear it. A cash payment still has no fee.
+
+**Independent Test**: Bank ABC’s usual fee is 3 EGP. A new 200 EGP payment starts at 3 EGP. Leaving it decreases the bank by 203 EGP. Clearing it decreases the bank by 200 EGP and leaves the usual fee at 3 EGP. A cash account with a usual fee of 5 EGP still shows no fee field on a payment.
+
+### Implementation for User Story 2
+
+- [X] T152 [US2] In `lib/features/transactions/presentation/pages/transaction_form_page.dart`, when a new expense’s paying account is `bank` or `eWallet`, start the commission field from that account’s `defaultCommissionMinor` (blank when it is 0). When the paying account changes to another bank or e-wallet before save, replace the field with that account’s usual fee. Opening a saved expense shows `commissionMinor` already on the row, not the account’s current usual fee. A cash or `other` expense keeps the field hidden even when that account’s usual fee is greater than zero. Switching that payment onto a bank or e-wallet starts the field from that account’s usual fee. Do not change `saveMovement` to copy the usual fee.
+
+**Checkpoint**: Saving a cleared fee stores 0. The account’s usual fee is unchanged.
+
+---
+
+## Phase 28: User Story 3 — Start a move with the source account’s usual fee (Priority: P2)
+
+**Goal**: A new transfer starts with the source account’s usual fee only. The destination’s usual fee is not added.
+
+**Independent Test**: Bank ABC’s usual fee is 5 EGP and Vodafone Cash’s usual fee is 2 EGP. A new move from Bank ABC starts at 5 EGP, not 2 EGP and not 7 EGP. Changing the source to an account whose usual fee is 0 clears the starting fee. A saved move keeps its fee after the source account’s usual fee changes.
+
+### Implementation for User Story 3
+
+- [X] T153 [US3] In `lib/features/transactions/presentation/pages/transaction_form_page.dart`, when a new transfer’s source account is chosen, start the commission field from that source account’s `defaultCommissionMinor` only. Do not add the destination’s usual fee. When the source changes before save, replace the field with the new source’s usual fee. Opening a saved transfer shows the fee already on the row.
+
+**Checkpoint**: The destination balance still increases by the moved amount only.
+
+---
+
+## Phase 29: Polish — Usual fee
+
+**Purpose**: Analysis and the manual pass. Dashboard and report formulas stay as they are, because a usual fee is not spending until a saved row carries it.
+
+- [X] T154 Run `flutter analyze` and `flutter test` from the repository root and clear every issue this amendment causes in `lib/` and `test/`.
+- [X] T155 Walk steps 1, 5b, and 5c in `specs/001-phase0-mvp/quickstart.md` and fix any miss against `specs/001-phase0-mvp/contracts/accounts.md` and `specs/001-phase0-mvp/contracts/transactions.md`.
+
+---
+
+## Dependencies — Usual fee
+
+### Phase dependencies
+
+- **Phase 24**: No dependency on other open tasks.
+- **Phase 25**: Depends on Phase 24 for the label the account form uses. Blocks Phases 26–28.
+- **Phase 26 (US1)**: Depends on Phase 25. No dependency on US2 or US3.
+- **Phase 27 (US2)**: Depends on Phase 25 and on Phase 26, because the account must already store the usual fee.
+- **Phase 28 (US3)**: Depends on Phase 27, because it edits the same form.
+- **Phase 29**: Depends on Phases 26–28.
+
+### Within Phase 25
+
+- T141, T142, and T143 can run together, and they are written to fail before T144–T148.
+- T144 and T145 can run together.
+- T146 depends on T144 and T145.
+- T147 depends on T144.
+- T148 depends on T147.
+
+### Parallel example after Phase 25
+
+```text
+T149 test/features/accounts/domain/save_account_usual_fee_test.dart
+T150 test/features/accounts/presentation/save_account_usual_fee_cubit_test.dart
+```
+
+T153 waits until T152 has landed in `lib/features/transactions/presentation/pages/transaction_form_page.dart`.
+
+## Implementation strategy — Usual fee
+
+1. Finish Phase 24 and Phase 25. Stop and confirm a usual fee of 0 leaves every balance unchanged.
+2. Finish Phase 26 (US1). This is the MVP of the amendment: an account can store a usual fee.
+3. Finish Phase 27 (US2) so a bank or wallet payment starts with that fee.
+4. Finish Phase 28 (US3) so a move starts with the source account’s usual fee only.
+5. Finish Phase 29. Do not add the usual fee to dashboard or report totals.

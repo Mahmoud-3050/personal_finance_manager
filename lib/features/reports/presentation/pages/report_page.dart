@@ -10,6 +10,7 @@ import '../../../../core/presentation/api_call_state.dart';
 import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/domain/entities/account_period_figures.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
+import '../../../../shared/domain/entities/category.dart';
 import '../../../../shared/domain/entities/category_share.dart';
 import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
@@ -143,7 +144,9 @@ class _ReportPageState extends State<ReportPage> {
                             AppRoutes.transactions,
                             extra: SearchTransactionsParams(
                               range: _range,
-                              type: MoneyTransactionType.expense,
+                              type: share.id == transferCommissionCategoryId
+                                  ? null
+                                  : MoneyTransactionType.expense,
                               categoryId: share.id,
                             ),
                           ),

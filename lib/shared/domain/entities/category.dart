@@ -2,6 +2,9 @@ import 'package:equatable/equatable.dart';
 
 enum CategoryKind { income, expense }
 
+const String transferCommissionCategoryId = 'seed-expense-رسوم تحويل';
+const String transferCommissionCategoryName = 'رسوم تحويل';
+
 class Category extends Equatable {
   const Category({
     required this.id,

@@ -20,6 +20,7 @@ abstract interface class TransactionsRepository {
     String? toAccountId,
     String? description,
     String? notes,
+    int commissionMinor = 0,
   });
 
   Future<Either<Failure, FinanceRecords>> deleteTransaction(String id);

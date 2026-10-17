@@ -6,7 +6,7 @@ Read-only behavior. Figure definitions are in [data-model.md](../data-model.md).
 
 The dashboard period is the current local calendar month.
 
-- Shows that month’s income, expenses, and net result. Transfers are outside all three.
+- Shows that month’s income and expenses. The moved amount of a transfer is outside both. A transfer commission dated in that month is inside expenses. The month’s net result is not its own row.
 - Shows total money (current, not limited to the month) and each active account’s current balance.
 - Does not list deactivated accounts.
 - Shows the month’s expenses by category, with amount and share.
@@ -23,10 +23,10 @@ The dashboard period is the current local calendar month.
 
 ## Report contents
 
-- Financial summary: period income, period expenses, net result. Transfers excluded.
+- Financial summary: period income, period expenses, net result. The moved amount of a transfer is excluded. A commission in the period is included in expenses and in the net result.
 - Expenses by category and subcategory: amount and percentage of period expenses. Income by category: amount and percentage of period income.
 - When the relevant total is zero, every share is `0%`. Otherwise shares use one decimal place, half up.
-- Account report: starting balance, income, expenses, transfers in, transfers out, ending balance.
+- Account report: starting balance, income, expenses, transfers in, transfers out, ending balance. Transfers in and transfers out are moved amounts only. A commission is part of the source or paying account’s expenses.
 - **Given** the account’s opening date falls inside the range, **then** the starting balance is that opening balance and it is still not income.
 - Transaction list: income, expenses, and transfers in the range, narrowed by the active search and filters from [transactions.md](transactions.md).
 - Total money on the report is the same current included-account total as the dashboard. Changing the range does not change it.

@@ -38,6 +38,12 @@ class _AccountFormPageState extends State<AccountFormPage> {
   late final TextEditingController _amount = TextEditingController(
     text: Money(widget.existing?.openingBalanceMinor ?? 0).format(),
   );
+  late final TextEditingController _usualFee = TextEditingController(
+    text:
+        widget.existing == null || widget.existing!.defaultCommissionMinor == 0
+        ? ''
+        : Money(widget.existing!.defaultCommissionMinor).format(),
+  );
   late final TextEditingController _bankName = TextEditingController(
     text: widget.existing?.bankName ?? '',
   );
@@ -57,6 +63,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
   void dispose() {
     _name.dispose();
     _amount.dispose();
+    _usualFee.dispose();
     _bankName.dispose();
     _accountNumber.dispose();
     _phone.dispose();
@@ -165,6 +172,14 @@ class _AccountFormPageState extends State<AccountFormPage> {
               ),
             ),
             SizedBox(height: 12.h),
+            AppTextFormField(
+              controller: _usualFee,
+              labelText: Strings.fenzoUsualCommission,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+            ),
+            SizedBox(height: 12.h),
             FinanceLedgerRow(
               title: Strings.fenzoOpeningDate,
               subtitle: _openingDate.toIso(),
@@ -247,6 +262,26 @@ class _AccountFormPageState extends State<AccountFormPage> {
         .toList();
   }
 
+  int? _parsedUsualFee() {
+    if (_usualFee.text.trim().isEmpty) {
+      return 0;
+    }
+    return Money.parse(
+      _usualFee.text,
+      allowNegative: false,
+      allowZero: true,
+    ).fold((failure) {
+      setState(() => _message = _usualFeeMessage(failure.message));
+      return null;
+    }, (Money money) => money.minor);
+  }
+
+  String _usualFeeMessage(String? code) => switch (code) {
+    'amount_scale' => Strings.fenzoAmountScale,
+    'amount_positive' => Strings.fenzoAmountPositive,
+    _ => Strings.fenzoAmountInvalid,
+  };
+
   String _blockingMessage() {
     final String lines = _blockingTransactions()
         .map(
@@ -273,6 +308,10 @@ class _AccountFormPageState extends State<AccountFormPage> {
     if (money == null || _name.text.trim().isEmpty) {
       return;
     }
+    final int? usualFee = _parsedUsualFee();
+    if (usualFee == null) {
+      return;
+    }
     context.read<SaveAccountCubit>().fSaveAccount(
       SaveAccountParams(
         id: widget.existing?.id,
@@ -284,6 +323,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
         bankName: _blankToNull(_bankName.text),
         accountNumber: _blankToNull(_accountNumber.text),
         phoneNumber: _blankToNull(_phone.text),
+        defaultCommissionMinor: usualFee,
       ),
     );
   }

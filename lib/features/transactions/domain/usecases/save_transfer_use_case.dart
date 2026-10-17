@@ -19,6 +19,7 @@ class SaveTransferParams extends Params {
     this.toAccountId,
     this.description,
     this.notes,
+    this.commissionMinor = 0,
     this.cancellation,
   });
   final String? id;
@@ -31,6 +32,7 @@ class SaveTransferParams extends Params {
   final String? toAccountId;
   final String? description;
   final String? notes;
+  final int commissionMinor;
   @override
   final Object? cancellation;
   @override
@@ -42,6 +44,7 @@ class SaveTransferParams extends Params {
     date,
     accountId,
     categoryId,
+    commissionMinor,
   ];
 }
 
@@ -62,6 +65,7 @@ class SaveTransferUseCase extends UseCase<FinanceRecords, SaveTransferParams> {
       toAccountId: params.toAccountId,
       description: params.description,
       notes: params.notes,
+      commissionMinor: params.commissionMinor,
     );
   }
 }

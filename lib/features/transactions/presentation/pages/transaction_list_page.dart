@@ -173,6 +173,9 @@ class _TransactionListPageState extends State<TransactionListPage> {
                                     (MoneyTransaction item) =>
                                         TransactionSummary(
                                           item: item,
+                                          showFeeAsAmount:
+                                              _categoryId ==
+                                              transferCommissionCategoryId,
                                           book:
                                               categoriesState
                                                   is ApiCallSuccess<

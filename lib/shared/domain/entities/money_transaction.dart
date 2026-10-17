@@ -20,6 +20,7 @@ class MoneyTransaction extends Equatable {
     this.toAccountId,
     this.description,
     this.notes,
+    this.commissionMinor = 0,
   });
 
   final String id;
@@ -33,6 +34,7 @@ class MoneyTransaction extends Equatable {
   final String? toAccountId;
   final String? description;
   final String? notes;
+  final int commissionMinor;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -49,6 +51,7 @@ class MoneyTransaction extends Equatable {
     toAccountId,
     description,
     notes,
+    commissionMinor,
     createdAt,
     updatedAt,
   ];

@@ -6,13 +6,16 @@ import 'package:language/language.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('cancel leaves the action unconfirmed', (WidgetTester tester) async {
+  testWidgets('cancel leaves the action unconfirmed', (
+    WidgetTester tester,
+  ) async {
     await Language.instance.init();
     bool? result;
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('ar'),
-        localizationsDelegates: LanguageLocalizationsSetup.localizationsDelegates,
+        localizationsDelegates:
+            LanguageLocalizationsSetup.localizationsDelegates,
         supportedLocales: LanguageLocalizationsSetup.supportedLocales,
         home: Scaffold(
           body: Builder(

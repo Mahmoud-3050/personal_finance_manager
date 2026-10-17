@@ -11,14 +11,14 @@ int accountBalanceMinor(Account account, List<MoneyTransaction> transactions) {
         }
       case MoneyTransactionType.expense:
         if (transaction.accountId == account.id) {
-          balance -= transaction.amountMinor;
+          balance -= transaction.amountMinor + transaction.commissionMinor;
         }
       case MoneyTransactionType.transfer:
         if (transaction.toAccountId == account.id) {
           balance += transaction.amountMinor;
         }
         if (transaction.fromAccountId == account.id) {
-          balance -= transaction.amountMinor;
+          balance -= transaction.amountMinor + transaction.commissionMinor;
         }
     }
   }

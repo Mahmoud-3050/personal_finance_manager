@@ -83,6 +83,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   drift_dev: ^2.35.1
+  sqlite3: 3.5.2
 
 
 flutter:

@@ -20,6 +20,7 @@ class UpdateTransactionParams extends Params {
     this.toAccountId,
     this.description,
     this.notes,
+    this.commissionMinor = 0,
     this.cancellation,
   });
   final String id;
@@ -33,12 +34,19 @@ class UpdateTransactionParams extends Params {
   final String? toAccountId;
   final String? description;
   final String? notes;
+  final int commissionMinor;
   @override
   final Object? cancellation;
   @override
   Map<String, dynamic> toJson() => <String, dynamic>{'id': id};
   @override
-  List<Object?> get props => <Object?>[id, type, amountMinor, date];
+  List<Object?> get props => <Object?>[
+    id,
+    type,
+    amountMinor,
+    date,
+    commissionMinor,
+  ];
 }
 
 class UpdateTransactionUseCase
@@ -59,6 +67,7 @@ class UpdateTransactionUseCase
       toAccountId: params.toAccountId,
       description: params.description,
       notes: params.notes,
+      commissionMinor: params.commissionMinor,
     );
   }
 }

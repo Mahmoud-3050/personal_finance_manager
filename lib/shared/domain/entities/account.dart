@@ -18,6 +18,7 @@ class Account extends Equatable {
     this.bankName,
     this.accountNumber,
     this.phoneNumber,
+    this.defaultCommissionMinor = 0,
   });
 
   final String id;
@@ -27,6 +28,7 @@ class Account extends Equatable {
   final String? accountNumber;
   final String? phoneNumber;
   final int openingBalanceMinor;
+  final int defaultCommissionMinor;
   final CalendarDate openingDate;
   final bool isActive;
   final bool includeInTotal;
@@ -42,6 +44,7 @@ class Account extends Equatable {
     bool clearBank = false,
     bool clearPhone = false,
     int? openingBalanceMinor,
+    int? defaultCommissionMinor,
     CalendarDate? openingDate,
     bool? isActive,
     bool? includeInTotal,
@@ -55,6 +58,8 @@ class Account extends Equatable {
       accountNumber: clearBank ? null : accountNumber ?? this.accountNumber,
       phoneNumber: clearPhone ? null : phoneNumber ?? this.phoneNumber,
       openingBalanceMinor: openingBalanceMinor ?? this.openingBalanceMinor,
+      defaultCommissionMinor:
+          defaultCommissionMinor ?? this.defaultCommissionMinor,
       openingDate: openingDate ?? this.openingDate,
       isActive: isActive ?? this.isActive,
       includeInTotal: includeInTotal ?? this.includeInTotal,
@@ -72,6 +77,7 @@ class Account extends Equatable {
     accountNumber,
     phoneNumber,
     openingBalanceMinor,
+    defaultCommissionMinor,
     openingDate,
     isActive,
     includeInTotal,

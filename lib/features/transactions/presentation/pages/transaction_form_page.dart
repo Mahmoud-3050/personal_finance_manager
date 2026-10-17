@@ -51,6 +51,11 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
   late final TextEditingController _notes = TextEditingController(
     text: widget.existing?.notes ?? widget.existing?.description ?? '',
   );
+  late final TextEditingController _commission = TextEditingController(
+    text: widget.existing == null || widget.existing!.commissionMinor == 0
+        ? ''
+        : Money(widget.existing!.commissionMinor).format(),
+  );
   late MoneyTransactionType _type =
       widget.existing?.type ?? MoneyTransactionType.expense;
   late CalendarDate _date = widget.existing?.date ?? CalendarDate.today();
@@ -65,6 +70,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
   void dispose() {
     _amount.dispose();
     _notes.dispose();
+    _commission.dispose();
     super.dispose();
   }
 
@@ -136,6 +142,8 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                           typeLocked: widget.existing != null,
                           amount: _amount,
                           notes: _notes,
+                          commission: _commission,
+                          showCommission: _commissionApplies,
                           date: _date,
                           accounts: activeAccounts,
                           categories: _matchingCategories(categoryBook),
@@ -151,9 +159,22 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                               _categoryId = null;
                               _subcategoryId = null;
                             });
+                            if (widget.existing != null) {
+                              return;
+                            }
+                            if (value == MoneyTransactionType.transfer) {
+                              _showUsualFee(_accountById(_fromAccountId));
+                              return;
+                            }
+                            if (value == MoneyTransactionType.expense) {
+                              final Account? account = _accountById(_accountId);
+                              if (account?.type == AccountType.bank ||
+                                  account?.type == AccountType.eWallet) {
+                                _showUsualFee(account);
+                              }
+                            }
                           },
-                          onAccountChanged: (String? value) =>
-                              setState(() => _accountId = value),
+                          onAccountChanged: _onPayingAccountChanged,
                           onCategoryChanged: (String? value) {
                             setState(() {
                               _categoryId = value;
@@ -162,8 +183,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                           },
                           onSubcategoryChanged: (String? value) =>
                               setState(() => _subcategoryId = value),
-                          onFromChanged: (String? value) =>
-                              setState(() => _fromAccountId = value),
+                          onFromChanged: _onSourceAccountChanged,
                           onToChanged: (String? value) =>
                               setState(() => _toAccountId = value),
                           onPickDate: _pickDate,
@@ -192,7 +212,12 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
         ? CategoryKind.income
         : CategoryKind.expense;
     return book.categories
-        .where((Category item) => item.isActive && item.kind == kind)
+        .where(
+          (Category item) =>
+              item.isActive &&
+              item.kind == kind &&
+              item.id != transferCommissionCategoryId,
+        )
         .toList();
   }
 
@@ -209,6 +234,10 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
   }
 
   void _onSaved(BuildContext context, ApiCallState<FinanceRecords> state) {
+    if (state is ApiCallError<FinanceRecords>) {
+      setState(() => _message = _validationCopy(state.message));
+      return;
+    }
     if (state is! ApiCallSuccess<FinanceRecords>) {
       return;
     }
@@ -267,6 +296,81 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
     return earlierThan(_accountId);
   }
 
+  Account? _accountById(String? accountId) {
+    if (accountId == null) {
+      return null;
+    }
+    final ApiCallState<AccountListData> state = context
+        .read<GetAccountsCubit>()
+        .state;
+    if (state is! ApiCallSuccess<AccountListData>) {
+      return null;
+    }
+    for (final Account account in state.data.records.accounts) {
+      if (account.id == accountId) {
+        return account;
+      }
+    }
+    return null;
+  }
+
+  void _onPayingAccountChanged(String? value) {
+    final String? previous = _accountId;
+    setState(() => _accountId = value);
+    if (_type != MoneyTransactionType.expense) {
+      return;
+    }
+    if (widget.existing != null && previous == value) {
+      return;
+    }
+    final Account? account = _accountById(value);
+    if (account?.type != AccountType.bank &&
+        account?.type != AccountType.eWallet) {
+      return;
+    }
+    _showUsualFee(account);
+  }
+
+  void _onSourceAccountChanged(String? value) {
+    final String? previous = _fromAccountId;
+    setState(() => _fromAccountId = value);
+    if (_type != MoneyTransactionType.transfer) {
+      return;
+    }
+    if (widget.existing != null && previous == value) {
+      return;
+    }
+    _showUsualFee(_accountById(value));
+  }
+
+  void _showUsualFee(Account? account) {
+    final int usualFee = account?.defaultCommissionMinor ?? 0;
+    _commission.text = usualFee == 0 ? '' : Money(usualFee).format();
+  }
+
+  bool get _commissionApplies {
+    if (_type == MoneyTransactionType.transfer) {
+      return true;
+    }
+    if (_type != MoneyTransactionType.expense) {
+      return false;
+    }
+    final Account? account = _accountById(_accountId);
+    return account?.type == AccountType.bank ||
+        account?.type == AccountType.eWallet;
+  }
+
+  Either<Failure, int> _parsedCommission() {
+    if (_commission.text.trim().isEmpty) {
+      return const Right(0);
+    }
+    return Money.parse(
+      _commission.text,
+      allowNegative: false,
+      allowZero: true,
+    ).map((Money money) => money.minor);
+  }
+
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -298,8 +402,22 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
       setState(() => _message = Strings.fenzoDateBeforeOpening);
       return;
     }
+    final Either<Failure, int> commissionParsed = _parsedCommission();
+    final String? commissionMessage = commissionParsed.fold(
+      (Failure failure) => _validationCopy(failure.message),
+      (int commission) => !_commissionApplies && commission > 0
+          ? Strings.fenzoCommissionNotAllowed
+          : null,
+    );
+    if (commissionMessage != null) {
+      setState(() => _message = commissionMessage);
+      return;
+    }
     setState(() => _message = null);
     final Money money = parsed.rightOrNull!;
+    final int commissionMinor = _commissionApplies
+        ? commissionParsed.rightOrNull!
+        : 0;
     final String? notes = _notes.text.trim().isEmpty
         ? null
         : _notes.text.trim();
@@ -317,6 +435,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
           fromAccountId: _fromAccountId,
           toAccountId: _toAccountId,
           notes: notes,
+          commissionMinor: commissionMinor,
         ),
       );
       return;
@@ -348,6 +467,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
             categoryId: _categoryId,
             subcategoryId: _subcategoryId,
             notes: notes,
+            commissionMinor: commissionMinor,
           ),
         );
       case MoneyTransactionType.transfer:
@@ -364,6 +484,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
               fromAccountId: _fromAccountId,
               toAccountId: _toAccountId,
               notes: notes,
+              commissionMinor: commissionMinor,
             ),
           );
         }
@@ -377,6 +498,8 @@ class _FormBody extends StatelessWidget {
     required this.typeLocked,
     required this.amount,
     required this.notes,
+    required this.commission,
+    required this.showCommission,
     required this.date,
     required this.accounts,
     required this.categories,
@@ -401,6 +524,8 @@ class _FormBody extends StatelessWidget {
   final bool typeLocked;
   final TextEditingController amount;
   final TextEditingController notes;
+  final TextEditingController commission;
+  final bool showCommission;
   final CalendarDate date;
   final List<Account> accounts;
   final List<Category> categories;
@@ -458,6 +583,14 @@ class _FormBody extends StatelessWidget {
           labelText: Strings.fenzoAmount,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
         ),
+        if (showCommission) ...<Widget>[
+          SizedBox(height: 12.h),
+          AppTextFormField(
+            controller: commission,
+            labelText: Strings.fenzoTransferCommission,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ),
+        ],
         SizedBox(height: 12.h),
         if (type == MoneyTransactionType.transfer) ...<Widget>[
           _accountDropdown(
@@ -528,6 +661,7 @@ class _FormBody extends StatelessWidget {
 String _validationCopy(String? code) => switch (code) {
   'amount_scale' => Strings.fenzoAmountScale,
   'amount_positive' => Strings.fenzoAmountPositive,
+  'commission_not_allowed' => Strings.fenzoCommissionNotAllowed,
   _ => Strings.fenzoAmountInvalid,
 };
 

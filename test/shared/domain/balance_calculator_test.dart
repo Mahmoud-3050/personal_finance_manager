@@ -29,23 +29,60 @@ void main() {
     updatedAt: now,
   );
 
-  test('opening balance is not income and a transfer does not change total money', () {
-    expect(accountBalanceMinor(bank, const <MoneyTransaction>[]), 2500000);
+  test(
+    'opening balance is not income and a transfer does not change total money',
+    () {
+      expect(accountBalanceMinor(bank, const <MoneyTransaction>[]), 2500000);
+      final MoneyTransaction transfer = MoneyTransaction(
+        id: 't1',
+        type: MoneyTransactionType.transfer,
+        amountMinor: 100000,
+        date: const CalendarDate(2026, 10, 2),
+        fromAccountId: 'bank',
+        toAccountId: 'wallet',
+        createdAt: now,
+        updatedAt: now,
+      );
+      expect(accountBalanceMinor(bank, <MoneyTransaction>[transfer]), 2400000);
+      expect(accountBalanceMinor(wallet, <MoneyTransaction>[transfer]), 100000);
+      expect(
+        totalMoneyMinor(<Account>[bank, wallet], <MoneyTransaction>[transfer]),
+        2500000,
+      );
+    },
+  );
+
+  test('a transfer commission leaves the destination the moved amount', () {
     final MoneyTransaction transfer = MoneyTransaction(
-      id: 't1',
+      id: 't2',
       type: MoneyTransactionType.transfer,
       amountMinor: 100000,
+      commissionMinor: 500,
       date: const CalendarDate(2026, 10, 2),
       fromAccountId: 'bank',
       toAccountId: 'wallet',
       createdAt: now,
       updatedAt: now,
     );
-    expect(accountBalanceMinor(bank, <MoneyTransaction>[transfer]), 2400000);
+    expect(accountBalanceMinor(bank, <MoneyTransaction>[transfer]), 2399500);
     expect(accountBalanceMinor(wallet, <MoneyTransaction>[transfer]), 100000);
     expect(
       totalMoneyMinor(<Account>[bank, wallet], <MoneyTransaction>[transfer]),
-      2500000,
+      2499500,
     );
+  });
+
+  test('a bank expense decreases the account by the payment plus the fee', () {
+    final MoneyTransaction expense = MoneyTransaction(
+      id: 'e1',
+      type: MoneyTransactionType.expense,
+      amountMinor: 20000,
+      commissionMinor: 300,
+      date: const CalendarDate(2026, 10, 2),
+      accountId: 'bank',
+      createdAt: now,
+      updatedAt: now,
+    );
+    expect(accountBalanceMinor(bank, <MoneyTransaction>[expense]), 2479700);
   });
 }

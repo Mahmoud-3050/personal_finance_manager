@@ -17,6 +17,7 @@ class TransactionSummary extends StatelessWidget {
     required this.book,
     this.onTap,
     this.trailing,
+    this.showFeeAsAmount = false,
     super.key,
   });
 
@@ -24,14 +25,22 @@ class TransactionSummary extends StatelessWidget {
   final FinanceRecords? book;
   final VoidCallback? onTap;
   final Widget? trailing;
+  final bool showFeeAsAmount;
 
   @override
   Widget build(BuildContext context) {
     final String? category = _name(book?.categories, item.categoryId);
     return SummaryCard(
       title: item.description ?? item.notes ?? _typeLabel(item.type),
-      subtitle: _subtitle(item, book, category),
-      amount: Money(item.amountMinor).format(),
+      subtitle: _subtitle(
+        item,
+        book,
+        category,
+        hideFee: showFeeAsAmount,
+      ),
+      amount: Money(
+        showFeeAsAmount ? item.commissionMinor : item.amountMinor,
+      ).format(),
       amountColor: movementTone(context.colors, item.type),
       leading: MovementMark(type: item.type, categoryName: category),
       trailing: trailing,
@@ -56,8 +65,9 @@ String? _name(List<Category>? categories, String? id) {
 String _subtitle(
   MoneyTransaction item,
   FinanceRecords? book,
-  String? category,
-) {
+  String? category, {
+  required bool hideFee,
+}) {
   final String? subcategory = book?.subcategories
       .where((Subcategory value) => value.id == item.subcategoryId)
       .map((Subcategory value) => value.name)
@@ -66,8 +76,12 @@ String _subtitle(
     category,
     subcategory,
   ].whereType<String>().join(' / ');
-  if (names.isEmpty) {
-    return item.date.toIso();
-  }
-  return '${item.date.toIso()} · $names';
+  final String fee = item.commissionMinor > 0 && !hideFee
+      ? '${Strings.fenzoTransferCommission} ${Money(item.commissionMinor).format()}'
+      : '';
+  return <String>[
+    item.date.toIso(),
+    if (names.isNotEmpty) names,
+    if (fee.isNotEmpty) fee,
+  ].join(' · ');
 }

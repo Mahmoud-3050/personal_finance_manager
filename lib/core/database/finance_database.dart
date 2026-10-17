@@ -10,6 +10,8 @@ class AccountRows extends Table {
   TextColumn get accountNumber => text().nullable()();
   TextColumn get phoneNumber => text().nullable()();
   IntColumn get openingBalanceMinor => integer()();
+  IntColumn get defaultCommissionMinor =>
+      integer().withDefault(const Constant(0))();
   TextColumn get openingDate => text()();
   BoolColumn get isActive => boolean()();
   BoolColumn get includeInTotal => boolean()();
@@ -52,6 +54,8 @@ class TransactionRows extends Table {
   TextColumn get toAccountId => text().nullable()();
   TextColumn get description => text().nullable()();
   TextColumn get notes => text().nullable()();
+  IntColumn get commissionMinor =>
+      integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -66,5 +70,25 @@ class FinanceDatabase extends _$FinanceDatabase {
   FinanceDatabase(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (Migrator migrator, int from, int to) async {
+        if (from < 2) {
+          await migrator.addColumn(
+            transactionRows,
+            transactionRows.commissionMinor,
+          );
+        }
+        if (from < 3) {
+          await migrator.addColumn(
+            accountRows,
+            accountRows.defaultCommissionMinor,
+          );
+        }
+      },
+    );
+  }
 }

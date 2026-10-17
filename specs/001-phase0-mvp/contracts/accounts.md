@@ -9,6 +9,8 @@ Screen behavior for creating, editing, listing, and retiring accounts. Rules and
 ## Create
 
 - **Given** a valid name, type, opening balance, and opening date, **when** the person saves, **then** the account is active, included in total money, and its current balance equals the opening balance.
+- A usual transfer commission is optional. Blank or zero is stored as zero. It does not change the current balance.
+- A negative usual fee, or one with more than two decimal places, is rejected and the account is not saved.
 - Bank name and account number are optional and only for a bank account.
 - Phone number is optional and only for an e-wallet.
 - The opening balance is not listed as income.
@@ -22,7 +24,9 @@ Screen behavior for creating, editing, listing, and retiring accounts. Rules and
 
 ## Edit
 
-- Name, type-specific labels, opening balance, opening date, and inclusion can be edited without a confirmation dialog.
+- Name, type-specific labels, opening balance, opening date, usual fee, and inclusion can be edited without a confirmation dialog.
+- **Given** saved records already used an older usual fee, **when** the usual fee changes, **then** those records keep the fee that was saved and balances do not change from the account edit alone.
+- Changing the account type does not clear the usual fee. It still clears identifying labels that do not apply to the new type.
 - **Given** the account has no transactions, **when** the type changes, **then** labels that do not apply to the new type are cleared.
 - **Given** the account has a transaction, **when** a type change is attempted, **then** the type stays and the person is told it is fixed.
 - **Given** a transaction is earlier than a new opening date, **when** the date change is attempted, **then** it is rejected and those transactions are identified.

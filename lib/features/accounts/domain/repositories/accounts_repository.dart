@@ -18,6 +18,7 @@ abstract interface class AccountsRepository {
     String? bankName,
     String? accountNumber,
     String? phoneNumber,
+    int defaultCommissionMinor = 0,
   });
 
   Future<Either<Failure, FinanceRecords>> deactivateAccount(String id);

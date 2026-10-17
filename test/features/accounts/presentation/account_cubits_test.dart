@@ -22,6 +22,7 @@ class _Repo implements AccountsRepository {
     String? bankName,
     String? accountNumber,
     String? phoneNumber,
+    int defaultCommissionMinor = 0,
   }) async {
     return Right(FinanceRecords.empty());
   }

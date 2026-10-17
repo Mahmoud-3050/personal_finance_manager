@@ -18,6 +18,7 @@ final class AccountModel extends Account {
     super.bankName,
     super.accountNumber,
     super.phoneNumber,
+    super.defaultCommissionMinor,
   });
 
   factory AccountModel.fromEntity(Account account) {
@@ -29,6 +30,7 @@ final class AccountModel extends Account {
       accountNumber: account.accountNumber,
       phoneNumber: account.phoneNumber,
       openingBalanceMinor: account.openingBalanceMinor,
+      defaultCommissionMinor: account.defaultCommissionMinor,
       openingDate: account.openingDate,
       isActive: account.isActive,
       includeInTotal: account.includeInTotal,
@@ -46,6 +48,7 @@ final class AccountModel extends Account {
       accountNumber: row.accountNumber,
       phoneNumber: row.phoneNumber,
       openingBalanceMinor: row.openingBalanceMinor,
+      defaultCommissionMinor: row.defaultCommissionMinor,
       openingDate: CalendarDate.parse(row.openingDate),
       isActive: row.isActive,
       includeInTotal: row.includeInTotal,
@@ -63,6 +66,7 @@ final class AccountModel extends Account {
       accountNumber: json['account_number'] as String?,
       phoneNumber: json['phone_number'] as String?,
       openingBalanceMinor: json['opening_balance_minor'] as int,
+      defaultCommissionMinor: json['default_commission_minor'] as int? ?? 0,
       openingDate: CalendarDate.parse(json['opening_date'] as String),
       isActive: json['is_active'] as bool,
       includeInTotal: json['include_in_total'] as bool,
@@ -79,6 +83,7 @@ final class AccountModel extends Account {
     'account_number': accountNumber,
     'phone_number': phoneNumber,
     'opening_balance_minor': openingBalanceMinor,
+    'default_commission_minor': defaultCommissionMinor,
     'opening_date': openingDate.toIso(),
     'is_active': isActive,
     'include_in_total': includeInTotal,
@@ -95,6 +100,7 @@ final class AccountModel extends Account {
       accountNumber: Value(accountNumber),
       phoneNumber: Value(phoneNumber),
       openingBalanceMinor: openingBalanceMinor,
+      defaultCommissionMinor: Value(defaultCommissionMinor),
       openingDate: openingDate.toIso(),
       isActive: isActive,
       includeInTotal: includeInTotal,

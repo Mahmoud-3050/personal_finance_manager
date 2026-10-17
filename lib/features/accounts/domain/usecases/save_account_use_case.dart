@@ -18,6 +18,7 @@ class SaveAccountParams extends Params {
     this.bankName,
     this.accountNumber,
     this.phoneNumber,
+    this.defaultCommissionMinor = 0,
     this.cancellation,
   });
 
@@ -30,6 +31,7 @@ class SaveAccountParams extends Params {
   final String? bankName;
   final String? accountNumber;
   final String? phoneNumber;
+  final int defaultCommissionMinor;
   @override
   final Object? cancellation;
 
@@ -44,6 +46,7 @@ class SaveAccountParams extends Params {
     openingBalanceMinor,
     openingDate,
     includeInTotal,
+    defaultCommissionMinor,
   ];
 }
 
@@ -63,6 +66,7 @@ class SaveAccountUseCase extends UseCase<FinanceRecords, SaveAccountParams> {
       bankName: params.bankName,
       accountNumber: params.accountNumber,
       phoneNumber: params.phoneNumber,
+      defaultCommissionMinor: params.defaultCommissionMinor,
     );
   }
 }

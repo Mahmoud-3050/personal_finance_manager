@@ -33,7 +33,7 @@ final class FinanceRecords {
 
   FinanceRecords seedIfNeeded(DateTime now) {
     if (categories.isNotEmpty) {
-      return this;
+      return ensureTransferCommissionCategory();
     }
     final List<Category> seeded = <Category>[];
     final List<Subcategory> children = <Subcategory>[];
@@ -66,6 +66,7 @@ final class FinanceRecords {
       'تعليم',
       'ترفيه',
       'أسرة',
+      transferCommissionCategoryName,
       'أخرى',
     ]) {
       add(CategoryKind.expense, name);
@@ -86,6 +87,25 @@ final class FinanceRecords {
       categories: seeded,
       subcategories: children,
       transactions: transactions,
+    ).ensureTransferCommissionCategory();
+  }
+
+  FinanceRecords ensureTransferCommissionCategory() {
+    if (categories.any(
+      (Category item) => item.id == transferCommissionCategoryId,
+    )) {
+      return this;
+    }
+    return _copy(
+      categories: <Category>[
+        ...categories,
+        const Category(
+          id: transferCommissionCategoryId,
+          name: transferCommissionCategoryName,
+          kind: CategoryKind.expense,
+          isActive: true,
+        ),
+      ],
     );
   }
 
@@ -100,7 +120,11 @@ final class FinanceRecords {
     String? bankName,
     String? accountNumber,
     String? phoneNumber,
+    int defaultCommissionMinor = 0,
   }) {
+    if (defaultCommissionMinor < 0) {
+      return const Left(ValidationFailure(message: 'commission_non_negative'));
+    }
     final String trimmed = name.trim();
     if (trimmed.isEmpty) {
       return const Left(ValidationFailure(message: 'name_required'));
@@ -112,6 +136,7 @@ final class FinanceRecords {
           name: trimmed,
           type: type,
           openingBalanceMinor: openingBalanceMinor,
+          defaultCommissionMinor: defaultCommissionMinor,
           openingDate: openingDate,
           isActive: true,
           includeInTotal: includeInTotal,
@@ -152,6 +177,7 @@ final class FinanceRecords {
         name: trimmed,
         type: type,
         openingBalanceMinor: openingBalanceMinor,
+        defaultCommissionMinor: defaultCommissionMinor,
         openingDate: openingDate,
         includeInTotal: includeInTotal,
         clearBank: type != AccountType.bank,
@@ -214,9 +240,32 @@ final class FinanceRecords {
     String? toAccountId,
     String? description,
     String? notes,
+    int commissionMinor = 0,
   }) {
+    if (!categories.any(
+      (Category item) => item.id == transferCommissionCategoryId,
+    )) {
+      return ensureTransferCommissionCategory().saveMovement(
+        id: id,
+        type: type,
+        amountMinor: amountMinor,
+        date: date,
+        now: now,
+        accountId: accountId,
+        categoryId: categoryId,
+        subcategoryId: subcategoryId,
+        fromAccountId: fromAccountId,
+        toAccountId: toAccountId,
+        description: description,
+        notes: notes,
+        commissionMinor: commissionMinor,
+      );
+    }
     if (amountMinor <= 0) {
       return const Left(ValidationFailure(message: 'amount_positive'));
+    }
+    if (commissionMinor < 0) {
+      return const Left(ValidationFailure(message: 'commission_non_negative'));
     }
     if (type == MoneyTransactionType.transfer) {
       final String? source = fromAccountId;
@@ -239,6 +288,12 @@ final class FinanceRecords {
       }
       if (date.isBefore(account.openingDate)) {
         return const Left(ValidationFailure(message: 'date_before_opening'));
+      }
+      if (commissionMinor > 0 && !_commissionAllowed(type, account)) {
+        return const Left(ValidationFailure(message: 'commission_not_allowed'));
+      }
+      if (categoryId == transferCommissionCategoryId) {
+        return const Left(ValidationFailure(message: 'category_invalid'));
       }
       final CategoryKind kind = type == MoneyTransactionType.income
           ? CategoryKind.income
@@ -268,6 +323,7 @@ final class FinanceRecords {
       toAccountId: type == MoneyTransactionType.transfer ? toAccountId : null,
       description: description,
       notes: notes,
+      commissionMinor: commissionMinor,
       createdAt: id == null
           ? now
           : transactions
@@ -446,7 +502,10 @@ final class FinanceRecords {
           item.toAccountId != accountId) {
         return false;
       }
-      if (categoryId != null && item.categoryId != categoryId) {
+      if (categoryId != null &&
+          (categoryId == transferCommissionCategoryId
+              ? item.commissionMinor <= 0
+              : item.categoryId != categoryId)) {
         return false;
       }
       if (subcategoryId != null && item.subcategoryId != subcategoryId) {
@@ -466,6 +525,12 @@ final class FinanceRecords {
       ].whereType<String>().join(' ').toLowerCase();
       return haystack.contains(needle);
     }).toList();
+  }
+
+  bool _commissionAllowed(MoneyTransactionType type, Account account) {
+    return type == MoneyTransactionType.expense &&
+        (account.type == AccountType.bank ||
+            account.type == AccountType.eWallet);
   }
 
   Account? _account(String id) {

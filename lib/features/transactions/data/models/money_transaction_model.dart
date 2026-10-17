@@ -19,6 +19,7 @@ final class MoneyTransactionModel extends MoneyTransaction {
     super.toAccountId,
     super.description,
     super.notes,
+    super.commissionMinor,
   });
 
   factory MoneyTransactionModel.fromEntity(MoneyTransaction transaction) {
@@ -34,6 +35,7 @@ final class MoneyTransactionModel extends MoneyTransaction {
       toAccountId: transaction.toAccountId,
       description: transaction.description,
       notes: transaction.notes,
+      commissionMinor: transaction.commissionMinor,
       createdAt: transaction.createdAt,
       updatedAt: transaction.updatedAt,
     );
@@ -52,6 +54,7 @@ final class MoneyTransactionModel extends MoneyTransaction {
       toAccountId: row.toAccountId,
       description: row.description,
       notes: row.notes,
+      commissionMinor: row.commissionMinor,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );
@@ -70,6 +73,7 @@ final class MoneyTransactionModel extends MoneyTransaction {
       toAccountId: json['to_account_id'] as String?,
       description: json['description'] as String?,
       notes: json['notes'] as String?,
+      commissionMinor: json['commission_minor'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -87,6 +91,7 @@ final class MoneyTransactionModel extends MoneyTransaction {
     'to_account_id': toAccountId,
     'description': description,
     'notes': notes,
+    'commission_minor': commissionMinor,
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
   };
@@ -104,6 +109,7 @@ final class MoneyTransactionModel extends MoneyTransaction {
       toAccountId: Value(toAccountId),
       description: Value(description),
       notes: Value(notes),
+      commissionMinor: Value(commissionMinor),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

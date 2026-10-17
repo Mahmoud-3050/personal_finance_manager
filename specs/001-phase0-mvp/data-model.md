@@ -40,6 +40,7 @@ A place that holds money.
 | accountNumber | no | Bank type only. Identifying label, never a secret |
 | phoneNumber | no | E-wallet type only. Cleared when the type changes away from e-wallet |
 | openingBalanceMinor | yes | Piastres. Not income |
+| defaultCommissionMinor | yes | Usual transfer commission in piastres. Zero or greater. Blank means 0. Not spending and not part of the balance. Not cleared when the type changes |
 | openingDate | yes | First day this account can have transactions |
 | isActive | yes | New accounts start active |
 | includeInTotal | yes | New accounts start included |
@@ -62,8 +63,8 @@ inactive + included      (person later includes a deactivated account)
 
 | Action | Allowed when | Result |
 |---|---|---|
-| Create | Name, type, opening balance, and opening date are valid | Active, included in total |
-| Edit name, labels, opening balance, opening date, inclusion | Always, except the opening-date rule below | Labels that do not match the type are not kept |
+| Create | Name, type, opening balance, and opening date are valid. Usual fee, if entered, is zero or greater and has at most 2 decimal places | Active, included in total. Usual fee is 0 when left blank |
+| Edit name, labels, opening balance, opening date, inclusion, usual fee | Always, except the opening-date rule below | Labels that do not match the type are not kept. A new usual fee does not change fees already saved on transactions |
 | Change type | Account has zero transactions | Type changes; labels that do not apply to the new type are cleared |
 | Change type | Account has any transaction | Rejected; type unchanged |
 | Change opening date | New date is on or before every existing transaction on this account | Balances recalculate because they are derived |
@@ -82,10 +83,12 @@ For one account:
 ```text
 openingBalanceMinor
 + income amounts where accountId = this account
-− expense amounts where accountId = this account
+− (expense amounts + expense commissions) where accountId = this account
 + transfer amounts where toAccountId = this account
-− transfer amounts where fromAccountId = this account
+− (transfer amounts + transfer commissions) where fromAccountId = this account
 ```
+
+`commissionMinor` is never added to the destination.
 
 Total money is the sum of those balances for accounts with `includeInTotal = true`, including a deactivated account only if the person included it again.
 
@@ -104,7 +107,9 @@ Classifies income or expense. Ready-made rows are seeded once, when the category
 
 Seed, income: راتب، عمل حر، نشاط تجاري، هدايا، أخرى.
 
-Seed, expense: طعام، مواصلات، تسوق، فواتير، صحة، تعليم، ترفيه، أسرة، أخرى.
+Seed, expense: طعام، مواصلات، تسوق، فواتير، صحة، تعليم، ترفيه، أسرة، رسوم تحويل، أخرى.
+
+`رسوم تحويل` uses the stable id `seed-expense-رسوم تحويل`. It is inserted when that id is missing, including when the rest of the catalog already exists. The expense picker does not offer it. A normal expense cannot use that id. Commissions always add to it, and reports show its current name if the person renamed it.
 
 ### Subcategory
 
@@ -135,6 +140,7 @@ One recorded movement. Types: `income`, `expense`, `transfer`.
 |---|---|---|---|
 | id | yes | yes | yes |
 | amountMinor | > 0 | > 0 | > 0 |
+| commissionMinor | must be 0 | 0 or more, and only when `accountId` is `bank` or `eWallet`; otherwise must be 0 | 0 or more, any account types |
 | date | yes | yes | yes |
 | accountId | yes, active | yes, active | no |
 | categoryId | yes, income kind | yes, expense kind | no |
@@ -153,9 +159,15 @@ One recorded movement. Types: `income`, `expense`, `transfer`.
 - Source and destination of a transfer are different active accounts.
 - Amounts larger than the current balance are allowed. The derived balance may be negative.
 - Edit and delete are allowed. After a confirmed delete, the row is gone and derived balances change. Cancel does not call delete.
-- A transfer is excluded from income totals, expense totals, and net result.
-- When both accounts are included in total money, a transfer does not change total money.
-- When only one side is included, total money changes by the amount and the transfer is still not income or expense.
+- A transfer’s moved amount is excluded from income totals, expense totals, and net result.
+- `commissionMinor` on that transfer is an expense of the source account, under `رسوم تحويل`. It is not part of transfers in or transfers out.
+- When both accounts are included in total money, a transfer with `commissionMinor = 0` does not change total money. A commission decreases total money by that fee only, because the source balance includes it and the destination does not.
+- When only one side is included, total money changes by the included side’s balance effect. The moved amount is still not income or expense. The fee affects total money only when the charged account is included.
+- On an expense, the paying account decreases by `amountMinor + commissionMinor`. The chosen category total changes by `amountMinor` only. The fee is added to `رسوم تحويل`.
+- A blank commission is stored as 0. Rows saved before the column existed are 0. A negative commission, or a commission on income, cash, or `other`, is rejected and not saved.
+- A new bank or e-wallet expense starts with the paying account’s `defaultCommissionMinor`. A new transfer starts with the source account’s `defaultCommissionMinor` only. The destination’s usual fee is not added. Changing that account before save replaces the starting fee when a fee is allowed on the row. The person can change or clear it. The saved `commissionMinor` is the amount they left, not a later copy of the usual fee.
+- Opening a saved row shows that row’s `commissionMinor`. Changing the account’s usual fee does not rewrite it.
+- Accounts saved before the usual-fee column existed, and JSON that omits `default_commission_minor`, have a usual fee of 0.
 
 ### List order
 
@@ -176,11 +188,11 @@ Computed for a valid inclusive date range. Not stored.
 | Figure | Definition |
 |---|---|
 | Period income | Sum of income with `date` inside the range |
-| Period expenses | Sum of expenses with `date` inside the range |
-| Net result | Period income − period expenses. Transfers excluded |
-| Category share | Amount and percentage of the period total for that kind. One decimal place, half up. `0%` when the period total is 0 |
+| Period expenses | Sum of expense `amountMinor` plus every `commissionMinor` with `date` inside the range |
+| Net result | Period income − period expenses. Transfer `amountMinor` is excluded. Transfer commissions are already inside period expenses |
+| Category share | Amount and percentage of the period total for that kind. One decimal place, half up. `0%` when the period total is 0. An expense category other than `رسوم تحويل` sums `amountMinor` only. `رسوم تحويل` sums `commissionMinor` for the period |
 | Account starting balance | Balance from the opening balance plus movements dated before the range. If `openingDate` falls inside the range, starting balance is the opening balance |
-| Account ending balance | Starting balance + period income − period expenses + transfers in − transfers out, for that account |
+| Account ending balance | Starting balance + period income − period expenses + transfers in − transfers out, for that account. Period expenses here include commissions charged to this account. Transfers in and transfers out do not |
 | Total money | Current derived total of included accounts. Not limited to the report range |
 
 An account whose opening date is after the range has no activity in that range.
