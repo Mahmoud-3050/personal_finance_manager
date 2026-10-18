@@ -113,9 +113,18 @@ abstract class AppFirebaseMessaging {
     );
   }
 
+  static const Duration apnsTokenTimeout = Duration(seconds: 3);
+
   static Future<String?> getAPNSToken() async {
-    final String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    log('@AppFirebaseMessaging:: getAPNSToken: apnsToken: $apnsToken');
-    return apnsToken;
+    try {
+      final String? apnsToken = await FirebaseMessaging.instance
+          .getAPNSToken()
+          .timeout(apnsTokenTimeout);
+      log('@AppFirebaseMessaging:: getAPNSToken: apnsToken: $apnsToken');
+      return apnsToken;
+    } on TimeoutException {
+      log('@AppFirebaseMessaging:: getAPNSToken timed out');
+      return null;
+    }
   }
 }

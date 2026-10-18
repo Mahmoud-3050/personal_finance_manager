@@ -1,3 +1,4 @@
+import 'package:field_validator/field_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,7 @@ import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/finance_menu_field.dart';
+import '../../../../shared/widgets/platform_date_picker.dart';
 import '../../../accounts/domain/entities/account_list_data.dart';
 import '../../../accounts/presentation/controller/get_accounts/get_accounts_cubit.dart';
 import '../../../categories/presentation/controller/get_categories/get_categories_cubit.dart';
@@ -36,6 +38,7 @@ class CaptureReviewPage extends StatefulWidget {
 }
 
 class _CaptureReviewPageState extends State<CaptureReviewPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late CaptureDraft _draft = widget.supplied ?? CaptureDraft.handStarted();
   late final TextEditingController _amount = TextEditingController(
     text: _draft.amountMinor == null ? '' : Money(_draft.amountMinor!).format(),
@@ -100,134 +103,140 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
                       return _noAccounts();
                     }
                     final FinanceRecords? book = _book(categoriesState);
-                    return ListView(
-                      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-                      children: <Widget>[
-                        _KindField(
-                          kind: _draft.kind,
-                          onChanged: (CaptureKind kind) =>
-                              _changeKind(kind, book, accounts),
-                        ),
-                        SizedBox(height: 12.h),
-                        _labeled(
-                          Strings.fenzoAmount,
-                          CaptureField.amount,
-                          AppTextFormField(
-                            controller: _amount,
-                            labelText: Strings.fenzoAmount,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
+                    return Form(
+                      key: _formKey,
+                      child: ListView(
+                        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+                        children: <Widget>[
+                          _KindField(
+                            kind: _draft.kind,
+                            onChanged: (CaptureKind kind) =>
+                                _changeKind(kind, book, accounts),
                           ),
-                        ),
-                        SizedBox(height: 12.h),
-                        _labeled(
-                          Strings.fenzoDate,
-                          CaptureField.date,
-                          TextButton(
-                            key: const Key('capture-date'),
-                            onPressed: _pickDate,
-                            child: Text(_draft.date.toIso()),
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        _labeled(
-                          Strings.fenzoAccount,
-                          CaptureField.account,
-                          FinanceMenuField<String?>(
-                            label: Strings.fenzoAccount,
-                            value: _selectedId(accounts, _draft.accountId),
-                            items: <DropdownMenuItem<String?>>[
-                              for (final Account account in accounts)
-                                DropdownMenuItem<String?>(
-                                  value: account.id,
-                                  child: Text(account.name),
-                                ),
-                            ],
-                            onChanged: (String? id) =>
-                                _changeAccount(id, accounts),
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        _labeled(
-                          Strings.fenzoCategory,
-                          CaptureField.category,
-                          FinanceMenuField<String?>(
-                            label: Strings.fenzoCategory,
-                            value: _selectedCategoryId(book),
-                            items: <DropdownMenuItem<String?>>[
-                              for (final Category category in _categories(book))
-                                DropdownMenuItem<String?>(
-                                  value: category.id,
-                                  child: Text(category.name),
-                                ),
-                            ],
-                            onChanged: _changeCategory,
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        _labeled(
-                          Strings.fenzoSubcategory,
-                          CaptureField.subcategory,
-                          FinanceMenuField<String?>(
-                            label: Strings.fenzoSubcategory,
-                            value: _selectedSubcategoryId(book),
-                            items: <DropdownMenuItem<String?>>[
-                              for (final Subcategory child in _subcategories(
-                                book,
-                              ))
-                                DropdownMenuItem<String?>(
-                                  value: child.id,
-                                  child: Text(child.name),
-                                ),
-                            ],
-                            onChanged: (String? id) {
-                              setState(() {
-                                _draft = id == null
-                                    ? _draft.copyWith(clearSubcategory: true)
-                                    : _draft.copyWith(subcategoryId: id);
-                              });
-                            },
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        _labeled(
-                          Strings.fenzoNotes,
-                          CaptureField.notes,
-                          AppTextFormField(
-                            controller: _notes,
-                            labelText: Strings.fenzoNotes,
-                          ),
-                        ),
-                        if (_draft.feeApplies) ...<Widget>[
                           SizedBox(height: 12.h),
                           _labeled(
-                            Strings.fenzoTransferCommission,
-                            CaptureField.commission,
-                            AppTextFormField(
-                              key: const Key('capture-fee'),
-                              controller: _commission,
-                              labelText: Strings.fenzoTransferCommission,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
+                            Strings.fenzoAmount,
+                            CaptureField.amount,
+                            AppTextFormField.numbersTextField(
+                              controller: _amount,
+                              labelText: Strings.fenzoAmount,
+                              validatorType: FieldValidator.numbers(
+                                maxDecimalPlaces: Money.decimalPlaces,
+                              ),
                             ),
                           ),
+                          SizedBox(height: 12.h),
+                          _labeled(
+                            Strings.fenzoDate,
+                            CaptureField.date,
+                            TextButton(
+                              key: const Key('capture-date'),
+                              onPressed: _pickDate,
+                              child: Text(_draft.date.toIso()),
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          _labeled(
+                            Strings.fenzoAccount,
+                            CaptureField.account,
+                            FinanceMenuField<String?>(
+                              label: Strings.fenzoAccount,
+                              value: _selectedId(accounts, _draft.accountId),
+                              items: <DropdownMenuItem<String?>>[
+                                for (final Account account in accounts)
+                                  DropdownMenuItem<String?>(
+                                    value: account.id,
+                                    child: Text(account.name),
+                                  ),
+                              ],
+                              onChanged: (String? id) =>
+                                  _changeAccount(id, accounts),
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          _labeled(
+                            Strings.fenzoCategory,
+                            CaptureField.category,
+                            FinanceMenuField<String?>(
+                              label: Strings.fenzoCategory,
+                              value: _selectedCategoryId(book),
+                              items: <DropdownMenuItem<String?>>[
+                                for (final Category category in _categories(
+                                  book,
+                                ))
+                                  DropdownMenuItem<String?>(
+                                    value: category.id,
+                                    child: Text(category.name),
+                                  ),
+                              ],
+                              onChanged: _changeCategory,
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          _labeled(
+                            Strings.fenzoSubcategory,
+                            CaptureField.subcategory,
+                            FinanceMenuField<String?>(
+                              label: Strings.fenzoSubcategory,
+                              value: _selectedSubcategoryId(book),
+                              items: <DropdownMenuItem<String?>>[
+                                for (final Subcategory child in _subcategories(
+                                  book,
+                                ))
+                                  DropdownMenuItem<String?>(
+                                    value: child.id,
+                                    child: Text(child.name),
+                                  ),
+                              ],
+                              onChanged: (String? id) {
+                                setState(() {
+                                  _draft = id == null
+                                      ? _draft.copyWith(clearSubcategory: true)
+                                      : _draft.copyWith(subcategoryId: id);
+                                });
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          _labeled(
+                            Strings.fenzoNotes,
+                            CaptureField.notes,
+                            AppTextFormField(
+                              controller: _notes,
+                              labelText: Strings.fenzoNotes,
+                            ),
+                          ),
+                          if (_draft.feeApplies) ...<Widget>[
+                            SizedBox(height: 12.h),
+                            _labeled(
+                              Strings.fenzoTransferCommission,
+                              CaptureField.commission,
+                              AppTextFormField.numbersTextField(
+                                key: const Key('capture-fee'),
+                                controller: _commission,
+                                labelText: Strings.fenzoTransferCommission,
+                                validatorType: FieldValidator.numbers(
+                                  required: false,
+                                  allowZero: true,
+                                  maxDecimalPlaces: Money.decimalPlaces,
+                                ),
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: 24.h),
+                          AppElevatedButton(
+                            text: Strings.fenzoCaptureConfirm,
+                            onPressed: _confirm,
+                          ),
+                          SizedBox(height: 8.h),
+                          TextButton(
+                            onPressed: () => context
+                                .read<DiscardCaptureDraftCubit>()
+                                .fDiscardCaptureDraft(),
+                            child: Text(Strings.fenzoCaptureDiscard),
+                          ),
                         ],
-                        SizedBox(height: 24.h),
-                        AppElevatedButton(
-                          text: Strings.fenzoCaptureConfirm,
-                          onPressed: _confirm,
-                        ),
-                        SizedBox(height: 8.h),
-                        TextButton(
-                          onPressed: () => context
-                              .read<DiscardCaptureDraftCubit>()
-                              .fDiscardCaptureDraft(),
-                          child: Text(Strings.fenzoCaptureDiscard),
-                        ),
-                      ],
+                      ),
                     );
                   },
             );
@@ -310,18 +319,14 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
   }
 
   Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
+    final CalendarDate? picked = await showPlatformDatePicker(
       context: context,
-      initialDate: _draft.date.toDateTime(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: _draft.date,
     );
     if (picked == null || !mounted) {
       return;
     }
-    setState(() {
-      _draft = _draft.copyWith(date: CalendarDate.fromDateTime(picked));
-    });
+    setState(() => _draft = _draft.copyWith(date: picked));
   }
 
   void _changeKind(
@@ -363,6 +368,9 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
   }
 
   Future<void> _confirm() async {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
     final ({int? minor, String? failure}) amount = _parseAmount(_amount.text);
     if (amount.failure != null) {
       _showMessage(amount.failure!);

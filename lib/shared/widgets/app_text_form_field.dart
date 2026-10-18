@@ -447,6 +447,7 @@ class AppTextFormField extends StatefulWidget {
 
   factory AppTextFormField.numbersTextField({
     required TextEditingController controller,
+    Key? key,
     FocusNode? focusNode,
     String? hintText,
     String? labelText,
@@ -465,6 +466,7 @@ class AppTextFormField extends StatefulWidget {
         ? (validatorType ?? FieldValidator.numbers())
         : validatorType;
     return AppTextFormField(
+      key: key,
       controller: controller,
       focusNode: focusNode,
       hintText: hintText,

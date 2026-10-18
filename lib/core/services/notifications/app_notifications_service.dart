@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../injection_container.dart';
@@ -14,10 +16,12 @@ import 'local_notifications.dart';
 abstract class AppNotificationsService {
   static Future<void> initNotifications() async {
     await Firebase.initializeApp();
-    requestPermission();
     final LocalNotificationService notificationService =
         LocalNotificationService();
     await notificationService.initialize();
+    await _afterFirstFrame();
+    await requestPermission();
+    await notificationService.requestPlatformPermission();
     bool requestFCMApis = true;
     if (Platform.isIOS) {
       final apnsToken = await AppFirebaseMessaging.getAPNSToken();
@@ -40,6 +44,16 @@ abstract class AppNotificationsService {
             : AppFirebaseMessagingTopics.android,
       );
     }
+  }
+
+  static Future<void> _afterFirstFrame() {
+    final Completer<void> firstFrame = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!firstFrame.isCompleted) {
+        firstFrame.complete();
+      }
+    });
+    return firstFrame.future;
   }
 
   static Future<void> requestPermission() async {

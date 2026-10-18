@@ -26,7 +26,7 @@ Future<void> initApp() async {
     config: ColorsPalettes.config,
     storage: ThemeModeStorage(sharedPreferences),
   );
-  await AppNotificationsService.initNotifications();
+  unawaited(AppNotificationsService.initNotifications());
   RefreshTokenHelper.instance.setOnSessionExpired(() async {
     // AppRouter.router.go(const SplashRoute(sessionExpired: true).location);
   });

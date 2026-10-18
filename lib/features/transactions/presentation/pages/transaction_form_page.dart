@@ -1,4 +1,5 @@
 import 'package:either/either.dart';
+import 'package:field_validator/field_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,7 @@ import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
 import '../../../../shared/widgets/finance_menu_field.dart';
+import '../../../../shared/widgets/platform_date_picker.dart';
 import '../../../accounts/domain/entities/account_list_data.dart';
 import '../../../accounts/presentation/controller/get_accounts/get_accounts_cubit.dart';
 import '../../../categories/presentation/controller/get_categories/get_categories_cubit.dart';
@@ -64,6 +66,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
   late String? _subcategoryId = widget.existing?.subcategoryId;
   late String? _fromAccountId = widget.existing?.fromAccountId;
   late String? _toAccountId = widget.existing?.toAccountId;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _message;
 
   @override
@@ -138,6 +141,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                             ? categoriesState.data
                             : null;
                         return _FormBody(
+                          formKey: _formKey,
                           type: _type,
                           typeLocked: widget.existing != null,
                           amount: _amount,
@@ -372,19 +376,20 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
   }
 
   Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
+    final CalendarDate? picked = await showPlatformDatePicker(
       context: context,
-      initialDate: _date.toDateTime(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: _date,
     );
     if (picked == null || !mounted) {
       return;
     }
-    setState(() => _date = CalendarDate.fromDateTime(picked));
+    setState(() => _date = picked);
   }
 
   void _save() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
     final Either<Failure, Money> parsed = Money.parse(
       _amount.text,
       allowNegative: false,
@@ -494,6 +499,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
 
 class _FormBody extends StatelessWidget {
   const _FormBody({
+    required this.formKey,
     required this.type,
     required this.typeLocked,
     required this.amount,
@@ -520,6 +526,7 @@ class _FormBody extends StatelessWidget {
     required this.message,
   });
 
+  final GlobalKey<FormState> formKey;
   final MoneyTransactionType type;
   final bool typeLocked;
   final TextEditingController amount;
@@ -547,98 +554,109 @@ class _FormBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.all(16.w),
-      children: <Widget>[
-        if (message != null)
-          Padding(
-            padding: EdgeInsets.only(bottom: 12.h),
-            child: Text(message!, style: TextStyles.of(size: 14)),
-          ),
-        FinanceMenuField<MoneyTransactionType>(
-          value: type,
-          items: MoneyTransactionType.values
-              .map(
-                (MoneyTransactionType item) =>
-                    DropdownMenuItem<MoneyTransactionType>(
-                      value: item,
-                      child: Text(
-                        _movementLabel(item),
-                        style: TextStyles.of(size: 16),
+    return Form(
+      key: formKey,
+      child: ListView(
+        padding: EdgeInsets.all(16.w),
+        children: <Widget>[
+          if (message != null)
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Text(message!, style: TextStyles.of(size: 14)),
+            ),
+          FinanceMenuField<MoneyTransactionType>(
+            value: type,
+            items: MoneyTransactionType.values
+                .map(
+                  (MoneyTransactionType item) =>
+                      DropdownMenuItem<MoneyTransactionType>(
+                        value: item,
+                        child: Text(
+                          _movementLabel(item),
+                          style: TextStyles.of(size: 16),
+                        ),
                       ),
-                    ),
-              )
-              .toList(),
-          onChanged: typeLocked
-              ? null
-              : (MoneyTransactionType? value) {
-                  if (value != null) {
-                    onTypeChanged(value);
-                  }
-                },
-        ),
-        SizedBox(height: 12.h),
-        AppTextFormField(
-          controller: amount,
-          labelText: Strings.fenzoAmount,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        if (showCommission) ...<Widget>[
-          SizedBox(height: 12.h),
-          AppTextFormField(
-            controller: commission,
-            labelText: Strings.fenzoTransferCommission,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                )
+                .toList(),
+            onChanged: typeLocked
+                ? null
+                : (MoneyTransactionType? value) {
+                    if (value != null) {
+                      onTypeChanged(value);
+                    }
+                  },
           ),
+          SizedBox(height: 12.h),
+          AppTextFormField.numbersTextField(
+            controller: amount,
+            labelText: Strings.fenzoAmount,
+            validatorType: FieldValidator.numbers(
+              maxDecimalPlaces: Money.decimalPlaces,
+            ),
+          ),
+          if (showCommission) ...<Widget>[
+            SizedBox(height: 12.h),
+            AppTextFormField.numbersTextField(
+              controller: commission,
+              labelText: Strings.fenzoTransferCommission,
+              validatorType: FieldValidator.numbers(
+                required: false,
+                allowZero: true,
+                maxDecimalPlaces: Money.decimalPlaces,
+              ),
+            ),
+          ],
+          SizedBox(height: 12.h),
+          if (type == MoneyTransactionType.transfer) ...<Widget>[
+            _accountDropdown(
+              label: Strings.fenzoFromAccount,
+              value: fromAccountId,
+              onChanged: onFromChanged,
+            ),
+            SizedBox(height: 12.h),
+            _accountDropdown(
+              label: Strings.fenzoToAccount,
+              value: toAccountId,
+              onChanged: onToChanged,
+            ),
+          ] else ...<Widget>[
+            _accountDropdown(
+              label: Strings.fenzoAccount,
+              value: accountId,
+              onChanged: onAccountChanged,
+            ),
+            SizedBox(height: 12.h),
+            AppDropdown<String>(
+              value: categoryId,
+              values: categories.map((Category item) => item.id).toList(),
+              names: categories.map((Category item) => item.name).toList(),
+              hintText: Strings.fenzoCategory,
+              labelText: Strings.fenzoCategory,
+              onChanged: onCategoryChanged,
+            ),
+            SizedBox(height: 12.h),
+            AppDropdown<String>(
+              value: subcategoryId,
+              values: subcategories.map((Subcategory item) => item.id).toList(),
+              names: subcategories
+                  .map((Subcategory item) => item.name)
+                  .toList(),
+              hintText: Strings.fenzoSubcategory,
+              labelText: Strings.fenzoSubcategory,
+              isOptional: true,
+              onChanged: onSubcategoryChanged,
+            ),
+          ],
+          FinanceLedgerRow(
+            title: Strings.fenzoDate,
+            subtitle: date.toIso(),
+            onTap: onPickDate,
+          ),
+          AppTextFormField(controller: notes, labelText: Strings.fenzoNotes),
+          SizedBox(height: 16.h),
+          AppElevatedButton(text: Strings.fenzoSave, onPressed: onSave),
         ],
-        SizedBox(height: 12.h),
-        if (type == MoneyTransactionType.transfer) ...<Widget>[
-          _accountDropdown(
-            label: Strings.fenzoFromAccount,
-            value: fromAccountId,
-            onChanged: onFromChanged,
-          ),
-          SizedBox(height: 12.h),
-          _accountDropdown(
-            label: Strings.fenzoToAccount,
-            value: toAccountId,
-            onChanged: onToChanged,
-          ),
-        ] else ...<Widget>[
-          _accountDropdown(
-            label: Strings.fenzoAccount,
-            value: accountId,
-            onChanged: onAccountChanged,
-          ),
-          SizedBox(height: 12.h),
-          AppDropdown<String>(
-            value: categoryId,
-            values: categories.map((Category item) => item.id).toList(),
-            names: categories.map((Category item) => item.name).toList(),
-            hintText: Strings.fenzoCategory,
-            labelText: Strings.fenzoCategory,
-            onChanged: onCategoryChanged,
-          ),
-          SizedBox(height: 12.h),
-          AppDropdown<String>(
-            value: subcategoryId,
-            values: subcategories.map((Subcategory item) => item.id).toList(),
-            names: subcategories.map((Subcategory item) => item.name).toList(),
-            hintText: Strings.fenzoSubcategory,
-            labelText: Strings.fenzoSubcategory,
-            isOptional: true,
-            onChanged: onSubcategoryChanged,
-          ),
-        ],
-        FinanceLedgerRow(
-          title: Strings.fenzoDate,
-          subtitle: date.toIso(),
-          onTap: onPickDate,
-        ),
-        AppTextFormField(controller: notes, labelText: Strings.fenzoNotes),
-        SizedBox(height: 16.h),
-        AppElevatedButton(text: Strings.fenzoSave, onPressed: onSave),
-      ],
+      ),
     );
   }
 

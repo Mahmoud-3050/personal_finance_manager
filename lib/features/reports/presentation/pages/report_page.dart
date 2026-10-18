@@ -19,6 +19,7 @@ import '../../../../shared/widgets/finance/balance_flow_stat.dart';
 import '../../../../shared/widgets/finance/balance_hero_body.dart';
 import '../../../../shared/widgets/finance/gradient_panel.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
+import '../../../../shared/widgets/platform_date_picker.dart';
 import '../../../transactions/domain/usecases/search_transactions_use_case.dart';
 import '../../../transactions/presentation/controller/delete_transaction/delete_transaction_cubit.dart';
 import '../../../transactions/presentation/controller/save_expense/save_expense_cubit.dart';
@@ -253,28 +254,21 @@ class _ReportPageState extends State<ReportPage> {
   void _month() => _apply(CalendarDate.monthContaining(CalendarDate.today()));
 
   Future<void> _custom() async {
-    final DateTime? start = await showDatePicker(
+    final CalendarDate? start = await showPlatformDatePicker(
       context: context,
-      initialDate: _range.start.toDateTime(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: _range.start,
     );
     if (start == null || !mounted) {
       return;
     }
-    final DateTime? end = await showDatePicker(
+    final CalendarDate? end = await showPlatformDatePicker(
       context: context,
-      initialDate: _range.end.toDateTime(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: _range.end,
     );
     if (end == null || !mounted) {
       return;
     }
-    final DateRange? range = DateRange.tryCreate(
-      CalendarDate.fromDateTime(start),
-      CalendarDate.fromDateTime(end),
-    );
+    final DateRange? range = DateRange.tryCreate(start, end);
     if (range == null) {
       setState(() => _rangeError = Strings.fenzoInvalidRange);
       return;

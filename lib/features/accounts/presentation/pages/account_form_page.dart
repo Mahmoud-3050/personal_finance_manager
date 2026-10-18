@@ -16,6 +16,8 @@ import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
 import '../../../../shared/widgets/finance_menu_field.dart';
+import '../../../../shared/widgets/platform_date_picker.dart';
+import '../../../../shared/widgets/platform_switch_tile.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
 import '../../domain/entities/account_list_data.dart';
 import '../../domain/usecases/save_account_use_case.dart';
@@ -57,6 +59,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
   late CalendarDate _openingDate =
       widget.existing?.openingDate ?? CalendarDate.today();
   late bool _includeInTotal = widget.existing?.includeInTotal ?? true;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _message;
 
   @override
@@ -94,115 +97,121 @@ class _AccountFormPageState extends State<AccountFormPage> {
             style: TextStyles.of(size: 18, weight: FontWeight.w600),
           ),
         ),
-        body: ListView(
-          padding: EdgeInsets.all(16.w),
-          children: <Widget>[
-            AppTextFormField(
-              controller: _name,
-              labelText: Strings.fenzoName,
-              validatorType: const EmptyValidator(),
-            ),
-            SizedBox(height: 12.h),
-            FinanceMenuField<AccountType>(
-              value: _type,
-              label: Strings.fenzoAccount,
-              items: AccountType.values
-                  .map(
-                    (AccountType type) => DropdownMenuItem<AccountType>(
-                      value: type,
-                      child: Text(
-                        _accountTypeLabel(type),
-                        style: TextStyles.of(size: 16),
+        body: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.all(16.w),
+            children: <Widget>[
+              AppTextFormField(
+                controller: _name,
+                labelText: Strings.fenzoName,
+                validatorType: const EmptyValidator(),
+              ),
+              SizedBox(height: 12.h),
+              FinanceMenuField<AccountType>(
+                value: _type,
+                label: Strings.fenzoAccount,
+                items: AccountType.values
+                    .map(
+                      (AccountType type) => DropdownMenuItem<AccountType>(
+                        value: type,
+                        child: Text(
+                          _accountTypeLabel(type),
+                          style: TextStyles.of(size: 16),
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: typeLocked
-                  ? null
-                  : (AccountType? value) {
-                      if (value == null) {
-                        return;
-                      }
-                      setState(() {
-                        _type = value;
-                        if (value != AccountType.bank) {
-                          _bankName.clear();
-                          _accountNumber.clear();
+                    )
+                    .toList(),
+                onChanged: typeLocked
+                    ? null
+                    : (AccountType? value) {
+                        if (value == null) {
+                          return;
                         }
-                        if (value != AccountType.eWallet) {
-                          _phone.clear();
-                        }
-                      });
-                    },
-            ),
-            if (typeLocked)
-              Padding(
-                padding: EdgeInsets.only(top: 8.h),
-                child: Text(
-                  Strings.fenzoTypeLocked,
-                  style: TextStyles.of(size: 14),
+                        setState(() {
+                          _type = value;
+                          if (value != AccountType.bank) {
+                            _bankName.clear();
+                            _accountNumber.clear();
+                          }
+                          if (value != AccountType.eWallet) {
+                            _phone.clear();
+                          }
+                        });
+                      },
+              ),
+              if (typeLocked)
+                Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: Text(
+                    Strings.fenzoTypeLocked,
+                    style: TextStyles.of(size: 14),
+                  ),
+                ),
+              if (_type == AccountType.bank) ...<Widget>[
+                SizedBox(height: 12.h),
+                AppTextFormField(
+                  controller: _bankName,
+                  labelText: Strings.fenzoBankName,
+                ),
+                SizedBox(height: 12.h),
+                AppTextFormField.numbersTextField(
+                  controller: _accountNumber,
+                  labelText: Strings.fenzoAccountNumber,
+                  validatorType: FieldValidator.numbers(
+                    required: false,
+                    allowZero: true,
+                  ),
+                ),
+              ],
+              if (_type == AccountType.eWallet) ...<Widget>[
+                SizedBox(height: 12.h),
+                AppTextFormField(
+                  controller: _phone,
+                  labelText: Strings.fenzoPhone,
+                  keyboardType: TextInputType.phone,
+                ),
+              ],
+              SizedBox(height: 12.h),
+              AppTextFormField.numbersTextField(
+                controller: _amount,
+                labelText: Strings.fenzoAmount,
+                validatorType: FieldValidator.numbers(
+                  allowZero: true,
+                  maxDecimalPlaces: Money.decimalPlaces,
                 ),
               ),
-            if (_type == AccountType.bank) ...<Widget>[
               SizedBox(height: 12.h),
-              AppTextFormField(
-                controller: _bankName,
-                labelText: Strings.fenzoBankName,
+              AppTextFormField.numbersTextField(
+                controller: _usualFee,
+                labelText: Strings.fenzoUsualCommission,
+                validatorType: FieldValidator.numbers(
+                  required: false,
+                  allowZero: true,
+                  maxDecimalPlaces: Money.decimalPlaces,
+                ),
               ),
               SizedBox(height: 12.h),
-              AppTextFormField(
-                controller: _accountNumber,
-                labelText: Strings.fenzoAccountNumber,
+              FinanceLedgerRow(
+                title: Strings.fenzoOpeningDate,
+                subtitle: _openingDate.toIso(),
+                onTap: _pickOpeningDate,
               ),
+              PlatformSwitchTile(
+                title: Strings.fenzoIncludeInTotal,
+                value: _includeInTotal,
+                onChanged: (bool value) =>
+                    setState(() => _includeInTotal = value),
+              ),
+              if (_message != null)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: Text(_message!, style: TextStyles.of(size: 14)),
+                ),
+              SizedBox(height: 16.h),
+              AppElevatedButton(text: Strings.fenzoSave, onPressed: _save),
             ],
-            if (_type == AccountType.eWallet) ...<Widget>[
-              SizedBox(height: 12.h),
-              AppTextFormField(
-                controller: _phone,
-                labelText: Strings.fenzoPhone,
-                keyboardType: TextInputType.phone,
-              ),
-            ],
-            SizedBox(height: 12.h),
-            AppTextFormField(
-              controller: _amount,
-              labelText: Strings.fenzoAmount,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            AppTextFormField(
-              controller: _usualFee,
-              labelText: Strings.fenzoUsualCommission,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            FinanceLedgerRow(
-              title: Strings.fenzoOpeningDate,
-              subtitle: _openingDate.toIso(),
-              onTap: _pickOpeningDate,
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                Strings.fenzoIncludeInTotal,
-                style: TextStyles.of(size: 16),
-              ),
-              value: _includeInTotal,
-              onChanged: (bool value) =>
-                  setState(() => _includeInTotal = value),
-            ),
-            if (_message != null)
-              Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: Text(_message!, style: TextStyles.of(size: 14)),
-              ),
-            SizedBox(height: 16.h),
-            AppElevatedButton(text: Strings.fenzoSave, onPressed: _save),
-          ],
+          ),
         ),
       ),
     );
@@ -228,16 +237,14 @@ class _AccountFormPageState extends State<AccountFormPage> {
   }
 
   Future<void> _pickOpeningDate() async {
-    final DateTime? picked = await showDatePicker(
+    final CalendarDate? picked = await showPlatformDatePicker(
       context: context,
-      initialDate: _openingDate.toDateTime(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: _openingDate,
     );
     if (picked == null || !mounted) {
       return;
     }
-    setState(() => _openingDate = CalendarDate.fromDateTime(picked));
+    setState(() => _openingDate = picked);
   }
 
   List<MoneyTransaction> _blockingTransactions() {
@@ -293,6 +300,9 @@ class _AccountFormPageState extends State<AccountFormPage> {
   }
 
   void _save() {
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
     final List<MoneyTransaction> blocking = _blockingTransactions();
     if (blocking.isNotEmpty &&
         widget.existing != null &&

@@ -28,6 +28,13 @@ class BackupStatusPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            }
+          },
+        ),
         title: Text(Strings.backup, style: TextStyles.of(size: 18)),
       ),
       body: BlocBuilder<GetBackupStatusCubit, GetBackupStatusState>(

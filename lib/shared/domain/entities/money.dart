@@ -7,6 +7,7 @@ final class Money {
   const Money(this.minor);
 
   static const int scale = 100;
+  static const int decimalPlaces = 2;
 
   final int minor;
 
@@ -26,7 +27,7 @@ final class Money {
       return const Left(ValidationFailure(message: 'amount_invalid'));
     }
     final List<String> parts = trimmed.split('.');
-    if (parts.length == 2 && parts[1].length > 2) {
+    if (parts.length == 2 && parts[1].length > decimalPlaces) {
       return const Left(ValidationFailure(message: 'amount_scale'));
     }
     final bool negative = trimmed.startsWith('-');
@@ -34,7 +35,7 @@ final class Money {
     final List<String> unsigned = digits.split('.');
     final int whole = int.parse(unsigned[0]);
     final String fraction = unsigned.length == 2
-        ? unsigned[1].padRight(2, '0')
+        ? unsigned[1].padRight(decimalPlaces, '0')
         : '00';
     int minor = whole * scale + int.parse(fraction);
     if (negative) {
@@ -53,7 +54,10 @@ final class Money {
     final bool negative = minor < 0;
     final int absolute = minor.abs();
     final String whole = (absolute ~/ scale).toString();
-    final String fraction = (absolute % scale).toString().padLeft(2, '0');
+    final String fraction = (absolute % scale).toString().padLeft(
+      decimalPlaces,
+      '0',
+    );
     return '${negative ? '-' : ''}$whole.$fraction';
   }
 }
