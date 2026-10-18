@@ -13,6 +13,7 @@ enum CaptureField {
   subcategory,
   notes,
   commission,
+  shopName,
 }
 
 final class CaptureDraft extends Equatable {
@@ -27,6 +28,7 @@ final class CaptureDraft extends Equatable {
     this.subcategoryId,
     this.notes,
     this.commissionMinor,
+    this.shopName,
   });
 
   factory CaptureDraft.handStarted() {
@@ -46,6 +48,7 @@ final class CaptureDraft extends Equatable {
   final String? subcategoryId;
   final String? notes;
   final int? commissionMinor;
+  final String? shopName;
   final Set<CaptureField> uncertainFields;
 
   bool get feeApplies =>
@@ -96,6 +99,8 @@ final class CaptureDraft extends Equatable {
     bool clearNotes = false,
     int? commissionMinor,
     bool clearCommission = false,
+    String? shopName,
+    bool clearShopName = false,
     Set<CaptureField>? uncertainFields,
   }) {
     return CaptureDraft(
@@ -112,6 +117,7 @@ final class CaptureDraft extends Equatable {
       commissionMinor: clearCommission
           ? null
           : commissionMinor ?? this.commissionMinor,
+      shopName: clearShopName ? null : shopName ?? this.shopName,
       uncertainFields: uncertainFields ?? this.uncertainFields,
     );
   }
@@ -127,6 +133,7 @@ final class CaptureDraft extends Equatable {
     subcategoryId,
     notes,
     commissionMinor,
+    shopName,
     uncertainFields,
   ];
 }

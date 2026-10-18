@@ -21,9 +21,13 @@ import '../../features/backup/presentation/widgets/automatic_backup_host.dart';
 import '../../shared/widgets/finance_tab_shell.dart';
 import '../../features/capture/capture_injection.dart';
 import '../../features/capture/domain/entities/capture_draft.dart';
+import '../../features/capture/domain/entities/capture_review_request.dart';
 import '../../features/capture/presentation/controller/confirm_capture_draft/confirm_capture_draft_cubit.dart';
 import '../../features/capture/presentation/controller/discard_capture_draft/discard_capture_draft_cubit.dart';
+import '../../features/capture/presentation/controller/release_receipt_photo/release_receipt_photo_cubit.dart';
+import '../../features/capture/presentation/controller/start_receipt_capture/start_receipt_capture_cubit.dart';
 import '../../features/capture/presentation/pages/capture_review_page.dart';
+import '../../features/capture/presentation/pages/receipt_capture_page.dart';
 import '../../features/categories/categories_injection.dart';
 import '../../features/dashboard/dashboard_injection.dart';
 import '../../features/reports/reports_injection.dart';
@@ -207,15 +211,32 @@ class AppRouter {
             },
           ),
           GoRoute(
+            path: AppRoutes.captureReceipt,
+            builder: (BuildContext context, GoRouterState state) {
+              return FeatureScope(
+                scopeName: 'receipt-capture',
+                registrations: const <FeatureRegistration>[
+                  registerStartReceiptCapture,
+                ],
+                child: BlocProvider<StartReceiptCaptureCubit>(
+                  create: (_) =>
+                      ServiceLocator.instance<StartReceiptCaptureCubit>(),
+                  child: const ReceiptCapturePage(),
+                ),
+              );
+            },
+          ),
+          GoRoute(
             path: AppRoutes.captureReview,
             builder: (BuildContext context, GoRouterState state) {
-              final Object? extra = state.extra;
+              final CaptureReviewRequest? request = _reviewRequest(state.extra);
               return FeatureScope(
                 scopeName: 'capture',
                 registrations: const <FeatureRegistration>[
                   registerCaptureDataLayer,
                   registerConfirmCaptureDraft,
                   registerDiscardCaptureDraft,
+                  registerReleaseReceiptPhoto,
                 ],
                 child: MultiBlocProvider(
                   providers: <BlocProvider<dynamic>>[
@@ -227,9 +248,14 @@ class AppRouter {
                       create: (_) =>
                           ServiceLocator.instance<DiscardCaptureDraftCubit>(),
                     ),
+                    BlocProvider<ReleaseReceiptPhotoCubit>(
+                      create: (_) =>
+                          ServiceLocator.instance<ReleaseReceiptPhotoCubit>(),
+                    ),
                   ],
                   child: CaptureReviewPage(
-                    supplied: extra is CaptureDraft ? extra : null,
+                    supplied: request?.draft,
+                    photo: request?.photo,
                   ),
                 ),
               );
@@ -309,4 +335,12 @@ class AppRouter {
       ),
     ],
   );
+}
+
+CaptureReviewRequest? _reviewRequest(Object? extra) {
+  return switch (extra) {
+    CaptureReviewRequest request => request,
+    CaptureDraft draft => CaptureReviewRequest(draft: draft),
+    _ => null,
+  };
 }

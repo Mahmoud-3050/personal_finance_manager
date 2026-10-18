@@ -8,6 +8,7 @@ abstract class AppRoutes {
   static const String transactionForm = '/transactions/form';
   static const String transactions = '/transactions';
   static const String captureReview = '/capture/review';
+  static const String captureReceipt = '/capture/receipt';
   static const String categories = '/categories';
   static const String reports = '/reports';
   static const String settings = '/settings';

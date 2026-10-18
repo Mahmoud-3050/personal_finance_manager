@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:field_validator/field_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,14 +29,17 @@ import '../../../categories/presentation/controller/get_categories/get_categorie
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
 import '../../../transactions/presentation/controller/search_transactions/search_transactions_cubit.dart';
 import '../../domain/entities/capture_draft.dart';
+import '../../domain/entities/receipt_photo.dart';
 import '../controller/confirm_capture_draft/confirm_capture_draft_cubit.dart';
 import '../controller/discard_capture_draft/discard_capture_draft_cubit.dart';
+import '../controller/release_receipt_photo/release_receipt_photo_cubit.dart';
 import '../widgets/capture_uncertain_mark.dart';
 
 class CaptureReviewPage extends StatefulWidget {
-  const CaptureReviewPage({this.supplied, super.key});
+  const CaptureReviewPage({this.supplied, this.photo, super.key});
 
   final CaptureDraft? supplied;
+  final ReceiptPhoto? photo;
 
   @override
   State<CaptureReviewPage> createState() => _CaptureReviewPageState();
@@ -42,11 +48,18 @@ class CaptureReviewPage extends StatefulWidget {
 class _CaptureReviewPageState extends State<CaptureReviewPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late CaptureDraft _draft = widget.supplied ?? CaptureDraft.handStarted();
+  late final bool _offersShopName =
+      _draft.shopName != null ||
+      _draft.uncertainFields.contains(CaptureField.shopName);
+  ReleaseReceiptPhotoCubit? _release;
   late final TextEditingController _amount = TextEditingController(
     text: _draft.amountMinor == null ? '' : Money(_draft.amountMinor!).format(),
   );
   late final TextEditingController _notes = TextEditingController(
     text: _draft.notes ?? '',
+  );
+  late final TextEditingController _shop = TextEditingController(
+    text: _draft.shopName ?? '',
   );
   late final TextEditingController _commission = TextEditingController(
     text: _openingCommissionText(),
@@ -55,6 +68,9 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.photo != null) {
+      _release = context.read<ReleaseReceiptPhotoCubit>();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -66,8 +82,14 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
 
   @override
   void dispose() {
+    final ReceiptPhoto? photo = widget.photo;
+    final ReleaseReceiptPhotoCubit? release = _release;
+    if (photo != null && release != null) {
+      unawaited(release.fReleaseReceiptPhoto(photo));
+    }
     _amount.dispose();
     _notes.dispose();
+    _shop.dispose();
     _commission.dispose();
     super.dispose();
   }
@@ -110,6 +132,8 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
                       child: ListView(
                         padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
                         children: <Widget>[
+                          if (widget.photo case final ReceiptPhoto photo)
+                            _ReceiptPhotoView(path: photo.path),
                           _KindField(
                             kind: _draft.kind,
                             onChanged: (CaptureKind kind) =>
@@ -137,6 +161,19 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
                               child: Text(_draft.date.toIso()),
                             ),
                           ),
+                          if (_offersShopName) ...<Widget>[
+                            SizedBox(height: 12.h),
+                            _labeled(
+                              Strings.fenzoReceiptShopName,
+                              CaptureField.shopName,
+                              AppTextFormField(
+                                key: const Key('shop-name'),
+                                controller: _shop,
+                                labelText: Strings.fenzoReceiptShopName,
+                                onChanged: _changeShopName,
+                              ),
+                            ),
+                          ],
                           SizedBox(height: 12.h),
                           _labeled(
                             Strings.fenzoAccount,
@@ -321,6 +358,16 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
 
   void _showMessage(String message) {
     showAppSnackBar(context: context, message: message, type: ToastType.error);
+  }
+
+  void _changeShopName(String value) {
+    final String trimmed = value.trim();
+    setState(() {
+      _draft = _draft.copyWith(
+        shopName: trimmed,
+        clearShopName: trimmed.isEmpty,
+      );
+    });
   }
 
   Future<void> _pickDate() async {
@@ -517,6 +564,28 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
   }
 }
 
+class _ReceiptPhotoView extends StatelessWidget {
+  const _ReceiptPhotoView({required this.path});
+
+  final String path;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      key: const Key('receipt-photo'),
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Image.file(
+        File(path),
+        height: 180.h,
+        fit: BoxFit.contain,
+        errorBuilder: (BuildContext context, Object error, StackTrace? stack) {
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+}
+
 class _KindField extends StatelessWidget {
   const _KindField({required this.kind, required this.onChanged});
 
@@ -559,6 +628,8 @@ String captureFailureCopy(String? code) {
     'account_missing' || 'account_inactive' => Strings.fenzoAccount,
     'category_invalid' => Strings.fenzoCategory,
     'subcategory_invalid' => Strings.fenzoSubcategory,
+    'receipt_access_denied' => Strings.fenzoReceiptAccessDenied,
+    'receipt_read_failed' => Strings.fenzoReceiptReadFailed,
     _ => Strings.pleaseTryAgainLater,
   };
 }

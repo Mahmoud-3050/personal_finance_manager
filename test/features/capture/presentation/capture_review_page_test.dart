@@ -10,10 +10,17 @@ import 'package:finzomanager/features/accounts/presentation/controller/get_accou
 import 'package:finzomanager/features/capture/data/datasources/capture_draft_data_source.dart';
 import 'package:finzomanager/features/capture/data/repositories/capture_repository_impl.dart';
 import 'package:finzomanager/features/capture/domain/entities/capture_draft.dart';
+import 'package:finzomanager/features/capture/domain/entities/receipt_image_source.dart';
+import 'package:finzomanager/features/capture/domain/entities/receipt_photo.dart';
+import 'package:finzomanager/features/capture/domain/entities/receipt_read_gate.dart';
+import 'package:finzomanager/features/capture/domain/entities/receipt_reading.dart';
+import 'package:finzomanager/features/capture/domain/repositories/receipt_capture_repository.dart';
 import 'package:finzomanager/features/capture/domain/usecases/confirm_capture_draft_use_case.dart';
+import 'package:finzomanager/features/capture/domain/usecases/delete_receipt_photo_use_case.dart';
 import 'package:finzomanager/features/capture/domain/usecases/discard_capture_draft_use_case.dart';
 import 'package:finzomanager/features/capture/presentation/controller/confirm_capture_draft/confirm_capture_draft_cubit.dart';
 import 'package:finzomanager/features/capture/presentation/controller/discard_capture_draft/discard_capture_draft_cubit.dart';
+import 'package:finzomanager/features/capture/presentation/controller/release_receipt_photo/release_receipt_photo_cubit.dart';
 import 'package:finzomanager/features/capture/presentation/pages/capture_review_page.dart';
 import 'package:finzomanager/features/categories/domain/repositories/categories_repository.dart';
 import 'package:finzomanager/features/categories/domain/usecases/get_categories_use_case.dart';
@@ -59,6 +66,8 @@ void main() {
       expect(find.text(CalendarDate.today().toIso()), findsOneWidget);
       expect(find.byKey(const Key('uncertain-amount')), findsNothing);
       expect(find.byKey(const Key('mark-uncertain')), findsNothing);
+      expect(find.byKey(const Key('receipt-photo')), findsNothing);
+      expect(find.byKey(const Key('shop-name')), findsNothing);
       expect(harness.book.saves, 0);
       expect(harness.saveIncome.state, isA<ApiCallHolding<FinanceRecords>>());
       expect(harness.saveExpense.state, isA<ApiCallHolding<FinanceRecords>>());
@@ -82,6 +91,8 @@ void main() {
 
     expect(find.byKey(const Key('uncertain-amount')), findsOneWidget);
     expect(find.byKey(const Key('mark-uncertain')), findsNothing);
+    expect(find.byKey(const Key('receipt-photo')), findsNothing);
+    expect(find.byKey(const Key('shop-name')), findsNothing);
     expect(harness.book.saves, 0);
     expect(harness.saveIncome.state, isA<ApiCallHolding<FinanceRecords>>());
     expect(harness.saveExpense.state, isA<ApiCallHolding<FinanceRecords>>());
@@ -108,15 +119,41 @@ void main() {
     );
     expect(captureFailureCopy('not_a_known_code'), isNot('not_a_known_code'));
   });
+
+  testWidgets('a receipt proposal shows the photo and an uncertain shop name', (
+    WidgetTester tester,
+  ) async {
+    final _Harness harness = _Harness(
+      supplied: const CaptureDraft(
+        kind: CaptureKind.expense,
+        date: CalendarDate(2026, 10, 17),
+        uncertainFields: <CaptureField>{CaptureField.shopName},
+      ),
+      photo: const ReceiptPhoto(path: '/missing/receipt.png'),
+    );
+    addTearDown(harness.close);
+    await tester.pumpWidget(harness.build());
+    await tester.pump();
+
+    expect(find.byKey(const Key('receipt-photo')), findsOneWidget);
+    expect(find.byKey(const Key('uncertain-shopName')), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('shop-name')), 'Market');
+    await tester.pump();
+    expect(harness.book.saves, 0);
+    expect(harness.saveIncome.state, isA<ApiCallHolding<FinanceRecords>>());
+    expect(harness.saveExpense.state, isA<ApiCallHolding<FinanceRecords>>());
+  });
 }
 
 class _Harness {
-  _Harness({this.supplied, this.withAccount = true}) : book = _CountingBook() {
+  _Harness({this.supplied, this.photo, this.withAccount = true})
+    : book = _CountingBook() {
     saveIncome = SaveIncomeCubit(SaveIncomeUseCase(book));
     saveExpense = SaveExpenseCubit(SaveExpenseUseCase(book));
   }
 
   final CaptureDraft? supplied;
+  final ReceiptPhoto? photo;
   final bool withAccount;
   final _CountingBook book;
   late final SaveIncomeCubit saveIncome;
@@ -165,8 +202,13 @@ class _Harness {
                   ),
                 ),
               ),
+              BlocProvider<ReleaseReceiptPhotoCubit>(
+                create: (_) => ReleaseReceiptPhotoCubit(
+                  DeleteReceiptPhotoUseCase(repository: _QuietReceipts()),
+                ),
+              ),
             ],
-            child: CaptureReviewPage(supplied: supplied),
+            child: CaptureReviewPage(supplied: supplied, photo: photo),
           ),
         );
       },
@@ -260,6 +302,33 @@ class _EmptyCategories implements CategoriesRepository {
     required String name,
     required CategoryKind kind,
   }) => throw UnimplementedError();
+}
+
+class _QuietReceipts implements ReceiptCaptureRepository {
+  @override
+  bool get sendsImageOffDevice => false;
+
+  @override
+  Future<Either<Failure, ReceiptPhoto?>> pick(ReceiptImageSource source) async {
+    return const Right<Failure, ReceiptPhoto?>(null);
+  }
+
+  @override
+  Future<Either<Failure, ReceiptReadGate>> prepare(ReceiptPhoto photo) async {
+    return const Right<Failure, ReceiptReadGate>(
+      ReceiptReadOnDevice(reading: ReceiptReading()),
+    );
+  }
+
+  @override
+  Future<Either<Failure, ReceiptReading>> read(ReceiptPhoto photo) async {
+    return const Right<Failure, ReceiptReading>(ReceiptReading());
+  }
+
+  @override
+  Future<Either<Failure, void>> delete(ReceiptPhoto photo) async {
+    return const Right<Failure, void>(null);
+  }
 }
 
 class _CountingBook implements TransactionsRepository {

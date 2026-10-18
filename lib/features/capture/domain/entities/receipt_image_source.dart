@@ -1,0 +1,1 @@
+enum ReceiptImageSource { camera, gallery }

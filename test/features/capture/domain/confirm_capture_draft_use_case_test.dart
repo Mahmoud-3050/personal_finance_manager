@@ -135,6 +135,19 @@ void main() {
     await useCase(params);
     expect(book.expenseCalls, 1);
   });
+
+  test('a shop name is not saved as the notes', () async {
+    final _RecordingTransactions recorder = _RecordingTransactions();
+    await _freshUseCase(recorder)(
+      ConfirmCaptureDraftParams(
+        draft: _draft(
+          CaptureKind.expense,
+        ).copyWith(notes: 'typed note', shopName: 'Market'),
+      ),
+    );
+    expect(recorder.lastNotes, 'typed note');
+    expect(recorder.expenseCalls, 1);
+  });
 }
 
 ConfirmCaptureDraftUseCase _freshUseCase(_RecordingTransactions recorder) {
@@ -166,6 +179,7 @@ class _RecordingTransactions implements TransactionsRepository {
   int expenseCalls = 0;
   int incomeCalls = 0;
   int? lastCommission;
+  String? lastNotes;
   Failure? error;
 
   @override
@@ -198,6 +212,7 @@ class _RecordingTransactions implements TransactionsRepository {
       incomeCalls += 1;
     }
     lastCommission = commissionMinor;
+    lastNotes = notes;
     final Failure? failure = error;
     if (failure != null) {
       return Left(failure);

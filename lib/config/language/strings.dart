@@ -802,6 +802,15 @@ abstract class Strings {
   static String get fenzoCaptureDiscard => 'fenzo_capture_discard'.tr;
   static String get fenzoCaptureKind => 'fenzo_capture_kind'.tr;
   static String get fenzoCaptureUncertain => 'fenzo_capture_uncertain'.tr;
+  static String get fenzoReceipt => 'fenzo_receipt'.tr;
+  static String get fenzoReceiptTakePhoto => 'fenzo_receipt_take_photo'.tr;
+  static String get fenzoReceiptChoosePhoto => 'fenzo_receipt_choose_photo'.tr;
+  static String get fenzoReceiptReadFailed => 'fenzo_receipt_read_failed'.tr;
+  static String get fenzoReceiptSkipped => 'fenzo_receipt_skipped'.tr;
+  static String get fenzoReceiptOffDevice => 'fenzo_receipt_off_device'.tr;
+  static String get fenzoReceiptAccessDenied =>
+      'fenzo_receipt_access_denied'.tr;
+  static String get fenzoReceiptShopName => 'fenzo_receipt_shop_name'.tr;
   static String get fenzoNoMatches => 'fenzo_no_matches'.tr;
   static String get fenzoTransferSameAccount =>
       'fenzo_transfer_same_account'.tr;

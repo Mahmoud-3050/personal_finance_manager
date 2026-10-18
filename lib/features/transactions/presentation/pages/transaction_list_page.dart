@@ -109,6 +109,11 @@ class _TransactionListPageState extends State<TransactionListPage> {
           ),
           actions: <Widget>[
             IconButton(
+              tooltip: Strings.fenzoReceipt,
+              onPressed: () => context.push(AppRoutes.captureReceipt),
+              icon: const Icon(Icons.receipt_long_outlined),
+            ),
+            IconButton(
               tooltip: Strings.fenzoCaptureReview,
               onPressed: () => context.push(AppRoutes.captureReview),
               icon: const Icon(Icons.fact_check_outlined),
