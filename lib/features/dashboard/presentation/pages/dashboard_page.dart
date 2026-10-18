@@ -8,6 +8,8 @@ import '../../../../core/presentation/api_call_state.dart';
 import '../../../../core/utils/values/text_styles.dart';
 import '../../domain/entities/dashboard_data.dart';
 import '../controller/get_dashboard/get_dashboard_cubit.dart';
+import '../../../../shared/widgets/platform/platform_activity_indicator.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../widgets/dashboard_loaded.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -16,7 +18,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: PlatformAppBar(
         title: Text(Strings.fenzoTitle),
         actions: <Widget>[
           IconButton(
@@ -33,7 +35,7 @@ class DashboardPage extends StatelessWidget {
             ApiCallError<DashboardData>(:final String message) => Center(
               child: Text(message, style: TextStyles.of(size: 16)),
             ),
-            _ => const Center(child: CircularProgressIndicator()),
+            _ => const Center(child: PlatformActivityIndicator()),
           };
         },
       ),

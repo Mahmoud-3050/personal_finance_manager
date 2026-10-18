@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:screen_util/screen_util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,6 +11,7 @@ import '../../config/themes/extra_colors.dart';
 import '../../core/utils/extensions.dart';
 import '../../core/utils/values/text_styles.dart';
 import 'app_shimmer.dart';
+import 'platform/platform_target.dart';
 
 class AppElevatedButton extends StatefulWidget {
   final double? width;
@@ -89,6 +91,7 @@ class AppElevatedButton extends StatefulWidget {
 class _AppElevatedButtonState extends State<AppElevatedButton> {
   static const Duration _stateAnimationDuration = Duration(milliseconds: 220);
   static const double _defaultRadius = 999;
+  static const double _iosRadius = 12;
   static const double _iconGap = 8;
   static const double _loaderSize = 20;
   static const double _disabledTextOpacity = 0.85;
@@ -106,7 +109,8 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final radius = widget.borderRadius ?? _defaultRadius;
+    final bool ios = usesIosComponents(context);
+    final radius = widget.borderRadius ?? (ios ? _iosRadius : _defaultRadius);
     final backgroundColor = widget.buttonColor ?? colors.primary;
 
     return Semantics(
@@ -124,36 +128,58 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
         margin:
             widget.margin ?? .symmetric(horizontal: widget.sidePadding ?? 0),
         decoration: BoxDecoration(borderRadius: .circular(radius)),
-        child: ElevatedButton(
-          onPressed: _blocksPress ? null : _handlePressed,
-          clipBehavior: .antiAliasWithSaveLayer,
-          style: ElevatedButton.styleFrom(
-            padding:
-                widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
-            foregroundColor: colors.onPrimary,
-            backgroundColor: backgroundColor,
-            disabledBackgroundColor: colors.grey400,
-            disabledForegroundColor: colors.onPrimary.withValues(
-              alpha: _disabledTextOpacity,
-            ),
-            elevation: 0,
-            side: _buttonSide(),
-            shape: RoundedRectangleBorder(borderRadius: .circular(radius)),
-            minimumSize: widget.minimumSize,
-            maximumSize: widget.maximumSize,
-          ),
-          child: Center(
-            child: AnimatedSwitcher(
-              duration: _stateAnimationDuration,
-              child: KeyedSubtree(
-                key: ValueKey<bool>(widget.isLoading),
-                child: widget.isLoading
-                    ? _loadingIndicator(colors)
-                    : _buttonContent(colors),
+        child: ios
+            ? CupertinoButton.filled(
+                onPressed: _blocksPress ? null : _handlePressed,
+                padding:
+                    widget.padding ??
+                    .symmetric(horizontal: 16.w, vertical: 12.h),
+                borderRadius: .circular(radius),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: _stateAnimationDuration,
+                    child: KeyedSubtree(
+                      key: ValueKey<bool>(widget.isLoading),
+                      child: widget.isLoading
+                          ? _loadingIndicator(colors, ios: true)
+                          : _buttonContent(colors),
+                    ),
+                  ),
+                ),
+              )
+            : ElevatedButton(
+                onPressed: _blocksPress ? null : _handlePressed,
+                clipBehavior: .antiAliasWithSaveLayer,
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      widget.padding ??
+                      .symmetric(horizontal: 16.w, vertical: 12.h),
+                  foregroundColor: colors.onPrimary,
+                  backgroundColor: backgroundColor,
+                  disabledBackgroundColor: colors.grey400,
+                  disabledForegroundColor: colors.onPrimary.withValues(
+                    alpha: _disabledTextOpacity,
+                  ),
+                  elevation: 0,
+                  side: _buttonSide(),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: .circular(radius),
+                  ),
+                  minimumSize: widget.minimumSize,
+                  maximumSize: widget.maximumSize,
+                ),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: _stateAnimationDuration,
+                    child: KeyedSubtree(
+                      key: ValueKey<bool>(widget.isLoading),
+                      child: widget.isLoading
+                          ? _loadingIndicator(colors, ios: false)
+                          : _buttonContent(colors),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -182,13 +208,14 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
     return BorderSide(color: borderColor);
   }
 
-  Widget _loadingIndicator(ThemeColors colors) {
+  Widget _loadingIndicator(ThemeColors colors, {required bool ios}) {
+    final Color tint = widget.textColor ?? colors.onPrimary;
     return ExcludeSemantics(
       child: SizedBox.square(
         dimension: _loaderSize.r,
-        child: CircularProgressIndicator(
-            color: widget.textColor ?? colors.onPrimary,
-        ).appLoading,
+        child: ios
+            ? CupertinoActivityIndicator(color: tint)
+            : CircularProgressIndicator(color: tint).appLoading,
       ),
     );
   }

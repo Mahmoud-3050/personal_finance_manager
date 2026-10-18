@@ -1,16 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 import '../../config/language/strings.dart';
-import '../../core/utils/values/fonts.dart';
 import '../domain/entities/calendar_date.dart';
+import 'platform/platform_target.dart';
 
 const CalendarDate _earliestSelectableDate = CalendarDate(2000, 1, 1);
 const CalendarDate _latestSelectableDate = CalendarDate(2100, 1, 1);
 const double _iosDatePickerHeight = 216;
-const double _iosDatePickerFontSize = 21;
 
 /// Shows the platform date picker and returns the chosen day.
 ///
@@ -28,7 +26,7 @@ Future<CalendarDate?> showPlatformDatePicker({
     earliest,
     latest,
   );
-  final DateTime? picked = _usesIosDatePicker(context)
+  final DateTime? picked = usesIosComponents(context)
       ? await _showIosDatePicker(
           context: context,
           initialDate: initial,
@@ -45,10 +43,6 @@ Future<CalendarDate?> showPlatformDatePicker({
     return null;
   }
   return CalendarDate.fromDateTime(picked);
-}
-
-bool _usesIosDatePicker(BuildContext context) {
-  return Theme.of(context).platform == TargetPlatform.iOS;
 }
 
 DateTime _clampDate(DateTime value, DateTime earliest, DateTime latest) {
@@ -114,25 +108,12 @@ class _PlatformDatePickerState extends State<PlatformDatePicker> {
             ),
             SizedBox(
               height: _iosDatePickerHeight,
-              child: CupertinoTheme(
-                data: CupertinoThemeData(
-                  brightness: Theme.of(context).brightness,
-                  primaryColor: colors.primary,
-                  textTheme: CupertinoTextThemeData(
-                    dateTimePickerTextStyle: TextStyle(
-                      color: colors.textPrimary,
-                      fontSize: _iosDatePickerFontSize.sp,
-                      fontFamily: Fonts.current,
-                    ),
-                  ),
-                ),
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.date,
-                  initialDateTime: widget.initialDate,
-                  minimumDate: widget.firstDate,
-                  maximumDate: widget.lastDate,
-                  onDateTimeChanged: (DateTime value) => _selectedDate = value,
-                ),
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.date,
+                initialDateTime: widget.initialDate,
+                minimumDate: widget.firstDate,
+                maximumDate: widget.lastDate,
+                onDateTimeChanged: (DateTime value) => _selectedDate = value,
               ),
             ),
           ],
@@ -152,9 +133,9 @@ class _DatePickerToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        TextButton(onPressed: onCancel, child: Text(Strings.cancel)),
+        CupertinoButton(onPressed: onCancel, child: Text(Strings.cancel)),
         const Spacer(),
-        TextButton(onPressed: onDone, child: Text(Strings.done)),
+        CupertinoButton(onPressed: onDone, child: Text(Strings.done)),
       ],
     );
   }

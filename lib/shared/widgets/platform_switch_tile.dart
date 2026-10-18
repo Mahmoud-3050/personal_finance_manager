@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:screen_util/screen_util.dart';
+import 'package:themes/themes.dart';
 
 import '../../core/utils/values/text_styles.dart';
+import 'platform/platform_target.dart';
 
 const double _switchTitleSize = 16;
 
@@ -27,7 +29,7 @@ class PlatformSwitchTile extends StatelessWidget {
       title,
       style: TextStyles.of(size: _switchTitleSize),
     );
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
+    if (usesIosComponents(context)) {
       return _IosSwitchTile(
         title: titleText,
         value: value,
@@ -69,7 +71,13 @@ class _IosSwitchTile extends StatelessWidget {
                 child: title,
               ),
             ),
-            CupertinoSwitch(value: value, onChanged: toggle),
+            CupertinoSwitch(
+              value: value,
+              activeTrackColor: context.colors.primary,
+              inactiveTrackColor: context.colors.border,
+              thumbColor: context.colors.white,
+              onChanged: toggle,
+            ),
           ],
         ),
       ),

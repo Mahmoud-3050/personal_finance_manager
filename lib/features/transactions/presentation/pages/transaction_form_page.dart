@@ -21,6 +21,7 @@ import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
 import '../../../../shared/widgets/finance_menu_field.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../../../../shared/widgets/platform_date_picker.dart';
 import '../../../accounts/domain/entities/account_list_data.dart';
 import '../../../accounts/presentation/controller/get_accounts/get_accounts_cubit.dart';
@@ -95,7 +96,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
+        appBar: PlatformAppBar(
           title: Text(
             _title,
             style: TextStyles.of(size: 18, weight: FontWeight.w600),

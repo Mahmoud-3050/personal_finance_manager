@@ -29,12 +29,12 @@ class FinanceAmount extends StatelessWidget {
         weight: weight,
         color: color,
         fontFamily: Fonts.display,
-        letterSpacing: size >= 28 ? -0.8 : -0.2,
+        letterSpacing: Fonts.tracking(size >= 28 ? -0.8 : -0.2),
         height: 1.05,
         fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
-        fontVariations: <FontVariation>[
-          FontVariation.weight(weight.value.toDouble()),
-        ],
+        fontVariations: Fonts.usesArabic
+            ? null
+            : <FontVariation>[FontVariation.weight(weight.value.toDouble())],
       ),
     );
   }
@@ -107,10 +107,7 @@ class FinanceLedgerRow extends StatelessWidget {
                   Text(
                     subtitle!,
                     maxLines: 2,
-                    style: TextStyles.of(
-                      size: 13,
-                      color: colors.textSecondary,
-                    ),
+                    style: TextStyles.of(size: 13, color: colors.textSecondary),
                   ),
                 ],
               ],
@@ -128,9 +125,7 @@ class FinanceLedgerRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: colors.divider)),
       ),
-      child: onTap == null
-          ? body
-          : InkWell(onTap: onTap, child: body),
+      child: onTap == null ? body : InkWell(onTap: onTap, child: body),
     );
   }
 }

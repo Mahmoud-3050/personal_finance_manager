@@ -38,6 +38,7 @@ abstract final class TextStyles {
     String? debugLabel,
     String? package,
   }) {
+    final String resolvedFamily = fontFamily ?? Fonts.current;
     return TextStyle(
       inherit: inherit,
       color:
@@ -63,8 +64,12 @@ abstract final class TextStyles {
       decorationColor: decorationColor,
       decorationStyle: decorationStyle,
       decorationThickness: decorationThickness,
-      fontFamily: fontFamily ?? Fonts.current,
-      fontFamilyFallback: fontFamilyFallback,
+      fontFamily: resolvedFamily,
+      fontFamilyFallback:
+          fontFamilyFallback ??
+          (resolvedFamily == Fonts.ibmPlexSansArabic
+              ? null
+              : const <String>[Fonts.ibmPlexSansArabic]),
       overflow: overflow,
       textBaseline: textBaseline,
       debugLabel: debugLabel,

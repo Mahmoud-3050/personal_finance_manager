@@ -15,6 +15,7 @@ import '../../../../shared/domain/finance_records.dart';
 import '../../../../shared/widgets/finance/account_mark.dart';
 import '../../../../shared/widgets/finance/summary_card.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../../domain/entities/account_list_data.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
 import '../../domain/usecases/deactivate_account_use_case.dart';
@@ -43,7 +44,7 @@ class AccountListPage extends StatelessWidget {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
+        appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoAccounts,
             style: TextStyles.of(size: 18, weight: FontWeight.w600),

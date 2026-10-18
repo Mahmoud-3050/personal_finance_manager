@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
@@ -11,10 +12,7 @@ import 'extra_colors.dart';
 /// Call only inside [ScreenUtilInit] so `.w` / `.sp` are valid.
 ThemeData appTheme(ThemeColors colors, Brightness brightness) {
   final colorTheme = Themes.buildThemeData(colors, brightness);
-  final TextStyle body = TextStyles.of(
-    size: 16,
-    fontFamily: Fonts.current,
-  );
+  final TextStyle body = TextStyles.of(size: 16, fontFamily: Fonts.current);
   final TextStyle label = TextStyles.of(
     size: 15,
     weight: FontWeight.w600,
@@ -22,10 +20,18 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
   );
   final StadiumBorder pill = const StadiumBorder();
   return colorTheme.copyWith(
-    textTheme: colorTheme.textTheme.apply(fontFamily: Fonts.current),
+    textTheme: colorTheme.textTheme.apply(
+      fontFamily: Fonts.current,
+      bodyColor: colors.textPrimary,
+      displayColor: colors.textPrimary,
+    ),
     primaryTextTheme: colorTheme.primaryTextTheme.apply(
       fontFamily: Fonts.current,
+      bodyColor: colors.onPrimary,
+      displayColor: colors.onPrimary,
     ),
+    colorScheme: _platformColorScheme(colorTheme.colorScheme, colors),
+    cupertinoOverrideTheme: _cupertinoTheme(colors, _surfaceBrightness(colors)),
     splashFactory: InkRipple.splashFactory,
     dividerTheme: DividerThemeData(thickness: 1.sp, color: colors.divider),
     focusColor: colors.primary,
@@ -58,7 +64,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         shape: pill,
         textStyle: label.copyWith(
-          fontWeight: FontWeight.w500, 
+          fontWeight: FontWeight.w500,
           fontFamily: Fonts.current,
         ),
       ),
@@ -88,7 +94,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         if (states.contains(WidgetState.selected)) {
           return colors.onPrimary;
         }
-        return colors.foreground;
+        return colors.textPrimary;
       }),
       trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
@@ -98,13 +104,50 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
       }),
       trackOutlineColor: WidgetStateProperty.all<Color>(colors.border),
     ),
-    progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.textPrimary),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: colors.background,
       elevation: 0,
       height: 64.h,
-      indicatorColor: colors.primary.withValues(alpha: 0.12),
+      indicatorColor: colors.primary.withValues(alpha: _selectedTintAlpha),
       surfaceTintColor: colors.background,
+      iconTheme: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+        final Color color = states.contains(WidgetState.selected)
+            ? colors.primary
+            : colors.unselected;
+        return IconThemeData(color: color);
+      }),
+    ),
+    datePickerTheme: DatePickerThemeData(
+      backgroundColor: colors.foreground,
+      headerBackgroundColor: colors.background,
+      headerForegroundColor: colors.textPrimary,
+      dayForegroundColor: WidgetStateProperty.resolveWith((
+        Set<WidgetState> states,
+      ) {
+        if (states.contains(WidgetState.selected)) {
+          return colors.onPrimary;
+        }
+        return colors.textPrimary;
+      }),
+      dayBackgroundColor: WidgetStateProperty.resolveWith((
+        Set<WidgetState> states,
+      ) {
+        if (states.contains(WidgetState.selected)) {
+          return colors.primary;
+        }
+        return colors.foreground.withValues(alpha: 0);
+      }),
+      todayForegroundColor: WidgetStateProperty.all<Color>(colors.primary),
+      todayBorder: BorderSide(color: colors.primary),
+      yearForegroundColor: WidgetStateProperty.all<Color>(colors.textPrimary),
+      rangeSelectionBackgroundColor: colors.primary.withValues(
+        alpha: _selectedTintAlpha,
+      ),
+      confirmButtonStyle: TextButton.styleFrom(foregroundColor: colors.primary),
+      cancelButtonStyle: TextButton.styleFrom(
+        foregroundColor: colors.textSecondary,
+      ),
     ),
     appBarTheme: AppBarThemeData(
       backgroundColor: colors.background,
@@ -117,7 +160,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         size: 20,
         weight: FontWeight.w600,
         fontFamily: Fonts.current,
-        letterSpacing: -0.4,
+        letterSpacing: Fonts.tracking(-0.4),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -156,6 +199,91 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
         TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
       },
+    ),
+  );
+}
+
+const double _selectedTintAlpha = 0.16;
+const double _iosBodySize = 17;
+const double _iosSmallActionSize = 15;
+const double _iosLargeTitleSize = 34;
+const double _iosPickerSize = 21;
+const double _iosTabSize = 10;
+
+ColorScheme _platformColorScheme(ColorScheme base, ThemeColors colors) {
+  final Color selectedTint = colors.primary.withValues(
+    alpha: _selectedTintAlpha,
+  );
+  return base.copyWith(
+    surface: colors.background,
+    onSurface: colors.textPrimary,
+    onSurfaceVariant: colors.textSecondary,
+    surfaceDim: colors.background,
+    surfaceBright: colors.foreground,
+    surfaceContainerLowest: colors.background,
+    surfaceContainerLow: colors.background,
+    surfaceContainer: colors.foreground,
+    surfaceContainerHigh: colors.foreground,
+    surfaceContainerHighest: colors.foreground,
+    outline: colors.border,
+    outlineVariant: colors.divider,
+    surfaceTint: colors.background,
+    primaryContainer: selectedTint,
+    onPrimaryContainer: colors.primary,
+    secondaryContainer: colors.secondary,
+    onSecondaryContainer: colors.onSecondary,
+    errorContainer: colors.error.withValues(alpha: _selectedTintAlpha),
+    onErrorContainer: colors.error,
+    inverseSurface: colors.textPrimary,
+    onInverseSurface: colors.background,
+    inversePrimary: colors.primary,
+  );
+}
+
+/// Both palettes are dark navy, including the light theme mode. Cupertino
+/// sheets and alerts resolve their materials from this brightness.
+Brightness _surfaceBrightness(ThemeColors colors) {
+  return ThemeData.estimateBrightnessForColor(colors.background);
+}
+
+CupertinoThemeData _cupertinoTheme(ThemeColors colors, Brightness brightness) {
+  final TextStyle body = TextStyle(
+    inherit: false,
+    color: colors.textPrimary,
+    fontFamily: Fonts.current,
+    fontFamilyFallback: Fonts.usesArabic
+        ? null
+        : const <String>[Fonts.ibmPlexSansArabic],
+    fontSize: _iosBodySize,
+    decoration: TextDecoration.none,
+  );
+  final TextStyle action = body.copyWith(color: colors.primary);
+  return CupertinoThemeData(
+    brightness: brightness,
+    primaryColor: colors.primary,
+    primaryContrastingColor: colors.onPrimary,
+    applyThemeToAll: true,
+    scaffoldBackgroundColor: colors.background,
+    barBackgroundColor: colors.background,
+    selectionHandleColor: colors.primary,
+    textTheme: CupertinoTextThemeData(
+      primaryColor: colors.primary,
+      textStyle: body,
+      actionTextStyle: action,
+      actionSmallTextStyle: action.copyWith(fontSize: _iosSmallActionSize),
+      tabLabelTextStyle: body.copyWith(
+        color: colors.textSecondary,
+        fontSize: _iosTabSize,
+        fontWeight: FontWeight.w500,
+      ),
+      navTitleTextStyle: body.copyWith(fontWeight: FontWeight.w600),
+      navLargeTitleTextStyle: body.copyWith(
+        fontSize: _iosLargeTitleSize,
+        fontWeight: FontWeight.w700,
+      ),
+      navActionTextStyle: action,
+      pickerTextStyle: body.copyWith(fontSize: _iosPickerSize),
+      dateTimePickerTextStyle: body.copyWith(fontSize: _iosPickerSize),
     ),
   );
 }

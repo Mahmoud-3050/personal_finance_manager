@@ -8,6 +8,8 @@ import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/domain/finance_records.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
+import '../../../../shared/widgets/platform/platform_activity_indicator.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../../domain/entities/backup_copy.dart';
 import '../../domain/entities/backup_settings.dart';
 import '../controller/list_cloud_copies/list_cloud_copies_cubit.dart';
@@ -48,7 +50,7 @@ class _CloudCopiesPageState extends State<CloudCopiesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: PlatformAppBar(
         title: Text(Strings.backupCopies, style: TextStyles.of(size: 18)),
       ),
       body: BlocBuilder<SignInForBackupCubit, SignInForBackupState>(
@@ -63,7 +65,7 @@ class _CloudCopiesPageState extends State<CloudCopiesPage> {
             builder: (BuildContext context, ListCloudCopiesState state) {
               return switch (state) {
                 ApiCallLoading() => const Center(
-                  child: CircularProgressIndicator(),
+                  child: PlatformActivityIndicator(),
                 ),
                 ApiCallSuccess(:final data) => ListView.builder(
                   itemCount: data.length,
@@ -78,7 +80,10 @@ class _CloudCopiesPageState extends State<CloudCopiesPage> {
                         child: Text(
                           Strings.backupRestore,
                           maxLines: 1,
-                          style: TextStyles.of(size: 14, weight: FontWeight.w600),
+                          style: TextStyles.of(
+                            size: 14,
+                            weight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     );

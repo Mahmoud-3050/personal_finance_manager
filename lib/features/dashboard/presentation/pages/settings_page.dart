@@ -6,6 +6,7 @@ import 'package:themes/themes.dart';
 import '../../../../config/language/strings.dart';
 import '../../../../config/routes/app_routes.dart';
 import '../../../../shared/widgets/finance/summary_card.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -13,7 +14,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(Strings.settings)),
+      appBar: PlatformAppBar(title: Text(Strings.settings)),
       body: ListView(
         padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
         children: const <Widget>[_CategoriesLink(), _BackupLink()],

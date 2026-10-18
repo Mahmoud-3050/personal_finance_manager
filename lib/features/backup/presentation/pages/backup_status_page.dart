@@ -16,6 +16,8 @@ import '../controller/export_book/export_book_cubit.dart';
 import '../controller/get_backup_status/get_backup_status_cubit.dart';
 import '../controller/import_book/import_book_cubit.dart';
 import '../controller/preview_import/preview_import_cubit.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
+import '../../../../shared/widgets/platform/platform_button.dart';
 import '../widgets/reload_finance_book.dart';
 import '../controller/run_manual_backup/run_manual_backup_cubit.dart';
 import '../controller/set_backup_schedule/set_backup_schedule_cubit.dart';
@@ -27,8 +29,8 @@ class BackupStatusPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: BackButton(
+      appBar: PlatformAppBar(
+        leading: PlatformBackButton(
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -52,10 +54,10 @@ class BackupStatusPage extends StatelessWidget {
                   size: 28,
                   weight: FontWeight.w600,
                   fontFamily: Fonts.display,
-                  letterSpacing: -0.6,
-                  fontVariations: const <FontVariation>[
-                    FontVariation.weight(600),
-                  ],
+                  letterSpacing: Fonts.tracking(-0.6),
+                  fontVariations: Fonts.usesArabic
+                      ? null
+                      : const <FontVariation>[FontVariation.weight(600)],
                 ),
               ),
               SizedBox(height: 8.h),
@@ -90,53 +92,36 @@ class BackupStatusPage extends StatelessWidget {
               SizedBox(height: 24.h),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: PlatformButton(
+                  label: Strings.backupNow,
                   onPressed: () => _backupNow(context),
-                  child: Text(
-                    Strings.backupNow,
-                    maxLines: 1,
-                    style: TextStyles.of(
-                      size: 15,
-                      weight: FontWeight.w600,
-                      color: context.colors.onPrimary,
-                    ),
-                  ),
                 ),
               ),
               SizedBox(height: 8.h),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: PlatformButton(
+                  label: Strings.backupCopies,
+                  filled: false,
                   onPressed: () => context.push(AppRoutes.cloudCopies),
-                  child: Text(
-                    Strings.backupCopies,
-                    maxLines: 1,
-                    style: TextStyles.of(size: 15, weight: FontWeight.w500),
-                  ),
                 ),
               ),
               SizedBox(height: 8.h),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: PlatformButton(
+                  label: Strings.backupExport,
+                  filled: false,
                   onPressed: () => _export(context),
-                  child: Text(
-                    Strings.backupExport,
-                    maxLines: 1,
-                    style: TextStyles.of(size: 15, weight: FontWeight.w500),
-                  ),
                 ),
               ),
               SizedBox(height: 8.h),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
+                child: PlatformButton(
+                  label: Strings.backupImport,
+                  filled: false,
                   onPressed: () => _import(context),
-                  child: Text(
-                    Strings.backupImport,
-                    maxLines: 1,
-                    style: TextStyles.of(size: 15, weight: FontWeight.w500),
-                  ),
                 ),
               ),
               BlocBuilder<SignInForBackupCubit, SignInForBackupState>(
@@ -195,26 +180,10 @@ class BackupStatusPage extends StatelessWidget {
     BackupSettings settings,
     BackupSchedule schedule,
   ) {
-    final bool selected = settings.schedule == schedule;
-    final ThemeColors colors = context.colors;
-    final Text label = Text(
-      _scheduleLabel(schedule),
-      maxLines: 1,
-      style: TextStyles.of(
-        size: 13,
-        weight: FontWeight.w500,
-        color: selected ? colors.onPrimary : colors.textPrimary,
-      ),
-    );
-    if (selected) {
-      return FilledButton(
-        onPressed: () => _setSchedule(context, schedule),
-        child: label,
-      );
-    }
-    return OutlinedButton(
+    return PlatformButton(
+      label: _scheduleLabel(schedule),
+      filled: settings.schedule == schedule,
       onPressed: () => _setSchedule(context, schedule),
-      child: label,
     );
   }
 

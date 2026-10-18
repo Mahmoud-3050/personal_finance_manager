@@ -16,6 +16,8 @@ import '../../../../shared/domain/finance_records.dart';
 import '../widgets/transaction_filter_sheet.dart';
 import '../widgets/transaction_summary.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
+import '../../../../shared/widgets/platform/platform_activity_indicator.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
 import '../../../../shared/widgets/dialogs/show_modal_bottom_sheet.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
@@ -100,7 +102,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
+        appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoSearch,
             style: TextStyles.of(size: 18, weight: FontWeight.w600),
@@ -206,7 +208,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
                             );
                           }
                           return const Center(
-                            child: CircularProgressIndicator(),
+                            child: PlatformActivityIndicator(),
                           );
                         },
                   ),

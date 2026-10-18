@@ -111,6 +111,16 @@ flutter:
           weight: 600
         - asset: assets/fonts/Inter/Inter-Bold.ttf
           weight: 700
+    - family: IBM Plex Sans Arabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansArabic/IBMPlexSansArabic-Bold.ttf
+          weight: 700
     - family: Poppins
       fonts:
         - asset: assets/fonts/Poppins/Poppins-Black.ttf

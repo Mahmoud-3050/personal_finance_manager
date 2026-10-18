@@ -17,6 +17,7 @@ import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
 import '../../../../shared/widgets/finance_menu_field.dart';
 import '../../../../shared/widgets/platform_date_picker.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../../../../shared/widgets/platform_switch_tile.dart';
 import '../../../dashboard/presentation/controller/get_dashboard/get_dashboard_cubit.dart';
 import '../../domain/entities/account_list_data.dart';
@@ -91,7 +92,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
         context.pop();
       },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoAddAccount,
             style: TextStyles.of(size: 18, weight: FontWeight.w600),

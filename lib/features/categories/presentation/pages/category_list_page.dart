@@ -13,6 +13,8 @@ import '../../../../shared/widgets/finance_ledger.dart';
 import '../../../../shared/widgets/finance_menu_field.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/confirm_action_dialog.dart';
+import '../../../../shared/widgets/platform/platform_activity_indicator.dart';
+import '../../../../shared/widgets/platform/platform_app_bar.dart';
 import '../../domain/usecases/deactivate_category_use_case.dart';
 import '../../domain/usecases/delete_category_use_case.dart';
 import '../../domain/usecases/save_category_use_case.dart';
@@ -39,7 +41,7 @@ class CategoryListPage extends StatelessWidget {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
+        appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoCategories,
             style: TextStyles.of(size: 18, weight: FontWeight.w600),
@@ -48,7 +50,7 @@ class CategoryListPage extends StatelessWidget {
         body: BlocBuilder<GetCategoriesCubit, ApiCallState<FinanceRecords>>(
           builder: (BuildContext context, ApiCallState<FinanceRecords> state) {
             if (state is! ApiCallSuccess<FinanceRecords>) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: PlatformActivityIndicator());
             }
             final FinanceRecords book = state.data;
             return ListView(
@@ -106,7 +108,9 @@ class _CategoryTile extends StatelessWidget {
     final bool used = _idIsUsed(book, category.id);
     return FinanceLedgerRow(
       title: category.name,
-      subtitle: category.isActive ? category.kind.name : Strings.fenzoDeactivate,
+      subtitle: category.isActive
+          ? category.kind.name
+          : Strings.fenzoDeactivate,
       trailing: PopupMenuButton<String>(
         onSelected: (String action) => _onAction(context, action, used),
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
