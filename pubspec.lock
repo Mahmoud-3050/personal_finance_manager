@@ -1185,6 +1185,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.0"
+  liquidify:
+    dependency: "direct main"
+    description:
+      path: "third_party/liquidify"
+      relative: true
+    source: path
+    version: "0.1.1"
   list_counter:
     dependency: transitive
     description:

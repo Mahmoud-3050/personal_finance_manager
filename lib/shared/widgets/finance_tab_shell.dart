@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquidify/liquidify.dart';
 import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
@@ -8,7 +8,11 @@ import '../../config/language/strings.dart';
 import '../../config/routes/app_routes.dart';
 import 'platform/platform_target.dart';
 
-/// Edge-aligned tab bar for the four top-level book screens.
+/// Tab bar for the four top-level book screens.
+///
+/// iOS uses [NativeLiquidGlassTabBar] from liquidify, the native UITabBar
+/// with UIGlassEffect. The `.liquidGlass()` extension maps only a short list
+/// of Material icons to SF Symbols, so these book tabs pass symbol names.
 class FinanceTabShell extends StatelessWidget {
   const FinanceTabShell({required this.child, super.key});
 
@@ -32,9 +36,36 @@ class FinanceTabShell extends StatelessWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: usesIosComponents(context)
-          ? _IosBookTabs(
-              index: index,
-              onSelected: (int value) => context.go(paths[value]),
+          ? SafeArea(
+              top: false,
+              child: NativeLiquidGlassTabBar(
+                currentIndex: index,
+                onTap: (int value) => context.go(paths[value]),
+                selectedItemColor: colors.primary,
+                unselectedItemColor: colors.textSecondary,
+                items: <NativeTabBarItem>[
+                  NativeTabBarItem(
+                    label: Strings.fenzoTitle,
+                    icon: 'creditcard',
+                    activeIcon: 'creditcard.fill',
+                  ),
+                  NativeTabBarItem(
+                    label: Strings.fenzoAccounts,
+                    icon: 'building.2',
+                    activeIcon: 'building.2.fill',
+                  ),
+                  NativeTabBarItem(
+                    label: Strings.fenzoTransactions,
+                    icon: 'doc.text',
+                    activeIcon: 'doc.text.fill',
+                  ),
+                  NativeTabBarItem(
+                    label: Strings.fenzoReports,
+                    icon: 'chart.pie',
+                    activeIcon: 'chart.pie.fill',
+                  ),
+                ],
+              ),
             )
           : DecoratedBox(
               decoration: BoxDecoration(
@@ -73,47 +104,6 @@ class FinanceTabShell extends StatelessWidget {
                 ],
               ),
             ),
-    );
-  }
-}
-
-class _IosBookTabs extends StatelessWidget {
-  const _IosBookTabs({required this.index, required this.onSelected});
-
-  final int index;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeColors colors = context.colors;
-    return CupertinoTabBar(
-      currentIndex: index,
-      backgroundColor: colors.background,
-      activeColor: CupertinoTheme.of(context).primaryColor,
-      inactiveColor: colors.textSecondary,
-      border: Border(top: BorderSide(color: colors.divider)),
-      onTap: onSelected,
-      items: <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: const Icon(CupertinoIcons.creditcard),
-          activeIcon: const Icon(CupertinoIcons.creditcard_fill),
-          label: Strings.fenzoTitle,
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(CupertinoIcons.building_2_fill),
-          label: Strings.fenzoAccounts,
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(CupertinoIcons.doc_text),
-          activeIcon: const Icon(CupertinoIcons.doc_text_fill),
-          label: Strings.fenzoTransactions,
-        ),
-        BottomNavigationBarItem(
-          icon: const Icon(CupertinoIcons.chart_pie),
-          activeIcon: const Icon(CupertinoIcons.chart_pie_fill),
-          label: Strings.fenzoReports,
-        ),
-      ],
     );
   }
 }

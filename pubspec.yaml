@@ -71,6 +71,8 @@ dependencies:
   firebase_auth: ^6.7.0
   cloud_firestore: ^6.1.0
   internet_connection_checker_plus: ^3.1.2
+  liquidify:
+    path: third_party/liquidify
 
 dev_dependencies:
   flutter_test:

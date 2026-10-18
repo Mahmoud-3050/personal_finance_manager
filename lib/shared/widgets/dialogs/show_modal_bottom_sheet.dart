@@ -10,6 +10,7 @@ Future<dynamic> showAppModalBottomSheet({
 }) {
   return showModalBottomSheet<dynamic>(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     enableDrag: isDismissible,
     isDismissible: isDismissible,
@@ -17,8 +18,13 @@ Future<dynamic> showAppModalBottomSheet({
       borderRadius: .circular(borderRadius ?? 20.r),
     ),
     builder: (BuildContext context) {
+      final double keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+      final double homeInset = MediaQuery.viewPaddingOf(context).bottom;
+      final double bottomInset = keyboardInset > homeInset
+          ? keyboardInset
+          : homeInset;
       return Padding(
-        padding: .only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        padding: EdgeInsets.only(bottom: bottomInset),
         child: PopScope(
           canPop: isDismissible,
           child: Builder(

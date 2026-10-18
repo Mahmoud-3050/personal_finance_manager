@@ -118,7 +118,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
         body: Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 12.h, 4.w, 8.h),
+              padding: EdgeInsetsDirectional.fromSTEB(16.w, 12.h, 4.w, 8.h),
               child: Row(
                 children: <Widget>[
                   Expanded(

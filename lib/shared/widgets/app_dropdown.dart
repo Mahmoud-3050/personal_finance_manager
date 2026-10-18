@@ -7,6 +7,8 @@ import '../../core/utils/values/text_styles.dart';
 import 'app_shimmer.dart';
 import 'field_errors_scope.dart';
 
+const double _fieldContentInset = 16;
+
 class AppDropdown<T> extends StatelessWidget {
   final String hintText;
   final String? labelText;
@@ -72,7 +74,7 @@ class AppDropdown<T> extends StatelessWidget {
         if (visibleError != null) ...[
           SizedBox(height: 4.h),
           Padding(
-            padding: .symmetric(horizontal: 12.w),
+            padding: .symmetric(horizontal: _fieldContentInset.w),
             child: Text(
               visibleError,
               style: TextStyles.of(size: 12, color: colors.error),
@@ -112,20 +114,24 @@ class AppDropdown<T> extends StatelessWidget {
   Widget _buildLabel(ThemeColors colors) {
     final style = TextStyles.of(size: 16, weight: .w500);
     final label = labelText ?? '';
-    if (!showRequiredSymbol) {
-      return Text(label, style: style);
-    }
-    return Text.rich(
-      TextSpan(
-        text: label,
-        style: style,
-        children: [
-          TextSpan(
-            text: ' *',
-            style: style.copyWith(color: colors.error),
-          ),
-        ],
-      ),
+    final Widget labelWidget = showRequiredSymbol
+        ? Text.rich(
+            TextSpan(
+              text: label,
+              style: style,
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: style.copyWith(color: colors.error),
+                ),
+              ],
+            ),
+            textAlign: TextAlign.start,
+          )
+        : Text(label, textAlign: TextAlign.start, style: style);
+    return Padding(
+      padding: EdgeInsetsDirectional.only(start: _fieldContentInset.w),
+      child: labelWidget,
     );
   }
 
@@ -136,11 +142,13 @@ class AppDropdown<T> extends StatelessWidget {
     required bool isEnabled,
   }) {
     return Container(
-      padding: .symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: .symmetric(horizontal: _fieldContentInset.w, vertical: 4.h),
       decoration: BoxDecoration(
         borderRadius: .circular(8.r),
         color: backgroundColor,
-        border: .all(color: isInvalid ? colors.error : (borderColor ?? colors.hint)),
+        border: .all(
+          color: isInvalid ? colors.error : (borderColor ?? colors.hint),
+        ),
       ),
       child: DropdownButton<T>(
         value: _safeValue,
@@ -158,14 +166,18 @@ class AppDropdown<T> extends StatelessWidget {
         borderRadius: .circular(8.r),
         isExpanded: true,
         underline: const SizedBox(),
-        selectedItemBuilder: (BuildContext context) => _selectedItems(colors, models),
+        selectedItemBuilder: (BuildContext context) =>
+            _selectedItems(colors, models),
         items: _menuItems(models),
         onChanged: isEnabled ? onChanged : null,
       ),
     );
   }
 
-  List<Widget> _selectedItems(ThemeColors colors, List<DropdownItemModel<T>> models) {
+  List<Widget> _selectedItems(
+    ThemeColors colors,
+    List<DropdownItemModel<T>> models,
+  ) {
     return [
       if (isOptional) _buildHintText(colors),
       for (final item in models) _buildSelectedItem(colors, item),
@@ -176,7 +188,11 @@ class AppDropdown<T> extends StatelessWidget {
     return [
       if (isOptional)
         DropdownMenuItem<T>(
-          child: Text(Strings.none, style: TextStyles.of(size: 14, weight: .w500)),
+          child: Text(
+            Strings.none,
+            textAlign: TextAlign.start,
+            style: TextStyles.of(size: 14, weight: .w500),
+          ),
         ),
       for (final item in models)
         DropdownMenuItem<T>(
@@ -185,7 +201,11 @@ class AppDropdown<T> extends StatelessWidget {
             children: [
               if (item.icon != null) ...[item.icon!, SizedBox(width: 4.w)],
               Expanded(
-                child: Text(item.name, style: TextStyles.of(size: 14, weight: .w500)),
+                child: Text(
+                  item.name,
+                  textAlign: TextAlign.start,
+                  style: TextStyles.of(size: 14, weight: .w500),
+                ),
               ),
             ],
           ),
@@ -211,7 +231,10 @@ class AppDropdown<T> extends StatelessWidget {
                     ],
                   ),
                 )
-              : Text(prefix, style: TextStyles.of(size: 12, color: colors.textSecondary)),
+              : Text(
+                  prefix,
+                  style: TextStyles.of(size: 12, color: colors.textSecondary),
+                ),
           SizedBox(width: 8.w),
           Container(width: 2.w, height: 32.h, color: colors.divider),
           SizedBox(width: 8.w),
@@ -246,8 +269,9 @@ class AppDropdown<T> extends StatelessWidget {
                 ),
               ],
             ),
+            textAlign: TextAlign.start,
           )
-        : Text(hintText, style: hintStyle);
+        : Text(hintText, textAlign: TextAlign.start, style: hintStyle);
 
     final icon = iconItemBuilder;
     if (icon == null) return hint;
@@ -261,11 +285,15 @@ class AppDropdown<T> extends StatelessWidget {
   }
 
   Widget _buildSelectedText(String value) {
-    return Text(
-      value,
-      style: TextStyles.of(size: 14, weight: .w500),
-      maxLines: 2,
-      overflow: .ellipsis,
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: Text(
+        value,
+        textAlign: TextAlign.start,
+        style: TextStyles.of(size: 14, weight: .w500),
+        maxLines: 1,
+        overflow: .ellipsis,
+      ),
     );
   }
 }
@@ -282,7 +310,14 @@ class AppDropdownShimmer extends StatelessWidget {
     return Column(
       crossAxisAlignment: .start,
       children: [
-        Text(label, style: TextStyles.of(size: 16, weight: .w500)),
+        Padding(
+          padding: EdgeInsetsDirectional.only(start: _fieldContentInset.w),
+          child: Text(
+            label,
+            textAlign: TextAlign.start,
+            style: TextStyles.of(size: 16, weight: .w500),
+          ),
+        ),
         SizedBox(height: 4.h),
         _dropdown(context),
       ],
@@ -293,10 +328,17 @@ class AppDropdownShimmer extends StatelessWidget {
     final colors = context.colors;
     return AppShimmer(
       child: Container(
-        padding: .symmetric(horizontal: 16.w, vertical: 4.h),
-        decoration: BoxDecoration(borderRadius: .circular(8.r), color: colors.foreground),
+        padding: .symmetric(horizontal: _fieldContentInset.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          borderRadius: .circular(8.r),
+          color: colors.foreground,
+        ),
         child: DropdownButton<int>(
-          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.unselected, size: 20.r),
+          icon: Icon(
+            Icons.arrow_drop_down_rounded,
+            color: colors.unselected,
+            size: 20.r,
+          ),
           hint: Text(
             'hintText',
             style: TextStyles.of(size: 14, color: colors.unselected),
@@ -331,7 +373,14 @@ class AppDropdownErrorWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: .start,
       children: [
-        Text(label, style: TextStyles.of(size: 16, weight: .w500)),
+        Padding(
+          padding: EdgeInsetsDirectional.only(start: _fieldContentInset.w),
+          child: Text(
+            label,
+            textAlign: TextAlign.start,
+            style: TextStyles.of(size: 16, weight: .w500),
+          ),
+        ),
         SizedBox(height: 4.h),
         _dropdown(context),
       ],
@@ -341,7 +390,7 @@ class AppDropdownErrorWidget extends StatelessWidget {
   Widget _dropdown(BuildContext context) {
     final colors = context.colors;
     return Container(
-      padding: .symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: .symmetric(horizontal: _fieldContentInset.w, vertical: 4.h),
       decoration: BoxDecoration(
         borderRadius: .circular(8.r),
         color: colors.foreground,
@@ -352,7 +401,10 @@ class AppDropdownErrorWidget extends StatelessWidget {
           onTap: onRetry,
           child: Icon(Icons.refresh_rounded, color: colors.hint, size: 20.r),
         ),
-        hint: Text(errorText, style: TextStyles.of(size: 14, color: colors.error)),
+        hint: Text(
+          errorText,
+          style: TextStyles.of(size: 14, color: colors.error),
+        ),
         borderRadius: .circular(8.r),
         isExpanded: true,
         underline: const SizedBox(),
