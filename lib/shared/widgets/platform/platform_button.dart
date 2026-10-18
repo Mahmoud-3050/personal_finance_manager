@@ -36,7 +36,7 @@ class PlatformButton extends StatelessWidget {
       maxLines: 1,
       style: TextStyles.of(
         size: 15,
-        weight: FontWeight.w600,
+        weight: TextStyles.semibold,
         color: labelColor,
       ),
     );

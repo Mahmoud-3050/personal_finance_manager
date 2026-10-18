@@ -282,7 +282,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
                       name,
                       style: TextStyles.of(
                         size: 14,
-                        weight: .w500,
+                        weight: TextStyles.medium,
                         color: isSelected ? colors.primary : colors.textPrimary,
                       ),
                       maxLines: 2,
@@ -340,7 +340,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   }
 
   Widget _buildLabel(ThemeColors colors) {
-    final style = TextStyles.of(size: 16, weight: .w500);
+    final style = TextStyles.of(size: 16, weight: TextStyles.medium);
     final label = widget.labelText ?? '';
     if (!widget.showRequiredSymbol) {
       return Text(label, style: style);
@@ -473,7 +473,10 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
       child: Row(
         mainAxisSize: .min,
         children: [
-          Text(_nameOf(item), style: TextStyles.of(size: 12, weight: .w600)),
+          Text(
+            _nameOf(item),
+            style: TextStyles.of(size: 12, weight: TextStyles.semibold),
+          ),
           SizedBox(width: 8.w),
           GestureDetector(
             onTap: () => _toggleItemSelection(item),
@@ -488,7 +491,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   Widget _buildJoinedSelectedText(ThemeColors colors) {
     return Text(
       _selected.map(_nameOf).join(', '),
-      style: TextStyles.of(size: 14, weight: .w500),
+      style: TextStyles.of(size: 14, weight: TextStyles.medium),
       maxLines: 2,
       overflow: .ellipsis,
     );

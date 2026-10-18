@@ -69,7 +69,7 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
           },
           child: Text(
             snapshot.data?.toString() ?? '',
-            style: TextStyles.of(size: 16, weight: .w700),
+            style: TextStyles.of(size: 16, weight: TextStyles.bold),
             key: UniqueKey(),
           ),
         );

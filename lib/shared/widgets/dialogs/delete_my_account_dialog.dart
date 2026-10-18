@@ -19,7 +19,11 @@ class DeleteAccountDialog extends StatelessWidget {
         children: [
           Text(
             Strings.deleteAccount,
-            style: TextStyles.of(size: 18, weight: .w600, color: colors.error),
+            style: TextStyles.of(
+              size: 18,
+              weight: TextStyles.semibold,
+              color: colors.error,
+            ),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -73,7 +77,11 @@ class ConfirmDeleteAccountDialog extends StatelessWidget {
         children: [
           Text(
             Strings.confirmDeleteAccount,
-            style: TextStyles.of(size: 18, weight: .w600, color: colors.error),
+            style: TextStyles.of(
+              size: 18,
+              weight: TextStyles.semibold,
+              color: colors.error,
+            ),
           ),
           SizedBox(height: 16.h),
           Text(

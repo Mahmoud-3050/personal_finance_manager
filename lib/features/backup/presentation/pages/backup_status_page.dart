@@ -52,7 +52,7 @@ class BackupStatusPage extends StatelessWidget {
                 _scheduleLabel(settings.schedule),
                 style: TextStyles.of(
                   size: 28,
-                  weight: FontWeight.w600,
+                  weight: TextStyles.semibold,
                   fontFamily: Fonts.display,
                   letterSpacing: Fonts.tracking(-0.6),
                   fontVariations: Fonts.usesArabic

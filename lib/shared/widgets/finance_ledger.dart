@@ -10,7 +10,7 @@ class FinanceAmount extends StatelessWidget {
     required this.label,
     required this.size,
     this.color,
-    this.weight = FontWeight.w600,
+    this.weight = TextStyles.semibold,
     super.key,
   });
 
@@ -53,7 +53,7 @@ class FinanceSectionTitle extends StatelessWidget {
         label,
         style: TextStyles.of(
           size: 13,
-          weight: FontWeight.w600,
+          weight: TextStyles.semibold,
           color: context.colors.textSecondary,
         ),
       ),
@@ -100,7 +100,7 @@ class FinanceLedgerRow extends StatelessWidget {
                 Text(
                   title,
                   maxLines: 1,
-                  style: TextStyles.of(size: 16, weight: FontWeight.w500),
+                  style: TextStyles.of(size: 16, weight: TextStyles.medium),
                 ),
                 if (subtitle != null && subtitle!.isNotEmpty) ...<Widget>[
                   SizedBox(height: 2.h),

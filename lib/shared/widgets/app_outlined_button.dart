@@ -185,7 +185,7 @@ class _AppOutlinedButtonState extends State<AppOutlinedButton> {
           widget.textStyle ??
           TextStyles.of(
             size: 16,
-            weight: .w500,
+            weight: TextStyles.medium,
             color: _isVisuallyDisabled ? colors.grey400 : accentColor,
           ),
       textAlign: .center,

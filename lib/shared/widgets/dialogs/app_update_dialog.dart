@@ -73,7 +73,7 @@ class AppUpdateDialog extends StatelessWidget {
       Expanded(
         child: Text(
           '${Strings.newVersion}!',
-          style: TextStyles.of(size: 18, weight: .w600),
+          style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           maxLines: 1,
         ),
       ),
@@ -82,7 +82,7 @@ class AppUpdateDialog extends StatelessWidget {
         'v$newVersion',
         style: TextStyles.of(
           size: 18,
-          weight: .w600,
+          weight: TextStyles.semibold,
           color: colors.yellow.withValues(alpha: 0.9),
         ),
         maxLines: 1,

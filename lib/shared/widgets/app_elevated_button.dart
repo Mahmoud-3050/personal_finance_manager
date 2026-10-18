@@ -269,7 +269,7 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
           widget.textStyle ??
           TextStyles.of(
             size: 16,
-            weight: .w500,
+            weight: TextStyles.medium,
             color:
                 widget.textColor ??
                 (isDisabled

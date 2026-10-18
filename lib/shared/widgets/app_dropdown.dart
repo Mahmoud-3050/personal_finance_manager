@@ -112,7 +112,7 @@ class AppDropdown<T> extends StatelessWidget {
   }
 
   Widget _buildLabel(ThemeColors colors) {
-    final style = TextStyles.of(size: 16, weight: .w500);
+    final style = TextStyles.of(size: 16, weight: TextStyles.medium);
     final label = labelText ?? '';
     final Widget labelWidget = showRequiredSymbol
         ? Text.rich(
@@ -191,7 +191,7 @@ class AppDropdown<T> extends StatelessWidget {
           child: Text(
             Strings.none,
             textAlign: TextAlign.start,
-            style: TextStyles.of(size: 14, weight: .w500),
+            style: TextStyles.of(size: 14, weight: TextStyles.medium),
           ),
         ),
       for (final item in models)
@@ -204,7 +204,7 @@ class AppDropdown<T> extends StatelessWidget {
                 child: Text(
                   item.name,
                   textAlign: TextAlign.start,
-                  style: TextStyles.of(size: 14, weight: .w500),
+                  style: TextStyles.of(size: 14, weight: TextStyles.medium),
                 ),
               ),
             ],
@@ -290,7 +290,7 @@ class AppDropdown<T> extends StatelessWidget {
       child: Text(
         value,
         textAlign: TextAlign.start,
-        style: TextStyles.of(size: 14, weight: .w500),
+        style: TextStyles.of(size: 14, weight: TextStyles.medium),
         maxLines: 1,
         overflow: .ellipsis,
       ),
@@ -315,7 +315,7 @@ class AppDropdownShimmer extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.start,
-            style: TextStyles.of(size: 16, weight: .w500),
+            style: TextStyles.of(size: 16, weight: TextStyles.medium),
           ),
         ),
         SizedBox(height: 4.h),
@@ -378,7 +378,7 @@ class AppDropdownErrorWidget extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.start,
-            style: TextStyles.of(size: 16, weight: .w500),
+            style: TextStyles.of(size: 16, weight: TextStyles.medium),
           ),
         ),
         SizedBox(height: 4.h),

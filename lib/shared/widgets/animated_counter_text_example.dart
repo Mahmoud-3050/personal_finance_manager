@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:themes/themes.dart';
 
+import '../../core/utils/values/text_styles.dart';
 import 'animated_counter_text.dart';
 import 'animated_shadowed_linear_progress_indicator_example.dart';
 
@@ -92,7 +93,10 @@ class _AnimatedCounterTextExampleState
         children: [
           Text(
             'Counter example',
-            style: bodyStyle.copyWith(fontSize: 18, fontWeight: .w600),
+            style: bodyStyle.copyWith(
+              fontSize: 18,
+              fontWeight: TextStyles.semibold,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -155,7 +159,7 @@ class _LabeledCounter extends StatelessWidget {
           style: TextStyle(
             inherit: false,
             fontSize: 14,
-            fontWeight: .w500,
+            fontWeight: TextStyles.medium,
             color: context.colors.textPrimary,
           ),
         ),
@@ -204,7 +208,7 @@ class _PresetButton extends StatelessWidget {
             style: TextStyle(
               inherit: false,
               fontSize: 14,
-              fontWeight: .w500,
+              fontWeight: TextStyles.medium,
               color: selected ? colors.primary : colors.textPrimary,
             ),
           ),

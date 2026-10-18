@@ -32,7 +32,10 @@ class BalanceHeroBody extends StatelessWidget {
             alignment: AlignmentDirectional.centerEnd,
             child: BalanceGlyph(),
           ),
-          Text(label, style: TextStyles.of(size: 13, weight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyles.of(size: 13, weight: TextStyles.medium),
+          ),
           SizedBox(height: 4.h),
           FinanceAmount(
             label: amount,

@@ -87,7 +87,7 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
         appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoCaptureReview,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
         ),
         body: BlocBuilder<GetAccountsCubit, GetAccountsState>(
@@ -252,7 +252,10 @@ class _CaptureReviewPageState extends State<CaptureReviewPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(label, style: TextStyles.of(size: 14, weight: FontWeight.w600)),
+        Text(
+          label,
+          style: TextStyles.of(size: 14, weight: TextStyles.semibold),
+        ),
         if (_draft.uncertainFields.contains(field))
           CaptureUncertainMark(field: field),
         child,

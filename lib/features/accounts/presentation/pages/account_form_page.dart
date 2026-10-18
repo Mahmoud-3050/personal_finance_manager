@@ -95,7 +95,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
         appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoAddAccount,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
         ),
         body: Form(

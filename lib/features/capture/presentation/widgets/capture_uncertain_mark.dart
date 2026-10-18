@@ -14,7 +14,7 @@ class CaptureUncertainMark extends StatelessWidget {
     return Text(
       Strings.fenzoCaptureUncertain,
       key: Key('uncertain-${field.name}'),
-      style: TextStyles.of(size: 12, weight: FontWeight.w600),
+      style: TextStyles.of(size: 12, weight: TextStyles.semibold),
     );
   }
 }

@@ -31,7 +31,7 @@ class AppOtpField extends StatelessWidget {
       textInputAction: TextInputAction.done,
       maxLength: length,
       textAlign: TextAlign.center,
-      style: TextStyles.of(size: 24, weight: FontWeight.w600),
+      style: TextStyles.of(size: 24, weight: TextStyles.semibold),
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.digitsOnly,
         LengthLimitingTextInputFormatter(length),

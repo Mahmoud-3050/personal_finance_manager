@@ -4,6 +4,7 @@ import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 import '../../config/themes/colors_palettes.dart';
+import '../../core/utils/values/text_styles.dart';
 import 'animated_counter_text.dart';
 import 'animated_shadowed_linear_progress_indicator.dart';
 
@@ -193,7 +194,10 @@ class _AnimatedShadowedLinearProgressIndicatorExampleState
         children: [
           Text(
             'Progress example',
-            style: bodyStyle.copyWith(fontSize: 18, fontWeight: .w600),
+            style: bodyStyle.copyWith(
+              fontSize: 18,
+              fontWeight: TextStyles.semibold,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -258,7 +262,7 @@ class _LabeledBar extends StatelessWidget {
           style: TextStyle(
             inherit: false,
             fontSize: 14,
-            fontWeight: .w500,
+            fontWeight: TextStyles.medium,
             color: context.colors.textPrimary,
           ),
         ),
@@ -302,7 +306,7 @@ class _PercentButton extends StatelessWidget {
             style: TextStyle(
               inherit: false,
               fontSize: 14,
-              fontWeight: .w500,
+              fontWeight: TextStyles.medium,
               color: selected ? colors.primary : colors.textPrimary,
             ),
           ),

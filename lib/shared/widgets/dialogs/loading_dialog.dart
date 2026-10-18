@@ -31,7 +31,7 @@ class LoadingDialog extends StatelessWidget {
                 SizedBox(height: 16.h),
                 Text(
                   title!,
-                  style: TextStyles.of(size: 16, weight: .w500),
+                  style: TextStyles.of(size: 16, weight: TextStyles.medium),
                   textAlign: .center,
                 ),
               ],

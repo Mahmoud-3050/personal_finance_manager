@@ -47,7 +47,7 @@ class AccountListPage extends StatelessWidget {
         appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoAccounts,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
         ),
         body: BlocBuilder<GetAccountsCubit, ApiCallState<AccountListData>>(

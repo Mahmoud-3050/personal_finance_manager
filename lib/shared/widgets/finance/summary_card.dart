@@ -116,7 +116,7 @@ class _SummaryCopy extends StatelessWidget {
         Text(
           title,
           maxLines: 1,
-          style: TextStyles.of(size: 15, weight: FontWeight.w600),
+          style: TextStyles.of(size: 15, weight: TextStyles.semibold),
         ),
         if (subtitle != null && subtitle!.isNotEmpty)
           Text(

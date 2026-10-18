@@ -74,7 +74,7 @@ class _ReportPageState extends State<ReportPage> {
         appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoReports,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
         ),
         body: Column(

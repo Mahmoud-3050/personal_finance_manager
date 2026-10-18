@@ -49,7 +49,7 @@ class ModalBottomSheetScaffold extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyles.of(size: 18, weight: .w500),
+                  style: TextStyles.of(size: 18, weight: TextStyles.medium),
                   textAlign: .center,
                 ),
               ),

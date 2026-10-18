@@ -44,7 +44,7 @@ class CategoryListPage extends StatelessWidget {
         appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoCategories,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
         ),
         body: BlocBuilder<GetCategoriesCubit, ApiCallState<FinanceRecords>>(
@@ -299,7 +299,7 @@ class _CategoryPromptState extends State<_CategoryPrompt> {
     return AlertDialog(
       title: Text(
         Strings.fenzoAddCategory,
-        style: TextStyles.of(size: 18, weight: FontWeight.w600),
+        style: TextStyles.of(size: 18, weight: TextStyles.semibold),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,

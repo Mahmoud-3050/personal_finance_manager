@@ -3,6 +3,7 @@ import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 import '../../core/utils/extensions.dart';
+import '../../core/utils/values/text_styles.dart';
 
 void showAppSnackBar({
   required BuildContext context,
@@ -64,7 +65,7 @@ Widget _buildContent(BuildContext context, String message, ToastType type) {
         style: TextStyle(
           color: colors.white,
           fontSize: 13.sp,
-          fontWeight: .w400,
+          fontWeight: TextStyles.regular,
           overflow: .clip,
         ),
       ),

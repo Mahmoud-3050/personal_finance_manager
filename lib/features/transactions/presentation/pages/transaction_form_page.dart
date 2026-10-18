@@ -99,7 +99,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
         appBar: PlatformAppBar(
           title: Text(
             _title,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
         ),
         body: BlocBuilder<GetAccountsCubit, ApiCallState<AccountListData>>(

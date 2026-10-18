@@ -617,7 +617,9 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       textInputAction: widget.textInputAction,
       autofillHints: widget.autofillHints,
       maxLengthEnforcement: .enforced,
-      style: widget.textStyle ?? TextStyles.of(size: 14, weight: .w500),
+      style:
+          widget.textStyle ??
+          TextStyles.of(size: 14, weight: TextStyles.medium),
       cursorColor: cursor,
       cursorErrorColor: cursor,
       cursorRadius: .circular(8.r),
@@ -912,7 +914,8 @@ class _DialingCodeButton extends StatelessWidget {
         onTap: onTap,
         enabled: enabled,
         flagSize: 20.r,
-        textStyle: textStyle ?? TextStyles.of(size: 14, weight: .w500),
+        textStyle:
+            textStyle ?? TextStyles.of(size: 14, weight: TextStyles.medium),
         dropdownIconColor: context.colors.hint,
       ),
     );

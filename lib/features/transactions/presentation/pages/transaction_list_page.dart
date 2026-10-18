@@ -105,7 +105,7 @@ class _TransactionListPageState extends State<TransactionListPage> {
         appBar: PlatformAppBar(
           title: Text(
             Strings.fenzoSearch,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
           actions: <Widget>[
             IconButton(

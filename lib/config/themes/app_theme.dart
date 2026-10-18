@@ -15,7 +15,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
   final TextStyle body = TextStyles.of(size: 16, fontFamily: Fonts.current);
   final TextStyle label = TextStyles.of(
     size: 15,
-    weight: FontWeight.w600,
+    weight: TextStyles.semibold,
     fontFamily: Fonts.current,
   );
   final StadiumBorder pill = const StadiumBorder();
@@ -64,7 +64,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
         shape: pill,
         textStyle: label.copyWith(
-          fontWeight: FontWeight.w500,
+          fontWeight: TextStyles.medium,
           fontFamily: Fonts.current,
         ),
       ),
@@ -73,7 +73,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
       style: TextButton.styleFrom(
         foregroundColor: colors.textPrimary,
         textStyle: body.copyWith(
-          fontWeight: FontWeight.w500,
+          fontWeight: TextStyles.medium,
           fontFamily: Fonts.current,
         ),
         shape: pill,
@@ -158,7 +158,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
       iconTheme: IconThemeData(color: colors.textPrimary),
       titleTextStyle: TextStyles.of(
         size: 20,
-        weight: FontWeight.w600,
+        weight: TextStyles.semibold,
         fontFamily: Fonts.current,
         letterSpacing: Fonts.tracking(-0.4),
       ),
@@ -274,12 +274,12 @@ CupertinoThemeData _cupertinoTheme(ThemeColors colors, Brightness brightness) {
       tabLabelTextStyle: body.copyWith(
         color: colors.textSecondary,
         fontSize: _iosTabSize,
-        fontWeight: FontWeight.w500,
+        fontWeight: TextStyles.medium,
       ),
-      navTitleTextStyle: body.copyWith(fontWeight: FontWeight.w600),
+      navTitleTextStyle: body.copyWith(fontWeight: TextStyles.semibold),
       navLargeTitleTextStyle: body.copyWith(
         fontSize: _iosLargeTitleSize,
-        fontWeight: FontWeight.w700,
+        fontWeight: TextStyles.bold,
       ),
       navActionTextStyle: action,
       pickerTextStyle: body.copyWith(fontSize: _iosPickerSize),

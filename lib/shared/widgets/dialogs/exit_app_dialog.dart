@@ -19,7 +19,7 @@ class ExitAppDialog extends StatelessWidget {
         children: [
           Text(
             Strings.confirmExit,
-            style: TextStyles.of(size: 18, weight: .w600),
+            style: TextStyles.of(size: 18, weight: TextStyles.semibold),
           ),
           SizedBox(height: 24.h),
           Text(

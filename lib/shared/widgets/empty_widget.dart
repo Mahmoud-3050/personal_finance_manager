@@ -42,7 +42,7 @@ class EmptyWidget extends StatelessWidget {
                 constraints: BoxConstraints(maxWidth: 0.85.sw),
                 child: Text(
                   title ?? Strings.noDataFound,
-                  style: TextStyles.of(size: 18, weight: .w600),
+                  style: TextStyles.of(size: 18, weight: TextStyles.semibold),
                   textAlign: .center,
                   overflow: .visible,
                 ),

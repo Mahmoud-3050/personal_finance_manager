@@ -82,7 +82,7 @@ class _CloudCopiesPageState extends State<CloudCopiesPage> {
                           maxLines: 1,
                           style: TextStyles.of(
                             size: 14,
-                            weight: FontWeight.w600,
+                            weight: TextStyles.semibold,
                           ),
                         ),
                       ),
