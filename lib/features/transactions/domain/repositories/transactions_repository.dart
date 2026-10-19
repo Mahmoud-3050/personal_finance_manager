@@ -4,6 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 
 abstract interface class TransactionsRepository {
   Future<Either<Failure, FinanceRecords>> load();
@@ -21,6 +22,8 @@ abstract interface class TransactionsRepository {
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   });
 
   Future<Either<Failure, FinanceRecords>> deleteTransaction(String id);

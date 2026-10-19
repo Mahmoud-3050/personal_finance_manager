@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../../../../core/database/finance_database.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 
 final class MoneyTransactionModel extends MoneyTransaction {
   const MoneyTransactionModel({
@@ -20,6 +21,8 @@ final class MoneyTransactionModel extends MoneyTransaction {
     super.description,
     super.notes,
     super.commissionMinor,
+    super.commissionBasis,
+    super.commissionRateMinor,
   });
 
   factory MoneyTransactionModel.fromEntity(MoneyTransaction transaction) {
@@ -36,6 +39,8 @@ final class MoneyTransactionModel extends MoneyTransaction {
       description: transaction.description,
       notes: transaction.notes,
       commissionMinor: transaction.commissionMinor,
+      commissionBasis: transaction.commissionBasis,
+      commissionRateMinor: transaction.commissionRateMinor,
       createdAt: transaction.createdAt,
       updatedAt: transaction.updatedAt,
     );
@@ -55,6 +60,8 @@ final class MoneyTransactionModel extends MoneyTransaction {
       description: row.description,
       notes: row.notes,
       commissionMinor: row.commissionMinor,
+      commissionBasis: CommissionBasis.values.byName(row.commissionBasis),
+      commissionRateMinor: row.commissionRateMinor,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );
@@ -74,6 +81,10 @@ final class MoneyTransactionModel extends MoneyTransaction {
       description: json['description'] as String?,
       notes: json['notes'] as String?,
       commissionMinor: json['commission_minor'] as int? ?? 0,
+      commissionBasis: CommissionBasis.values.byName(
+        json['commission_basis'] as String? ?? 'fixed',
+      ),
+      commissionRateMinor: json['commission_rate_minor'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -92,6 +103,8 @@ final class MoneyTransactionModel extends MoneyTransaction {
     'description': description,
     'notes': notes,
     'commission_minor': commissionMinor,
+    'commission_basis': commissionBasis.name,
+    'commission_rate_minor': commissionRateMinor,
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
   };
@@ -110,6 +123,8 @@ final class MoneyTransactionModel extends MoneyTransaction {
       description: Value(description),
       notes: Value(notes),
       commissionMinor: Value(commissionMinor),
+      commissionBasis: Value(commissionBasis.name),
+      commissionRateMinor: Value(commissionRateMinor),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

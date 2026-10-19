@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../shared/domain/entities/account.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 
 enum CaptureKind { income, expense }
 
@@ -79,6 +80,13 @@ final class CaptureDraft extends Equatable {
     );
     if (!selected.feeApplies) {
       return selected.copyWith(clearCommission: true);
+    }
+    if (account.defaultCommissionBasis == CommissionBasis.percentage) {
+      final int fee = percentageCommissionMinor(
+        amountMinor: selected.amountMinor ?? 0,
+        rateMinor: account.defaultCommissionRateMinor,
+      );
+      return selected.copyWith(commissionMinor: fee);
     }
     return selected.copyWith(commissionMinor: account.defaultCommissionMinor);
   }

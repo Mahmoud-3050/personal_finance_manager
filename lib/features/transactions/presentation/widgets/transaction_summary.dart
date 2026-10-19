@@ -7,6 +7,7 @@ import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/entities/subcategory.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../../../../shared/widgets/finance/movement_mark.dart';
 import '../../../../shared/widgets/finance/movement_style.dart';
 import '../../../../shared/widgets/finance/summary_card.dart';
@@ -79,9 +80,17 @@ String _subtitle(
   final String fee = item.commissionMinor > 0 && !hideFee
       ? '${Strings.fenzoTransferCommission} ${Money(item.commissionMinor).format()}'
       : '';
+  final String rate =
+      item.commissionMinor > 0 &&
+          !hideFee &&
+          item.commissionBasis == CommissionBasis.percentage &&
+          item.commissionRateMinor > 0
+      ? '${Strings.fenzoCommissionRate} ${Money(item.commissionRateMinor).format()}%'
+      : '';
   return <String>[
     item.date.toIso(),
     if (names.isNotEmpty) names,
     if (fee.isNotEmpty) fee,
+    if (rate.isNotEmpty) rate,
   ].join(' · ');
 }

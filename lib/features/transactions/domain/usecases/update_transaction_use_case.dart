@@ -5,6 +5,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../repositories/transactions_repository.dart';
 
 class UpdateTransactionParams extends Params {
@@ -21,6 +22,8 @@ class UpdateTransactionParams extends Params {
     this.description,
     this.notes,
     this.commissionMinor = 0,
+    this.commissionBasis = CommissionBasis.fixed,
+    this.commissionRateMinor = 0,
     this.cancellation,
   });
   final String id;
@@ -35,6 +38,8 @@ class UpdateTransactionParams extends Params {
   final String? description;
   final String? notes;
   final int commissionMinor;
+  final CommissionBasis commissionBasis;
+  final int commissionRateMinor;
   @override
   final Object? cancellation;
   @override
@@ -46,6 +51,8 @@ class UpdateTransactionParams extends Params {
     amountMinor,
     date,
     commissionMinor,
+    commissionBasis,
+    commissionRateMinor,
   ];
 }
 
@@ -68,6 +75,8 @@ class UpdateTransactionUseCase
       description: params.description,
       notes: params.notes,
       commissionMinor: params.commissionMinor,
+      commissionBasis: params.commissionBasis,
+      commissionRateMinor: params.commissionRateMinor,
     );
   }
 }

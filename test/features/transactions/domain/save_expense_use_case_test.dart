@@ -3,6 +3,7 @@ import 'package:finzomanager/core/error/failures.dart';
 import 'package:finzomanager/shared/domain/entities/account.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/entities/money_transaction.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:finzomanager/features/transactions/domain/repositories/transactions_repository.dart';
 import 'package:finzomanager/features/transactions/domain/usecases/save_expense_use_case.dart';
@@ -36,6 +37,8 @@ class _Repo implements TransactionsRepository {
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   }) async {
     final Either<Failure, FinanceRecords> next = book.saveMovement(
       id: id,
@@ -51,6 +54,8 @@ class _Repo implements TransactionsRepository {
       description: description,
       notes: notes,
       commissionMinor: commissionMinor,
+      commissionBasis: commissionBasis,
+      commissionRateMinor: commissionRateMinor,
     );
     return next.map((FinanceRecords value) {
       book = value;

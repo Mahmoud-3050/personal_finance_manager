@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../services/percentage_commission.dart';
 import 'calendar_date.dart';
 
 enum AccountType { bank, eWallet, cash, other }
@@ -19,6 +20,8 @@ class Account extends Equatable {
     this.accountNumber,
     this.phoneNumber,
     this.defaultCommissionMinor = 0,
+    this.defaultCommissionBasis = CommissionBasis.fixed,
+    this.defaultCommissionRateMinor = 0,
   });
 
   final String id;
@@ -29,6 +32,8 @@ class Account extends Equatable {
   final String? phoneNumber;
   final int openingBalanceMinor;
   final int defaultCommissionMinor;
+  final CommissionBasis defaultCommissionBasis;
+  final int defaultCommissionRateMinor;
   final CalendarDate openingDate;
   final bool isActive;
   final bool includeInTotal;
@@ -45,6 +50,8 @@ class Account extends Equatable {
     bool clearPhone = false,
     int? openingBalanceMinor,
     int? defaultCommissionMinor,
+    CommissionBasis? defaultCommissionBasis,
+    int? defaultCommissionRateMinor,
     CalendarDate? openingDate,
     bool? isActive,
     bool? includeInTotal,
@@ -60,6 +67,10 @@ class Account extends Equatable {
       openingBalanceMinor: openingBalanceMinor ?? this.openingBalanceMinor,
       defaultCommissionMinor:
           defaultCommissionMinor ?? this.defaultCommissionMinor,
+      defaultCommissionBasis:
+          defaultCommissionBasis ?? this.defaultCommissionBasis,
+      defaultCommissionRateMinor:
+          defaultCommissionRateMinor ?? this.defaultCommissionRateMinor,
       openingDate: openingDate ?? this.openingDate,
       isActive: isActive ?? this.isActive,
       includeInTotal: includeInTotal ?? this.includeInTotal,
@@ -78,6 +89,8 @@ class Account extends Equatable {
     phoneNumber,
     openingBalanceMinor,
     defaultCommissionMinor,
+    defaultCommissionBasis,
+    defaultCommissionRateMinor,
     openingDate,
     isActive,
     includeInTotal,

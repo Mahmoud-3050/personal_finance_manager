@@ -7,6 +7,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../shared/domain/entities/account.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../../domain/repositories/accounts_repository.dart';
 
 class AccountsRepositoryImpl
@@ -32,6 +33,8 @@ class AccountsRepositoryImpl
     String? accountNumber,
     String? phoneNumber,
     int defaultCommissionMinor = 0,
+    CommissionBasis defaultCommissionBasis = CommissionBasis.fixed,
+    int defaultCommissionRateMinor = 0,
   }) {
     return changeRecords(
       'saveAccount',
@@ -47,6 +50,8 @@ class AccountsRepositoryImpl
         accountNumber: accountNumber,
         phoneNumber: phoneNumber,
         defaultCommissionMinor: defaultCommissionMinor,
+        defaultCommissionBasis: defaultCommissionBasis,
+        defaultCommissionRateMinor: defaultCommissionRateMinor,
       ),
     );
   }

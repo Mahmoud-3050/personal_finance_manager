@@ -40,7 +40,9 @@ A place that holds money.
 | accountNumber | no | Bank type only. Identifying label, never a secret |
 | phoneNumber | no | E-wallet type only. Cleared when the type changes away from e-wallet |
 | openingBalanceMinor | yes | Piastres. Not income |
-| defaultCommissionMinor | yes | Usual transfer commission in piastres. Zero or greater. Blank means 0. Not spending and not part of the balance. Not cleared when the type changes |
+| defaultCommissionMinor | yes | Fixed usual transfer commission in piastres. Zero or greater. Blank means 0. Forced to 0 when `defaultCommissionBasis` is `percentage`. Not spending and not part of the balance. Not cleared when the type changes |
+| defaultCommissionBasis | yes | `fixed` or `percentage`. Default `fixed`. Same enum as a transfer commission |
+| defaultCommissionRateMinor | yes | 0 when `fixed`. When `percentage`, 0 or more hundredths of a percent (`100` = 1.00%). Not piastres. Not spending and not part of the balance |
 | openingDate | yes | First day this account can have transactions |
 | isActive | yes | New accounts start active |
 | includeInTotal | yes | New accounts start included |
@@ -63,8 +65,8 @@ inactive + included      (person later includes a deactivated account)
 
 | Action | Allowed when | Result |
 |---|---|---|
-| Create | Name, type, opening balance, and opening date are valid. Usual fee, if entered, is zero or greater and has at most 2 decimal places | Active, included in total. Usual fee is 0 when left blank |
-| Edit name, labels, opening balance, opening date, inclusion, usual fee | Always, except the opening-date rule below | Labels that do not match the type are not kept. A new usual fee does not change fees already saved on transactions |
+| Create | Name, type, opening balance, and opening date are valid. Usual fee is fixed or a percentage; amount or rate, if entered, is zero or greater and has at most 2 decimal places | Active, included in total. Usual fee is fixed 0 when left blank or set to 0 EGP or 0% |
+| Edit name, labels, opening balance, opening date, inclusion, usual fee (basis, amount, or rate) | Always, except the opening-date rule below | Labels that do not match the type are not kept. A new usual fee does not change fees already saved on transactions |
 | Change type | Account has zero transactions | Type changes; labels that do not apply to the new type are cleared |
 | Change type | Account has any transaction | Rejected; type unchanged |
 | Change opening date | New date is on or before every existing transaction on this account | Balances recalculate because they are derived |
@@ -140,7 +142,9 @@ One recorded movement. Types: `income`, `expense`, `transfer`.
 |---|---|---|---|
 | id | yes | yes | yes |
 | amountMinor | > 0 | > 0 | > 0 |
-| commissionMinor | must be 0 | 0 or more, and only when `accountId` is `bank` or `eWallet`; otherwise must be 0 | 0 or more, any account types |
+| commissionMinor | must be 0 | 0 or more, and only when `accountId` is `bank` or `eWallet`; otherwise must be 0 | 0 or more, any account types. On a percentage basis this is the rounded result, not a second amount the person types |
+| commissionBasis | `fixed` | `fixed` | `fixed` or `percentage` |
+| commissionRateMinor | must be 0 | must be 0 | 0 when `fixed`. When `percentage`, 0 or more hundredths of a percent (`100` = 1.00%). Not piastres |
 | date | yes | yes | yes |
 | accountId | yes, active | yes, active | no |
 | categoryId | yes, income kind | yes, expense kind | no |
@@ -165,9 +169,17 @@ One recorded movement. Types: `income`, `expense`, `transfer`.
 - When only one side is included, total money changes by the included side’s balance effect. The moved amount is still not income or expense. The fee affects total money only when the charged account is included.
 - On an expense, the paying account decreases by `amountMinor + commissionMinor`. The chosen category total changes by `amountMinor` only. The fee is added to `رسوم تحويل`.
 - A blank commission is stored as 0. Rows saved before the column existed are 0. A negative commission, or a commission on income, cash, or `other`, is rejected and not saved.
-- A new bank or e-wallet expense starts with the paying account’s `defaultCommissionMinor`. A new transfer starts with the source account’s `defaultCommissionMinor` only. The destination’s usual fee is not added. Changing that account before save replaces the starting fee when a fee is allowed on the row. The person can change or clear it. The saved `commissionMinor` is the amount they left, not a later copy of the usual fee.
-- Opening a saved row shows that row’s `commissionMinor`. Changing the account’s usual fee does not rewrite it.
-- Accounts saved before the usual-fee column existed, and JSON that omits `default_commission_minor`, have a usual fee of 0.
+- A new bank or e-wallet expense starts from the paying account’s usual fee. A fixed usual fee starts that money amount. A percentage usual fee starts `percentageCommissionMinor(paymentAmount, defaultCommissionRateMinor)` as a fixed money fee; the saved expense stays `fixed` with `commissionRateMinor` 0. A new transfer starts from the source account’s usual fee only: a fixed usual fee starts a fixed commission of that amount, and a percentage usual fee starts that percentage of the moved amount. The destination’s usual fee is not added. Changing that account before save replaces the starting fee with the new account’s usual fee and basis while the commission is still following that auto-filled start. A hand-set transfer basis or rate is left unchanged. The person can change or clear the starting fee. The saved fee is what they left, not a later copy of the usual fee.
+- Opening a saved row shows that row’s `commissionMinor` (and transfer basis/rate). Changing the account’s usual fee does not rewrite it.
+- Accounts saved before the usual-fee column existed, and JSON that omits `default_commission_minor`, have a fixed usual fee of 0. JSON that omits `default_commission_basis` or `default_commission_rate_minor` reads as `fixed` and 0. Accounts that stored only a money usual fee stay `fixed` with that money.
+- On a transfer, `commissionBasis` is `fixed` or `percentage`. Income and expenses are always `fixed` with `commissionRateMinor` 0 when saved. A percentage on those rows is rejected and not saved.
+- A percentage commission is `halfUp(amountMinor * commissionRateMinor / 10000)` in integer arithmetic. A remainder of half a piastre or more rounds away from zero. `commissionRateMinor` of `100` on `100000` piastres stores `commissionMinor` of `1000`. The same rule stores `333` for 1% of `33333`, `1` for 0.50% of `100`, and `0` for 1% of `49`. The same function starts a payment fee from a percentage usual fee.
+- `saveMovement` writes that result for a percentage transfer. The typed money amount is not kept beside the rate. A fixed basis stores the typed `commissionMinor` and forces `commissionRateMinor` to 0.
+- A blank rate is 0. A negative rate, or a rate with more than two decimal places, is rejected and not rounded. A rate above 100% is allowed.
+- Changing `amountMinor` on a percentage transfer updates `commissionMinor` from the saved rate. Changing `amountMinor` on a fixed transfer leaves `commissionMinor` unchanged.
+- Switching a transfer from fixed to percentage by hand clears the rate until the person enters one, unless the start already came from a percentage usual fee. Switching back to `fixed` uses the current source’s fixed usual fee when that usual fee is fixed, or the money amount currently shown when the usual fee is a percentage.
+- Rows saved before the basis columns existed, and JSON that omits `commission_basis` or `commission_rate_minor`, are `fixed` with rate 0 and keep the `commissionMinor` already stored. Their balances do not change until the person edits them.
+- A `commissionMinor` of 0 is not shown as a fee. A saved percentage rate is still kept when its current result is 0.
 
 ### List order
 

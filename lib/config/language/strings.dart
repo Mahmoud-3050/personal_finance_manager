@@ -757,6 +757,10 @@ abstract class Strings {
   static String get fenzoAmount => 'fenzo_amount'.tr;
   static String get fenzoTransferCommission => 'fenzo_transfer_commission'.tr;
   static String get fenzoUsualCommission => 'fenzo_usual_commission'.tr;
+  static String get fenzoCommissionFixed => 'fenzo_commission_fixed'.tr;
+  static String get fenzoCommissionPercentage =>
+      'fenzo_commission_percentage'.tr;
+  static String get fenzoCommissionRate => 'fenzo_commission_rate'.tr;
   static String get fenzoCommissionNotAllowed =>
       'fenzo_commission_not_allowed'.tr;
   static String get fenzoName => 'fenzo_name'.tr;

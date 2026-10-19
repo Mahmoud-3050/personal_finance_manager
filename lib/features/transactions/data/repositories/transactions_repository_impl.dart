@@ -7,6 +7,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../../domain/repositories/transactions_repository.dart';
 
 class TransactionsRepositoryImpl
@@ -35,6 +36,8 @@ class TransactionsRepositoryImpl
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   }) {
     return changeRecords(
       'saveMovement',
@@ -52,6 +55,8 @@ class TransactionsRepositoryImpl
         description: description,
         notes: notes,
         commissionMinor: commissionMinor,
+        commissionBasis: commissionBasis,
+        commissionRateMinor: commissionRateMinor,
       ),
     );
   }

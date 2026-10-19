@@ -188,10 +188,13 @@ class AppDropdown<T> extends StatelessWidget {
     return [
       if (isOptional)
         DropdownMenuItem<T>(
-          child: Text(
-            Strings.none,
-            textAlign: TextAlign.start,
-            style: TextStyles.of(size: 14, weight: TextStyles.medium),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              Strings.none,
+              textAlign: TextAlign.start,
+              style: TextStyles.of(size: 14, weight: TextStyles.medium),
+            ),
           ),
         ),
       for (final item in models)
@@ -257,21 +260,24 @@ class AppDropdown<T> extends StatelessWidget {
 
   Widget _buildHintText(ThemeColors colors) {
     final hintStyle = TextStyles.of(size: 14, color: colors.hint);
-    final Widget hint = showRequiredSymbol && labelText == null
-        ? Text.rich(
-            TextSpan(
-              text: hintText,
-              style: hintStyle,
-              children: [
-                TextSpan(
-                  text: ' *',
-                  style: TextStyles.of(size: 12, color: colors.error),
-                ),
-              ],
-            ),
-            textAlign: TextAlign.start,
-          )
-        : Text(hintText, textAlign: TextAlign.start, style: hintStyle);
+    final Widget hint = Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: showRequiredSymbol && labelText == null
+          ? Text.rich(
+              TextSpan(
+                text: hintText,
+                style: hintStyle,
+                children: [
+                  TextSpan(
+                    text: ' *',
+                    style: TextStyles.of(size: 12, color: colors.error),
+                  ),
+                ],
+              ),
+              textAlign: TextAlign.start,
+            )
+          : Text(hintText, textAlign: TextAlign.start, style: hintStyle),
+    );
 
     final icon = iconItemBuilder;
     if (icon == null) return hint;

@@ -14,6 +14,10 @@ description: "Task list for Phase 0 MVP personal money tracking"
 
 **Amendment 2026-10-17**: Phases 24–29 are the usual fee stored on each account. Tasks T001–T139 stay as they are. Do not add a new feature folder or a new cubit.
 
+**Amendment 2026-10-20**: Phases 30–34 are the fixed-or-percentage commission on a transfer. Tasks T001–T155 stay as they are. Do not add a new feature folder or a new cubit.
+
+**Amendment 2026-10-20 (usual fee)**: Phases 35–40 are the fixed-or-percentage usual fee on each account. Tasks T001–T174 stay as they are. Do not add a new feature folder or a new cubit. Reuse `CommissionBasis` and `percentageCommissionMinor`. A saved payment stays a money fee only.
+
 **Organization**: Tasks are grouped by user story so each story can be implemented and tested as its own increment.
 
 ## Format: `[ID] [P?] [Story] Description`
@@ -669,3 +673,245 @@ T153 waits until T152 has landed in `lib/features/transactions/presentation/page
 3. Finish Phase 27 (US2) so a bank or wallet payment starts with that fee.
 4. Finish Phase 28 (US3) so a move starts with the source account’s usual fee only.
 5. Finish Phase 29. Do not add the usual fee to dashboard or report totals.
+
+---
+
+## Phase 30: Setup — Percentage transfer commission
+
+**Purpose**: Labels for the fixed-or-percentage choice on a transfer. No new package and no new feature folder.
+
+- [X] T156 [P] Add `fenzo_commission_fixed`, `fenzo_commission_percentage`, and `fenzo_commission_rate` to `assets/lang/en.json` and `assets/lang/ar.json`, and add the matching getters in `lib/config/language/strings.dart`. English: "Fixed amount", "Percentage of amount", "Commission rate". Arabic: "مبلغ ثابت", "نسبة من المبلغ", "نسبة العمولة". Do not add a second string table.
+
+---
+
+## Phase 31: Foundational — Percentage transfer commission
+
+**Purpose**: A transfer can store a basis and a rate. Balances still use the resulting piastres. Older rows stay fixed. No transfer-form work starts before this phase.
+
+**Independent check**: 1% of 1,000.00 EGP stores `commissionMinor` of 1,000 piastres. A percentage on an expense is rejected. JSON without the new keys reads as `fixed` with rate 0 and keeps the stored fee.
+
+### Tests first
+
+- [X] T157 [P] Write failing tests for the percentage-to-piastres function in `test/shared/domain/percentage_commission_test.dart`: 1% of 100,000 piastres is 1,000; 1% of 33,333 is 333; 0.50% of 100 is 1; 1% of 49 is 0; 150% of 100,000 is 150,000. Use integer half-up only. Do not use `double`.
+- [X] T158 [P] Write failing `saveMovement` tests in `test/shared/domain/finance_records_percentage_commission_test.dart`: a transfer at 1% of 1,000.00 EGP stores basis `percentage`, rate 100, and commission 1,000 piastres; changing only the moved amount to 500.00 EGP recalculates the commission to 500 piastres; a fixed transfer keeps its typed fee when the amount changes; a percentage on an expense or income is rejected and the book is unchanged; a blank rate stores commission 0; a negative rate is rejected; a fixed basis forces the rate to 0.
+- [X] T159 [P] Write failing mapping tests in `test/features/transactions/data/money_transaction_model_test.dart`: `toJson` writes `commission_basis` and `commission_rate_minor`; a JSON object without those keys reads as `fixed` and 0 and keeps `commission_minor`.
+- [X] T160 [P] Extend `test/core/database/finance_schema_migration_test.dart` with a failing case: a schema-version-3 database whose `transaction_rows` have no `commission_basis` or `commission_rate_minor` gains those columns as `fixed` and 0 after `lib/core/database/finance_database.dart` upgrades to version 4, and an existing `commission_minor` of 500 stays 500.
+
+### Implementation
+
+- [X] T161 [P] Add `CommissionBasis` (`fixed`, `percentage`) and the pure function `percentageCommissionMinor({required int amountMinor, required int rateMinor})` in `lib/shared/domain/services/percentage_commission.dart` (or beside `Money` under `lib/shared/domain/`) so `test/shared/domain/percentage_commission_test.dart` passes. Formula: half-up of `amountMinor * rateMinor / 10000`. `100` means 1.00%.
+- [X] T162 [P] Add `commissionBasis` (default `fixed`) and `commissionRateMinor` (default 0) to `lib/shared/domain/entities/money_transaction.dart`, and include them in `props`.
+- [X] T163 [P] Add `commissionBasis` as non-null text with default `fixed` and `commissionRateMinor` as a non-null integer with default 0 on `TransactionRows` in `lib/core/database/finance_database.dart`, raise `schemaVersion` to 4, and add an `onUpgrade` from 3 to 4 that adds both columns. Keep the version 2 and version 3 upgrades. Regenerate `lib/core/database/finance_database.g.dart` with `dart run build_runner build --delete-conflicting-outputs`.
+- [X] T164 Map `commissionBasis` and `commissionRateMinor` in `lib/features/transactions/data/models/money_transaction_model.dart` (`fromEntity`, `fromRow`, `fromJson`, `toJson`, `toCompanion`) so missing keys are `fixed` and 0 and `toCompanion` passes `Value(...)` for both, making `test/features/transactions/data/money_transaction_model_test.dart` pass.
+- [X] T165 In `lib/shared/domain/finance_records.dart`, accept `commissionBasis` and `commissionRateMinor` on `saveMovement`. When the basis is `percentage` and the type is `transfer`, compute and store `commissionMinor` with the shared function, keep the rate, and ignore any typed money amount. When the basis is `fixed`, store the typed `commissionMinor` and force the rate to 0. Reject a percentage on income or expense without writing. Make `test/shared/domain/finance_records_percentage_commission_test.dart` pass.
+- [X] T166 Pass `commissionBasis` and `commissionRateMinor` through `lib/features/transactions/domain/repositories/transactions_repository.dart`, `lib/features/transactions/data/repositories/transactions_repository_impl.dart`, `lib/features/transactions/domain/usecases/save_transfer_use_case.dart`, and `lib/features/transactions/domain/usecases/update_transaction_use_case.dart` (`SaveTransferParams`, `UpdateTransactionParams`, and `props`). Default both to `fixed` and 0. Update the `saveMovement` fakes in `test/features/transactions/domain/save_transfer_use_case_test.dart`, `test/features/transactions/presentation/save_transfer_cubit_test.dart`, `test/features/capture/domain/confirm_capture_draft_use_case_test.dart`, and any other repository fakes that break, so they accept the new arguments with those defaults. Do not add a percentage path to receipt capture.
+
+**Checkpoint**: Existing fixed fees and balances are unchanged. A percentage is only possible on a transfer inside `saveMovement`.
+
+---
+
+## Phase 32: User Story 3 — Choose fixed or percentage on a move (Priority: P2) 🎯 MVP
+
+**Goal**: On a transfer, the person chooses a fixed amount or a percentage of the moved amount. One percent of 1,000 EGP shows and saves as 10 EGP. Switching basis does not stack the usual fee. Changing the moved amount updates a percentage fee and leaves a fixed fee alone.
+
+**Independent Test**: Transfer 1,000.00 EGP at 1%. The form shows 10.00 before save. After save, the source falls by 1,010.00, the destination rises by 1,000.00, and spending rises by 10.00 under رسوم تحويل. Change the amount to 500.00 and confirm the fee becomes 5.00. Switch from a usual fee of 5.00 to 1% and confirm the fee is 10.00, not 15.00.
+
+### Tests for User Story 3
+
+- [X] T167 [P] [US3] Write failing use-case tests in `test/features/transactions/domain/save_transfer_percentage_test.dart` that pass `commissionBasis` and `commissionRateMinor` through `SaveTransferUseCase` in `lib/features/transactions/domain/usecases/save_transfer_use_case.dart`, including 1% of 1,000.00 EGP storing 10.00 EGP.
+- [X] T168 [P] [US3] Write failing cubit tests for success and for `ValidationFailure` in `test/features/transactions/presentation/save_transfer_percentage_cubit_test.dart`, covering `fSaveTransfer` on `lib/features/transactions/presentation/controller/save_transfer/save_transfer_cubit.dart` with a percentage params object.
+
+### Implementation for User Story 3
+
+- [X] T169 [US3] On `lib/features/transactions/presentation/pages/transaction_form_page.dart`, for a transfer only, offer Fixed amount versus Percentage of amount. A new transfer still starts as fixed with the source account’s usual fee. While fixed, changing the source still replaces the fee with that account’s usual fee. While percentage, changing the source leaves the rate unchanged. Switching to percentage clears the rate until the person enters one and does not add the usual fee. Switching back to fixed prefills the current source’s usual fee. Parse the rate with the existing money parser (`allowZero: true`, `allowNegative: false`). Show the resulting commission with the shared percentage function before save. When the moved amount changes under percentage, refresh that preview. Pass `commissionBasis` and `commissionRateMinor` on `SaveTransferParams` and `UpdateTransactionParams`. Opening a saved fixed row shows the saved money fee. Opening a saved percentage row shows the saved rate and the recalculated money fee, including when that result is 0.00. The expense form stays a typed money fee only.
+- [X] T170 [US3] In `lib/features/transactions/presentation/widgets/transaction_summary.dart`, when `commissionMinor` is greater than 0, keep showing the money fee. When the basis is `percentage` and the rate is greater than 0, also show the rate. Do not show a fee when `commissionMinor` is 0.
+
+**Checkpoint**: A move at 1% of 1,000 EGP matches SC-014. A payment form still has no percentage control.
+
+---
+
+## Phase 33: User Story 5 — Show the rate on the home screen (Priority: P2)
+
+**Goal**: Recent activity on the home screen shows a percentage commission as both the money fee and the rate, without changing how expenses are totaled.
+
+**Independent Test**: After saving a 1,000 EGP move at 1%, the home recent list shows the 10 EGP fee and the 1% rate. Period expenses still increase by 10 EGP only.
+
+### Implementation for User Story 5
+
+- [X] T171 [US5] In `lib/features/dashboard/presentation/widgets/dashboard_activity.dart`, when a recent transfer has `commissionMinor` greater than 0, show the money fee, and when its basis is `percentage` with a rate greater than 0, show that rate too. Do not change `report_calculator.dart` or period totals; they already sum `commissionMinor`.
+
+**Checkpoint**: Dashboard totals still count only the money fee. The rate is display only.
+
+---
+
+## Phase 34: Polish — Percentage transfer commission
+
+**Purpose**: Analysis and the manual pass. Receipt capture stays a fixed payment fee.
+
+- [X] T172 [P] Confirm `lib/features/capture/presentation/pages/capture_review_page.dart` and `lib/features/capture/domain/entities/capture_draft.dart` still send a fixed `commissionMinor` only, with no basis control.
+- [X] T173 Run `flutter analyze` and `flutter test` from the repository root and clear every issue this amendment causes in `lib/` and `test/`.
+- [X] T174 Walk steps 5a, 5c, and 5d in `specs/001-phase0-mvp/quickstart.md` and fix any miss against `specs/001-phase0-mvp/contracts/transactions.md` and `specs/001-phase0-mvp/contracts/dashboard-and-reports.md`.
+
+---
+
+## Dependencies — Percentage transfer commission
+
+### Phase dependencies
+
+- **Phase 30**: No dependency on other open tasks.
+- **Phase 31**: Depends on Phase 30 for the labels the transfer form uses. Blocks Phases 32–33.
+- **Phase 32 (US3)**: Depends on Phase 31. This is the MVP of the amendment. No dependency on US5.
+- **Phase 33 (US5)**: Depends on Phase 31. Can run after or beside Phase 32 once the entity fields exist. Does not require the form if seeded rows already carry a percentage.
+- **Phase 34**: Depends on Phases 32–33.
+
+### Within Phase 31
+
+- T157–T160 can run together, and they are written to fail before T161–T166.
+- T161, T162, and T163 can run together.
+- T164 depends on T162 and T163.
+- T165 depends on T161 and T162.
+- T166 depends on T165.
+
+### Parallel example after Phase 31
+
+```text
+T167 test/features/transactions/domain/save_transfer_percentage_test.dart
+T168 test/features/transactions/presentation/save_transfer_percentage_cubit_test.dart
+T171 lib/features/dashboard/presentation/widgets/dashboard_activity.dart
+```
+
+T169 and T170 share `lib/features/transactions/presentation/` and should not run in parallel with each other.
+
+## Implementation strategy — Percentage transfer commission
+
+1. Finish Phase 30 and Phase 31. Stop and confirm older fixed fees and balances are unchanged.
+2. Finish Phase 32 (US3). This is the MVP of the amendment: a move can use 1% and store 10 EGP on a 1,000 EGP transfer.
+3. Finish Phase 33 (US5) so the home screen shows the rate beside the money fee.
+4. Finish Phase 34. Do not add a percentage control to payment or receipt capture.
+
+---
+
+## Phase 35: Setup — Percentage usual fee
+
+**Purpose**: Reuse the existing fixed-or-percentage labels on the account form. No new package and no new feature folder.
+
+- [X] T175 [P] Reuse `fenzo_commission_fixed`, `fenzo_commission_percentage`, and `fenzo_commission_rate` from `lib/config/language/strings.dart` (and `assets/lang/en.json` / `assets/lang/ar.json`) for the account usual-fee basis control. Do not add a second string table. Add a new key only if a distinct usual-fee rate label is required beyond `fenzo_commission_rate`.
+
+---
+
+## Phase 36: Foundational — Percentage usual fee
+
+**Purpose**: An account can store a fixed or percentage usual fee. Older accounts stay fixed. Balances ignore the usual fee until a saved row carries a fee. No account-form or transaction-form work starts before this phase.
+
+**Independent check**: Saving an account with a 1% usual fee stores basis `percentage`, rate 100, and amount 0. A fixed usual fee of 3.00 stores basis `fixed`, amount 300, and rate 0. JSON without the new keys reads as `fixed` with rate 0 and keeps any money already stored. Schema version 4 upgrades to 5 without changing balances.
+
+### Tests first
+
+- [X] T176 [P] Write failing `saveAccount` tests in `test/shared/domain/finance_records_percentage_usual_fee_test.dart`: a blank usual fee or 0% is stored as fixed with amount 0 and rate 0; a 1% usual fee stores basis `percentage`, rate 100, and `defaultCommissionMinor` 0; a fixed 3.00 EGP stores basis `fixed`, amount 300, and rate 0; a negative rate is rejected and the book is unchanged; a fixed basis forces the rate to 0; a percentage basis forces `defaultCommissionMinor` to 0; changing the usual fee does not change `commissionMinor` on an already saved transaction; the opening balance is unchanged by storing a percentage usual fee.
+- [X] T177 [P] Write failing mapping tests in `test/features/accounts/data/account_model_test.dart`: `toJson` writes `default_commission_basis` and `default_commission_rate_minor`; a JSON object without those keys reads as `fixed` and 0 and keeps `default_commission_minor`.
+- [X] T178 [P] Extend `test/core/database/finance_schema_migration_test.dart` with a failing case: a schema-version-4 database whose `account_rows` have no `default_commission_basis` or `default_commission_rate_minor` gains those columns as `fixed` and 0 after `lib/core/database/finance_database.dart` upgrades to version 5, and an existing `default_commission_minor` of 300 stays 300.
+
+### Implementation
+
+- [X] T179 [P] Add `defaultCommissionBasis` (default `CommissionBasis.fixed`) and `defaultCommissionRateMinor` (default 0) to `lib/shared/domain/entities/account.dart`, include them in `copyWith` and `props`, and keep `defaultCommissionMinor` as the fixed usual fee in piastres.
+- [X] T180 [P] Add `defaultCommissionBasis` as non-null text with default `fixed` and `defaultCommissionRateMinor` as a non-null integer with default 0 on `AccountRows` in `lib/core/database/finance_database.dart`, raise `schemaVersion` to 5, and add an `onUpgrade` from 4 to 5 that adds both columns. Keep versions 2–4. Regenerate `lib/core/database/finance_database.g.dart` with `dart run build_runner build --delete-conflicting-outputs`.
+- [X] T181 Map `defaultCommissionBasis` and `defaultCommissionRateMinor` in `lib/features/accounts/data/models/account_model.dart` (`fromEntity`, `fromRow`, `fromJson`, `toJson`, `toCompanion`) so missing keys are `fixed` and 0 and `toCompanion` passes `Value(...)` for both, making `test/features/accounts/data/account_model_test.dart` pass.
+- [X] T182 In `lib/shared/domain/finance_records.dart`, accept `defaultCommissionBasis` and `defaultCommissionRateMinor` on `saveAccount`. When the basis is `percentage`, store the rate and force `defaultCommissionMinor` to 0. When the basis is `fixed`, store the typed amount and force the rate to 0. Reject a negative amount or rate without writing. Make `test/shared/domain/finance_records_percentage_usual_fee_test.dart` pass. Do not make `saveMovement` copy the usual fee.
+- [X] T183 Pass `defaultCommissionBasis` and `defaultCommissionRateMinor` through `lib/features/accounts/domain/repositories/accounts_repository.dart`, `lib/features/accounts/data/repositories/accounts_repository_impl.dart`, and `lib/features/accounts/domain/usecases/save_account_use_case.dart` (`SaveAccountParams` and `props`). Default both to `fixed` and 0. Update repository fakes in account tests that break so they accept the new arguments with those defaults.
+
+**Checkpoint**: Existing fixed usual fees and balances are unchanged. `saveMovement` still does not read the usual fee.
+
+---
+
+## Phase 37: User Story 1 — Store a fixed or percentage usual fee (Priority: P1) 🎯 MVP
+
+**Goal**: On the account form, the person chooses a fixed usual fee or a percentage. Storing either does not change the balance. Older money-only usual fees open as fixed.
+
+**Independent Test**: Add Vodafone Cash with a 1% usual fee and opening balance 0. Balance stays 0. Add Bank ABC with a fixed 3 EGP usual fee. Change Bank ABC to 1% and confirm a payment that already used 3 EGP still shows 3 EGP. Reopen an account that only had a money usual fee and confirm it shows fixed.
+
+### Tests for User Story 1
+
+- [X] T184 [P] [US1] Write failing use-case tests in `test/features/accounts/domain/save_account_percentage_usual_fee_test.dart` that pass basis and rate through `SaveAccountUseCase` in `lib/features/accounts/domain/usecases/save_account_use_case.dart`, including a 1% usual fee storing rate 100.
+- [X] T185 [P] [US1] Write failing cubit tests for success and for `ValidationFailure` in `test/features/accounts/presentation/save_account_percentage_usual_fee_cubit_test.dart`, covering `fSaveAccount` on `lib/features/accounts/presentation/controller/save_account/save_account_cubit.dart` with a percentage usual-fee params object.
+
+### Implementation for User Story 1
+
+- [X] T186 [US1] On `lib/features/accounts/presentation/pages/account_form_page.dart`, offer Fixed amount versus Percentage for the usual fee, matching the transfer form pattern. Parse amount or rate with the existing money parser (`allowZero: true`, `allowNegative: false`). Blank, 0 EGP, or 0% saves as fixed with amount 0 and rate 0. Opening an account with basis `percentage` shows the rate. Opening an account that only had money shows fixed. Pass `defaultCommissionBasis` and `defaultCommissionRateMinor` on `SaveAccountParams`. Do not change balances in the UI from the usual fee alone.
+
+**Checkpoint**: An account can store 1% without changing its balance (SC-015).
+
+---
+
+## Phase 38: User Story 2 — Start a payment from a percentage usual fee (Priority: P1)
+
+**Goal**: A new bank or e-wallet payment starts from the paying account’s usual fee. A percentage usual fee starts the computed money amount. The saved payment stores a money fee only. Cash still has no fee.
+
+**Independent Test**: Bank ABC has a 1% usual fee. A new 200 EGP payment starts at 2.00 EGP. Saving stores 2.00 as money, not a percentage. Switching the paying account to a wallet with a fixed 3 EGP usual fee replaces the start with 3.00. A cash account with a 1% usual fee still shows no fee field.
+
+### Implementation for User Story 2
+
+- [X] T187 [US2] In `lib/features/transactions/presentation/pages/transaction_form_page.dart`, when a new expense’s paying account is `bank` or `eWallet`, start the commission from that account’s usual fee: fixed → that money amount; percentage → `percentageCommissionMinor(paymentAmount, defaultCommissionRateMinor)` as a fixed money field. When the payment amount changes while the start is still following a percentage usual fee, refresh that computed money. When the paying account changes before save to another bank or e-wallet, replace the start with that account’s usual fee. Opening a saved expense shows `commissionMinor` already on the row. Cash and `other` still hide the field. Save expenses as `CommissionBasis.fixed` with rate 0 only.
+- [X] T188 [US2] In `lib/features/capture/domain/entities/capture_draft.dart`, when applying an account’s usual fee, if the usual fee is a percentage, start the draft commission from `percentageCommissionMinor` of the draft amount and that rate; if fixed, keep copying `defaultCommissionMinor`. Do not add a percentage basis control to capture review.
+
+**Checkpoint**: A 200 EGP payment from a 1% usual fee matches SC-013 for payments. The saved row has no percentage basis.
+
+---
+
+## Phase 39: User Story 3 — Start a move from a percentage usual fee (Priority: P2)
+
+**Goal**: A new transfer starts from the source account’s usual fee with the same basis. Changing the source while still following that auto-filled start replaces it. A hand-set percentage is left alone. Switching back to fixed follows FR-062.
+
+**Independent Test**: Bank ABC has a 1% usual fee; Vodafone Cash has a fixed 2 EGP usual fee. A new 1,000 EGP move from Bank ABC starts at 1% showing 10.00, not 2.00 and not 12.00. Change the source to an account with a fixed 5 EGP usual fee and confirm the commission becomes fixed 5.00. Set 1% by hand, change the source, and confirm the hand-set rate stays.
+
+### Implementation for User Story 3
+
+- [X] T189 [US3] In `lib/features/transactions/presentation/pages/transaction_form_page.dart`, when a new transfer’s source is chosen, start the commission from that source’s usual fee only: fixed → fixed amount; percentage → that rate of the moved amount. Track whether the commission is still following the auto-filled start versus a hand-set basis or rate. While still auto-filled, changing the source replaces the start with the new source’s usual fee and basis. While hand-set, changing the source leaves the value unchanged. Switching from fixed to percentage by hand clears the rate unless the start already came from a percentage usual fee. Switching back to fixed uses the current source’s fixed usual fee when fixed, or the money amount currently shown when the usual fee is a percentage. Opening a saved transfer still shows the fee already on the row.
+
+**Checkpoint**: A move from a 1% usual fee matches SC-013 for moves. Hand-set rates survive a source change.
+
+---
+
+## Phase 40: Polish — Percentage usual fee
+
+**Purpose**: Analysis and the manual pass. Dashboard and report formulas stay on `commissionMinor` only.
+
+- [X] T190 Run `flutter analyze` and `flutter test` from the repository root and clear every issue this amendment causes in `lib/` and `test/`.
+- [X] T191 Walk steps 5b, 5c, and 5e in `specs/001-phase0-mvp/quickstart.md` and fix any miss against `specs/001-phase0-mvp/contracts/accounts.md` and `specs/001-phase0-mvp/contracts/transactions.md`.
+
+---
+
+## Dependencies — Percentage usual fee
+
+### Phase dependencies
+
+- **Phase 35**: No dependency on other open tasks. Reuses labels from Phase 30.
+- **Phase 36**: Depends on Phase 35 for labels the account form will use. Blocks Phases 37–39.
+- **Phase 37 (US1)**: Depends on Phase 36. This is the MVP of the amendment.
+- **Phase 38 (US2)**: Depends on Phase 36 and Phase 37 (account must store the percentage usual fee).
+- **Phase 39 (US3)**: Depends on Phase 36 and Phase 37. Can run after or beside Phase 38 once the account fields exist.
+- **Phase 40**: Depends on Phases 37–39.
+
+### Within Phase 36
+
+- T176–T178 can run together, and they are written to fail before T179–T183.
+- T179 and T180 can run together.
+- T181 depends on T179 and T180.
+- T182 depends on T179.
+- T183 depends on T182.
+
+### Parallel example after Phase 36
+
+```text
+T184 test/features/accounts/domain/save_account_percentage_usual_fee_test.dart
+T185 test/features/accounts/presentation/save_account_percentage_usual_fee_cubit_test.dart
+```
+
+T187 and T189 both edit `lib/features/transactions/presentation/pages/transaction_form_page.dart` and must not run in parallel with each other. T188 can run beside either once Phase 36 is done.
+
+## Implementation strategy — Percentage usual fee
+
+1. Finish Phase 35 and Phase 36. Stop and confirm older fixed usual fees and balances are unchanged.
+2. Finish Phase 37 (US1). This is the MVP of the amendment: an account can store a 1% usual fee.
+3. Finish Phase 38 (US2) so a bank or wallet payment starts from a percentage usual fee as money.
+4. Finish Phase 39 (US3) so a move inherits the source’s percentage usual fee and respects hand-set rates.
+5. Finish Phase 40. Do not add a percentage control to a saved payment or to receipt capture review.

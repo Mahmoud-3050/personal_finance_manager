@@ -3,6 +3,7 @@ import 'package:either/either.dart';
 import 'package:finzomanager/core/error/failures.dart';
 import 'package:finzomanager/core/presentation/api_call_state.dart';
 import 'package:finzomanager/shared/domain/entities/account.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:finzomanager/features/accounts/domain/repositories/accounts_repository.dart';
@@ -27,6 +28,8 @@ class _Repo implements AccountsRepository {
     String? accountNumber,
     String? phoneNumber,
     int defaultCommissionMinor = 0,
+    CommissionBasis defaultCommissionBasis = CommissionBasis.fixed,
+    int defaultCommissionRateMinor = 0,
   }) async {
     if (!_accepts || defaultCommissionMinor < 0) {
       return const Left(ValidationFailure(message: 'commission_non_negative'));

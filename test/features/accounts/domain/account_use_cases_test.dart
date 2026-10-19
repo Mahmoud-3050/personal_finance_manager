@@ -1,6 +1,7 @@
 import 'package:either/either.dart';
 import 'package:finzomanager/core/error/failures.dart';
 import 'package:finzomanager/shared/domain/entities/account.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/entities/category.dart';
 import 'package:finzomanager/shared/domain/entities/money_transaction.dart';
@@ -36,6 +37,8 @@ class _MemoryAccountsRepository implements AccountsRepository {
     String? accountNumber,
     String? phoneNumber,
     int defaultCommissionMinor = 0,
+    CommissionBasis defaultCommissionBasis = CommissionBasis.fixed,
+    int defaultCommissionRateMinor = 0,
   }) {
     return _keep(
       book.saveAccount(
@@ -50,6 +53,8 @@ class _MemoryAccountsRepository implements AccountsRepository {
         accountNumber: accountNumber,
         phoneNumber: phoneNumber,
         defaultCommissionMinor: defaultCommissionMinor,
+        defaultCommissionBasis: defaultCommissionBasis,
+        defaultCommissionRateMinor: defaultCommissionRateMinor,
       ),
     );
   }

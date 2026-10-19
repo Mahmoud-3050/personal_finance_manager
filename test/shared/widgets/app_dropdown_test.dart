@@ -158,6 +158,37 @@ void main() {
     expect(items!.first.value, isNull);
   });
 
+  testWidgets(
+    'optional null selection aligns to start for the current direction',
+    (tester) async {
+      await tester.pumpWidget(
+        _harness(
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: AppDropdown<String>(
+              value: null,
+              values: const ['a', 'b'],
+              names: const ['Alpha', 'Beta'],
+              hintText: 'Pick',
+              isOptional: true,
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      final selectedItems = tester
+          .widget<DropdownButton<String>>(find.byType(DropdownButton<String>))
+          .selectedItemBuilder!(tester.element(find.byType(DropdownButton<String>)));
+      final nullSelection = selectedItems.first;
+      expect(nullSelection, isA<Align>());
+      expect(
+        (nullSelection as Align).alignment,
+        AlignmentDirectional.centerStart,
+      );
+    },
+  );
+
   testWidgets('value missing from values does not throw', (tester) async {
     await tester.pumpWidget(
       _harness(

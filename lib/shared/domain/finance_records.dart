@@ -6,6 +6,7 @@ import 'entities/calendar_date.dart';
 import 'entities/category.dart';
 import 'entities/money_transaction.dart';
 import 'entities/subcategory.dart';
+import 'services/percentage_commission.dart';
 
 final class FinanceRecords {
   const FinanceRecords({
@@ -121,10 +122,23 @@ final class FinanceRecords {
     String? accountNumber,
     String? phoneNumber,
     int defaultCommissionMinor = 0,
+    CommissionBasis defaultCommissionBasis = CommissionBasis.fixed,
+    int defaultCommissionRateMinor = 0,
   }) {
-    if (defaultCommissionMinor < 0) {
+    if (defaultCommissionMinor < 0 || defaultCommissionRateMinor < 0) {
       return const Left(ValidationFailure(message: 'commission_non_negative'));
     }
+    final CommissionBasis storedBasis =
+        defaultCommissionBasis == CommissionBasis.percentage &&
+            defaultCommissionRateMinor == 0
+        ? CommissionBasis.fixed
+        : defaultCommissionBasis;
+    final int storedAmount = storedBasis == CommissionBasis.percentage
+        ? 0
+        : defaultCommissionMinor;
+    final int storedRate = storedBasis == CommissionBasis.percentage
+        ? defaultCommissionRateMinor
+        : 0;
     final String trimmed = name.trim();
     if (trimmed.isEmpty) {
       return const Left(ValidationFailure(message: 'name_required'));
@@ -136,7 +150,9 @@ final class FinanceRecords {
           name: trimmed,
           type: type,
           openingBalanceMinor: openingBalanceMinor,
-          defaultCommissionMinor: defaultCommissionMinor,
+          defaultCommissionMinor: storedAmount,
+          defaultCommissionBasis: storedBasis,
+          defaultCommissionRateMinor: storedRate,
           openingDate: openingDate,
           isActive: true,
           includeInTotal: includeInTotal,
@@ -177,7 +193,9 @@ final class FinanceRecords {
         name: trimmed,
         type: type,
         openingBalanceMinor: openingBalanceMinor,
-        defaultCommissionMinor: defaultCommissionMinor,
+        defaultCommissionMinor: storedAmount,
+        defaultCommissionBasis: storedBasis,
+        defaultCommissionRateMinor: storedRate,
         openingDate: openingDate,
         includeInTotal: includeInTotal,
         clearBank: type != AccountType.bank,
@@ -241,6 +259,8 @@ final class FinanceRecords {
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   }) {
     if (!categories.any(
       (Category item) => item.id == transferCommissionCategoryId,
@@ -259,12 +279,35 @@ final class FinanceRecords {
         description: description,
         notes: notes,
         commissionMinor: commissionMinor,
+        commissionBasis: commissionBasis,
+        commissionRateMinor: commissionRateMinor,
       );
     }
     if (amountMinor <= 0) {
       return const Left(ValidationFailure(message: 'amount_positive'));
     }
-    if (commissionMinor < 0) {
+    if (commissionBasis == CommissionBasis.percentage &&
+        type != MoneyTransactionType.transfer) {
+      return const Left(ValidationFailure(message: 'commission_not_allowed'));
+    }
+    if (commissionBasis == CommissionBasis.percentage &&
+        commissionRateMinor < 0) {
+      return const Left(ValidationFailure(message: 'commission_non_negative'));
+    }
+    final CommissionBasis storedBasis =
+        type == MoneyTransactionType.transfer
+        ? commissionBasis
+        : CommissionBasis.fixed;
+    final int storedRate = storedBasis == CommissionBasis.percentage
+        ? commissionRateMinor
+        : 0;
+    final int storedCommission = storedBasis == CommissionBasis.percentage
+        ? percentageCommissionMinor(
+            amountMinor: amountMinor,
+            rateMinor: storedRate,
+          )
+        : commissionMinor;
+    if (storedCommission < 0) {
       return const Left(ValidationFailure(message: 'commission_non_negative'));
     }
     if (type == MoneyTransactionType.transfer) {
@@ -289,7 +332,7 @@ final class FinanceRecords {
       if (date.isBefore(account.openingDate)) {
         return const Left(ValidationFailure(message: 'date_before_opening'));
       }
-      if (commissionMinor > 0 && !_commissionAllowed(type, account)) {
+      if (storedCommission > 0 && !_commissionAllowed(type, account)) {
         return const Left(ValidationFailure(message: 'commission_not_allowed'));
       }
       if (categoryId == transferCommissionCategoryId) {
@@ -323,7 +366,9 @@ final class FinanceRecords {
       toAccountId: type == MoneyTransactionType.transfer ? toAccountId : null,
       description: description,
       notes: notes,
-      commissionMinor: commissionMinor,
+      commissionMinor: storedCommission,
+      commissionBasis: storedBasis,
+      commissionRateMinor: storedRate,
       createdAt: id == null
           ? now
           : transactions

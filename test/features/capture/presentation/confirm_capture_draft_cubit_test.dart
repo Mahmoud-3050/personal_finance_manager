@@ -12,6 +12,7 @@ import 'package:finzomanager/features/transactions/domain/usecases/save_expense_
 import 'package:finzomanager/features/transactions/domain/usecases/save_income_use_case.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/entities/money_transaction.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -83,6 +84,8 @@ class _Book implements TransactionsRepository {
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   }) async {
     final Failure? failure = error;
     if (failure != null) {

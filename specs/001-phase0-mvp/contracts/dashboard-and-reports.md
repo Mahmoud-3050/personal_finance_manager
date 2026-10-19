@@ -10,7 +10,7 @@ The dashboard period is the current local calendar month.
 - Shows total money (current, not limited to the month) and each active account’s current balance.
 - Does not list deactivated accounts.
 - Shows the month’s expenses by category, with amount and share.
-- Shows the ten newest transactions across accounts.
+- Shows the ten newest transactions across accounts. A commission greater than zero is shown as money beside the moved or paid amount. When that fee came from a percentage, the row also shows the rate. A commission of zero is not shown as a fee.
 - Opening a total, category, or account shows the transactions that make up that figure.
 - A month with no transactions shows zero income, expenses, and net result. Account balances still include opening balances and older transactions.
 

@@ -1,4 +1,5 @@
 import 'package:finzomanager/shared/domain/entities/account.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:finzomanager/features/accounts/domain/repositories/accounts_repository.dart';
@@ -42,6 +43,8 @@ class _Repo implements AccountsRepository {
     String? accountNumber,
     String? phoneNumber,
     int defaultCommissionMinor = 0,
+    CommissionBasis defaultCommissionBasis = CommissionBasis.fixed,
+    int defaultCommissionRateMinor = 0,
   }) async {
     final Either<Failure, FinanceRecords> next = book.saveAccount(
       id: id,
@@ -55,6 +58,8 @@ class _Repo implements AccountsRepository {
       accountNumber: accountNumber,
       phoneNumber: phoneNumber,
       defaultCommissionMinor: defaultCommissionMinor,
+      defaultCommissionBasis: defaultCommissionBasis,
+      defaultCommissionRateMinor: defaultCommissionRateMinor,
     );
     return next.map((FinanceRecords value) {
       book = value;

@@ -16,6 +16,7 @@ import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/entities/subcategory.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../../../../shared/widgets/app_dropdown.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
@@ -55,26 +56,97 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
     text: widget.existing?.notes ?? widget.existing?.description ?? '',
   );
   late final TextEditingController _commission = TextEditingController(
-    text: widget.existing == null || widget.existing!.commissionMinor == 0
-        ? ''
-        : Money(widget.existing!.commissionMinor).format(),
+    text: _openingCommissionText(),
+  );
+  late final TextEditingController _rate = TextEditingController(
+    text: _openingRateText(),
   );
   late MoneyTransactionType _type =
       widget.existing?.type ?? MoneyTransactionType.expense;
+  late CommissionBasis _commissionBasis =
+      widget.existing?.commissionBasis ?? CommissionBasis.fixed;
   late CalendarDate _date = widget.existing?.date ?? CalendarDate.today();
   late String? _accountId = widget.existing?.accountId;
   late String? _categoryId = widget.existing?.categoryId;
   late String? _subcategoryId = widget.existing?.subcategoryId;
   late String? _fromAccountId = widget.existing?.fromAccountId;
   late String? _toAccountId = widget.existing?.toAccountId;
+  bool _commissionFollowsUsual = true;
+  bool _suppressCommissionListeners = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _message;
 
+  String _openingCommissionText() {
+    final MoneyTransaction? existing = widget.existing;
+    if (existing == null ||
+        existing.commissionBasis == CommissionBasis.percentage ||
+        existing.commissionMinor == 0) {
+      return '';
+    }
+    return Money(existing.commissionMinor).format();
+  }
+
+  String _openingRateText() {
+    final MoneyTransaction? existing = widget.existing;
+    if (existing == null ||
+        existing.commissionBasis != CommissionBasis.percentage ||
+        existing.commissionRateMinor == 0) {
+      return '';
+    }
+    return Money(existing.commissionRateMinor).format();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existing != null) {
+      _commissionFollowsUsual = false;
+    }
+    _amount.addListener(_onAmountOrRateChanged);
+    _rate.addListener(_onRateEdited);
+    _commission.addListener(_onCommissionEdited);
+  }
+
+  void _onCommissionEdited() {
+    if (!_suppressCommissionListeners &&
+        _commissionBasis == CommissionBasis.fixed) {
+      _commissionFollowsUsual = false;
+    }
+  }
+
+  void _onAmountOrRateChanged() {
+    if (_type == MoneyTransactionType.expense &&
+        _commissionFollowsUsual &&
+        _commissionApplies) {
+      final Account? account = _accountById(_accountId);
+      if (account?.defaultCommissionBasis == CommissionBasis.percentage) {
+        _applyUsualFee(account);
+        return;
+      }
+    }
+    if (_commissionBasis != CommissionBasis.percentage) {
+      return;
+    }
+    setState(() {});
+  }
+
+  void _onRateEdited() {
+    if (!_suppressCommissionListeners &&
+        _commissionBasis == CommissionBasis.percentage) {
+      _commissionFollowsUsual = false;
+    }
+    _onAmountOrRateChanged();
+  }
+
   @override
   void dispose() {
+    _amount.removeListener(_onAmountOrRateChanged);
+    _rate.removeListener(_onRateEdited);
+    _commission.removeListener(_onCommissionEdited);
     _amount.dispose();
     _notes.dispose();
     _commission.dispose();
+    _rate.dispose();
     super.dispose();
   }
 
@@ -148,6 +220,9 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                           amount: _amount,
                           notes: _notes,
                           commission: _commission,
+                          rate: _rate,
+                          commissionBasis: _commissionBasis,
+                          percentagePreview: _percentagePreviewText(),
                           showCommission: _commissionApplies,
                           date: _date,
                           accounts: activeAccounts,
@@ -163,22 +238,26 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
                               _type = value;
                               _categoryId = null;
                               _subcategoryId = null;
+                              if (value != MoneyTransactionType.transfer) {
+                                _commissionBasis = CommissionBasis.fixed;
+                              }
                             });
                             if (widget.existing != null) {
                               return;
                             }
                             if (value == MoneyTransactionType.transfer) {
-                              _showUsualFee(_accountById(_fromAccountId));
+                              _applyUsualFee(_accountById(_fromAccountId));
                               return;
                             }
                             if (value == MoneyTransactionType.expense) {
                               final Account? account = _accountById(_accountId);
                               if (account?.type == AccountType.bank ||
                                   account?.type == AccountType.eWallet) {
-                                _showUsualFee(account);
+                                _applyUsualFee(account);
                               }
                             }
                           },
+                          onBasisChanged: _onBasisChanged,
                           onAccountChanged: _onPayingAccountChanged,
                           onCategoryChanged: (String? value) {
                             setState(() {
@@ -333,7 +412,7 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
         account?.type != AccountType.eWallet) {
       return;
     }
-    _showUsualFee(account);
+    _applyUsualFee(account);
   }
 
   void _onSourceAccountChanged(String? value) {
@@ -345,12 +424,95 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
     if (widget.existing != null && previous == value) {
       return;
     }
-    _showUsualFee(_accountById(value));
+    if (!_commissionFollowsUsual) {
+      return;
+    }
+    _applyUsualFee(_accountById(value));
   }
 
-  void _showUsualFee(Account? account) {
-    final int usualFee = account?.defaultCommissionMinor ?? 0;
-    _commission.text = usualFee == 0 ? '' : Money(usualFee).format();
+  void _onBasisChanged(CommissionBasis basis) {
+    final Account? source = _accountById(_fromAccountId);
+    if (basis == CommissionBasis.percentage) {
+      final bool keepUsualRate =
+          _commissionFollowsUsual &&
+          source?.defaultCommissionBasis == CommissionBasis.percentage;
+      setState(() => _commissionBasis = basis);
+      if (keepUsualRate) {
+        return;
+      }
+      _commissionFollowsUsual = false;
+      _rate.text = '';
+      return;
+    }
+    setState(() => _commissionBasis = basis);
+    if (source?.defaultCommissionBasis == CommissionBasis.fixed) {
+      _applyUsualFee(source);
+      return;
+    }
+    // Usual fee is a percentage: keep the money amount currently shown.
+    _commissionFollowsUsual = false;
+    final Either<Failure, Money> amount = Money.parse(
+      _amount.text,
+      allowNegative: false,
+      allowZero: false,
+    );
+    final Either<Failure, int> rate = _parsedRate();
+    final int fee = amount.isRight && rate.isRight
+        ? percentageCommissionMinor(
+            amountMinor: amount.rightOrNull!.minor,
+            rateMinor: rate.rightOrNull!,
+          )
+        : 0;
+    _rate.text = '';
+    _commission.text = fee == 0 ? '' : Money(fee).format();
+  }
+
+  void _applyUsualFee(Account? account) {
+    _suppressCommissionListeners = true;
+    _commissionFollowsUsual = true;
+    try {
+      if (account == null) {
+        _commissionBasis = CommissionBasis.fixed;
+        _commission.text = '';
+        _rate.text = '';
+        setState(() {});
+        return;
+      }
+      if (account.defaultCommissionBasis == CommissionBasis.percentage) {
+        if (_type == MoneyTransactionType.transfer) {
+          _commissionBasis = CommissionBasis.percentage;
+          _rate.text = account.defaultCommissionRateMinor == 0
+              ? ''
+              : Money(account.defaultCommissionRateMinor).format();
+          _commission.text = '';
+          setState(() {});
+          return;
+        }
+        final Either<Failure, Money> amount = Money.parse(
+          _amount.text,
+          allowNegative: false,
+          allowZero: false,
+        );
+        final int fee = amount.isRight
+            ? percentageCommissionMinor(
+                amountMinor: amount.rightOrNull!.minor,
+                rateMinor: account.defaultCommissionRateMinor,
+              )
+            : 0;
+        _commissionBasis = CommissionBasis.fixed;
+        _rate.text = '';
+        _commission.text = fee == 0 ? '' : Money(fee).format();
+        setState(() {});
+        return;
+      }
+      _commissionBasis = CommissionBasis.fixed;
+      _rate.text = '';
+      final int usualFee = account.defaultCommissionMinor;
+      _commission.text = usualFee == 0 ? '' : Money(usualFee).format();
+      setState(() {});
+    } finally {
+      _suppressCommissionListeners = false;
+    }
   }
 
   bool get _commissionApplies {
@@ -374,6 +536,38 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
       allowNegative: false,
       allowZero: true,
     ).map((Money money) => money.minor);
+  }
+
+  Either<Failure, int> _parsedRate() {
+    if (_rate.text.trim().isEmpty) {
+      return const Right(0);
+    }
+    return Money.parse(
+      _rate.text,
+      allowNegative: false,
+      allowZero: true,
+    ).map((Money money) => money.minor);
+  }
+
+  String? _percentagePreviewText() {
+    if (_type != MoneyTransactionType.transfer ||
+        _commissionBasis != CommissionBasis.percentage) {
+      return null;
+    }
+    final Either<Failure, Money> amount = Money.parse(
+      _amount.text,
+      allowNegative: false,
+      allowZero: false,
+    );
+    final Either<Failure, int> rate = _parsedRate();
+    if (amount.isLeft || rate.isLeft) {
+      return '${Strings.fenzoTransferCommission} 0.00';
+    }
+    final int fee = percentageCommissionMinor(
+      amountMinor: amount.rightOrNull!.minor,
+      rateMinor: rate.rightOrNull!,
+    );
+    return '${Strings.fenzoTransferCommission} ${Money(fee).format()}';
   }
 
   Future<void> _pickDate() async {
@@ -408,22 +602,44 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
       setState(() => _message = Strings.fenzoDateBeforeOpening);
       return;
     }
-    final Either<Failure, int> commissionParsed = _parsedCommission();
-    final String? commissionMessage = commissionParsed.fold(
-      (Failure failure) => _validationCopy(failure.message),
-      (int commission) => !_commissionApplies && commission > 0
-          ? Strings.fenzoCommissionNotAllowed
-          : null,
-    );
+    final bool usePercentage =
+        _type == MoneyTransactionType.transfer &&
+        _commissionBasis == CommissionBasis.percentage;
+    final Either<Failure, int> commissionParsed = usePercentage
+        ? const Right(0)
+        : _parsedCommission();
+    final Either<Failure, int> rateParsed = usePercentage
+        ? _parsedRate()
+        : const Right(0);
+    final String? commissionMessage = usePercentage
+        ? rateParsed.fold(
+            (Failure failure) => _validationCopy(failure.message),
+            (_) => null,
+          )
+        : commissionParsed.fold(
+            (Failure failure) => _validationCopy(failure.message),
+            (int commission) => !_commissionApplies && commission > 0
+                ? Strings.fenzoCommissionNotAllowed
+                : null,
+          );
     if (commissionMessage != null) {
       setState(() => _message = commissionMessage);
       return;
     }
     setState(() => _message = null);
     final Money money = parsed.rightOrNull!;
-    final int commissionMinor = _commissionApplies
-        ? commissionParsed.rightOrNull!
-        : 0;
+    final CommissionBasis basis = usePercentage
+        ? CommissionBasis.percentage
+        : CommissionBasis.fixed;
+    final int rateMinor = usePercentage ? rateParsed.rightOrNull! : 0;
+    final int commissionMinor = !_commissionApplies
+        ? 0
+        : usePercentage
+        ? percentageCommissionMinor(
+            amountMinor: money.minor,
+            rateMinor: rateMinor,
+          )
+        : commissionParsed.rightOrNull!;
     final String? notes = _notes.text.trim().isEmpty
         ? null
         : _notes.text.trim();
@@ -442,6 +658,12 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
           toAccountId: _toAccountId,
           notes: notes,
           commissionMinor: commissionMinor,
+          commissionBasis: existing.type == MoneyTransactionType.transfer
+              ? basis
+              : CommissionBasis.fixed,
+          commissionRateMinor: existing.type == MoneyTransactionType.transfer
+              ? rateMinor
+              : 0,
         ),
       );
       return;
@@ -491,6 +713,8 @@ class _TransactionFormPageState extends State<TransactionFormPage> {
               toAccountId: _toAccountId,
               notes: notes,
               commissionMinor: commissionMinor,
+              commissionBasis: basis,
+              commissionRateMinor: rateMinor,
             ),
           );
         }
@@ -506,6 +730,9 @@ class _FormBody extends StatelessWidget {
     required this.amount,
     required this.notes,
     required this.commission,
+    required this.rate,
+    required this.commissionBasis,
+    required this.percentagePreview,
     required this.showCommission,
     required this.date,
     required this.accounts,
@@ -517,6 +744,7 @@ class _FormBody extends StatelessWidget {
     required this.fromAccountId,
     required this.toAccountId,
     required this.onTypeChanged,
+    required this.onBasisChanged,
     required this.onAccountChanged,
     required this.onCategoryChanged,
     required this.onSubcategoryChanged,
@@ -533,6 +761,9 @@ class _FormBody extends StatelessWidget {
   final TextEditingController amount;
   final TextEditingController notes;
   final TextEditingController commission;
+  final TextEditingController rate;
+  final CommissionBasis commissionBasis;
+  final String? percentagePreview;
   final bool showCommission;
   final CalendarDate date;
   final List<Account> accounts;
@@ -544,6 +775,7 @@ class _FormBody extends StatelessWidget {
   final String? fromAccountId;
   final String? toAccountId;
   final ValueChanged<MoneyTransactionType> onTypeChanged;
+  final ValueChanged<CommissionBasis> onBasisChanged;
   final ValueChanged<String?> onAccountChanged;
   final ValueChanged<String?> onCategoryChanged;
   final ValueChanged<String?> onSubcategoryChanged;
@@ -555,6 +787,9 @@ class _FormBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool transferFee = type == MoneyTransactionType.transfer;
+    final bool percentage =
+        transferFee && commissionBasis == CommissionBasis.percentage;
     return Form(
       key: formKey,
       child: ListView(
@@ -596,16 +831,56 @@ class _FormBody extends StatelessWidget {
             ),
           ),
           if (showCommission) ...<Widget>[
-            SizedBox(height: 12.h),
-            AppTextFormField.numbersTextField(
-              controller: commission,
-              labelText: Strings.fenzoTransferCommission,
-              validatorType: FieldValidator.numbers(
-                required: false,
-                allowZero: true,
-                maxDecimalPlaces: Money.decimalPlaces,
+            if (transferFee) ...<Widget>[
+              SizedBox(height: 12.h),
+              FinanceMenuField<CommissionBasis>(
+                value: commissionBasis,
+                items: CommissionBasis.values
+                    .map(
+                      (CommissionBasis item) =>
+                          DropdownMenuItem<CommissionBasis>(
+                            value: item,
+                            child: Text(
+                              item == CommissionBasis.fixed
+                                  ? Strings.fenzoCommissionFixed
+                                  : Strings.fenzoCommissionPercentage,
+                              style: TextStyles.of(size: 16),
+                            ),
+                          ),
+                    )
+                    .toList(),
+                onChanged: (CommissionBasis? value) {
+                  if (value != null) {
+                    onBasisChanged(value);
+                  }
+                },
               ),
-            ),
+            ],
+            SizedBox(height: 12.h),
+            if (percentage) ...<Widget>[
+              AppTextFormField.numbersTextField(
+                controller: rate,
+                labelText: Strings.fenzoCommissionRate,
+                validatorType: FieldValidator.numbers(
+                  required: false,
+                  allowZero: true,
+                  maxDecimalPlaces: Money.decimalPlaces,
+                ),
+              ),
+              if (percentagePreview != null) ...<Widget>[
+                SizedBox(height: 8.h),
+                Text(percentagePreview!, style: TextStyles.of(size: 14)),
+              ],
+            ] else
+              AppTextFormField.numbersTextField(
+                controller: commission,
+                labelText: Strings.fenzoTransferCommission,
+                validatorType: FieldValidator.numbers(
+                  required: false,
+                  allowZero: true,
+                  maxDecimalPlaces: Money.decimalPlaces,
+                ),
+              ),
           ],
           SizedBox(height: 12.h),
           if (type == MoneyTransactionType.transfer) ...<Widget>[

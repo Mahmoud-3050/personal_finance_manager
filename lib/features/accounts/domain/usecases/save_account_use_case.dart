@@ -5,6 +5,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../../../../shared/domain/entities/account.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../repositories/accounts_repository.dart';
 
 class SaveAccountParams extends Params {
@@ -19,6 +20,8 @@ class SaveAccountParams extends Params {
     this.accountNumber,
     this.phoneNumber,
     this.defaultCommissionMinor = 0,
+    this.defaultCommissionBasis = CommissionBasis.fixed,
+    this.defaultCommissionRateMinor = 0,
     this.cancellation,
   });
 
@@ -32,6 +35,8 @@ class SaveAccountParams extends Params {
   final String? accountNumber;
   final String? phoneNumber;
   final int defaultCommissionMinor;
+  final CommissionBasis defaultCommissionBasis;
+  final int defaultCommissionRateMinor;
   @override
   final Object? cancellation;
 
@@ -47,6 +52,8 @@ class SaveAccountParams extends Params {
     openingDate,
     includeInTotal,
     defaultCommissionMinor,
+    defaultCommissionBasis,
+    defaultCommissionRateMinor,
   ];
 }
 
@@ -67,6 +74,8 @@ class SaveAccountUseCase extends UseCase<FinanceRecords, SaveAccountParams> {
       accountNumber: params.accountNumber,
       phoneNumber: params.phoneNumber,
       defaultCommissionMinor: params.defaultCommissionMinor,
+      defaultCommissionBasis: params.defaultCommissionBasis,
+      defaultCommissionRateMinor: params.defaultCommissionRateMinor,
     );
   }
 }

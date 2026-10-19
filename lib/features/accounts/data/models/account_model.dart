@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../../../../core/database/finance_database.dart';
 import '../../../../shared/domain/entities/account.dart';
 import '../../../../shared/domain/entities/calendar_date.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 
 final class AccountModel extends Account {
   const AccountModel({
@@ -19,6 +20,8 @@ final class AccountModel extends Account {
     super.accountNumber,
     super.phoneNumber,
     super.defaultCommissionMinor,
+    super.defaultCommissionBasis,
+    super.defaultCommissionRateMinor,
   });
 
   factory AccountModel.fromEntity(Account account) {
@@ -31,6 +34,8 @@ final class AccountModel extends Account {
       phoneNumber: account.phoneNumber,
       openingBalanceMinor: account.openingBalanceMinor,
       defaultCommissionMinor: account.defaultCommissionMinor,
+      defaultCommissionBasis: account.defaultCommissionBasis,
+      defaultCommissionRateMinor: account.defaultCommissionRateMinor,
       openingDate: account.openingDate,
       isActive: account.isActive,
       includeInTotal: account.includeInTotal,
@@ -49,6 +54,10 @@ final class AccountModel extends Account {
       phoneNumber: row.phoneNumber,
       openingBalanceMinor: row.openingBalanceMinor,
       defaultCommissionMinor: row.defaultCommissionMinor,
+      defaultCommissionBasis: CommissionBasis.values.byName(
+        row.defaultCommissionBasis,
+      ),
+      defaultCommissionRateMinor: row.defaultCommissionRateMinor,
       openingDate: CalendarDate.parse(row.openingDate),
       isActive: row.isActive,
       includeInTotal: row.includeInTotal,
@@ -67,6 +76,11 @@ final class AccountModel extends Account {
       phoneNumber: json['phone_number'] as String?,
       openingBalanceMinor: json['opening_balance_minor'] as int,
       defaultCommissionMinor: json['default_commission_minor'] as int? ?? 0,
+      defaultCommissionBasis: CommissionBasis.values.byName(
+        json['default_commission_basis'] as String? ?? 'fixed',
+      ),
+      defaultCommissionRateMinor:
+          json['default_commission_rate_minor'] as int? ?? 0,
       openingDate: CalendarDate.parse(json['opening_date'] as String),
       isActive: json['is_active'] as bool,
       includeInTotal: json['include_in_total'] as bool,
@@ -84,6 +98,8 @@ final class AccountModel extends Account {
     'phone_number': phoneNumber,
     'opening_balance_minor': openingBalanceMinor,
     'default_commission_minor': defaultCommissionMinor,
+    'default_commission_basis': defaultCommissionBasis.name,
+    'default_commission_rate_minor': defaultCommissionRateMinor,
     'opening_date': openingDate.toIso(),
     'is_active': isActive,
     'include_in_total': includeInTotal,
@@ -101,6 +117,8 @@ final class AccountModel extends Account {
       phoneNumber: Value(phoneNumber),
       openingBalanceMinor: openingBalanceMinor,
       defaultCommissionMinor: Value(defaultCommissionMinor),
+      defaultCommissionBasis: Value(defaultCommissionBasis.name),
+      defaultCommissionRateMinor: Value(defaultCommissionRateMinor),
       openingDate: openingDate.toIso(),
       isActive: isActive,
       includeInTotal: includeInTotal,

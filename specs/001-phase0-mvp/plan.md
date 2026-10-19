@@ -1,6 +1,6 @@
 # Implementation Plan: Phase 0 MVP — Personal Money Tracking
 
-**Branch**: `001-phase0-mvp` | **Date**: 2026-10-06, amended 2026-10-16, amended 2026-10-17 | **Spec**: [spec.md](spec.md)
+**Branch**: `001-phase0-mvp` | **Date**: 2026-10-06, amended 2026-10-16, amended 2026-10-17, amended 2026-10-20 (transfer % and usual-fee %) | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `/specs/001-phase0-mvp/spec.md`
 
@@ -42,6 +42,38 @@ Each account stores an optional usual fee as integer piastres. Blank or zero mea
 
 The usual fee stays when the account type changes. Type change still clears only the identifying labels that do not apply.
 
+### Amendment 2026-10-20 — Fixed or percentage commission on a transfer
+
+On a transfer, the person chooses one basis: a fixed amount, or a percentage of the moved amount. One percent of 1,000.00 EGP is a commission of 10.00 EGP. The destination still receives the moved amount. Balances and reports keep using the resulting piastres in `commissionMinor`. They do not apply the rate a second time.
+
+`saveMovement` is the check. When the basis is `percentage` and the row is a transfer, it stores the rate and writes `commissionMinor` from that rate and `amountMinor`, using integer half-up rounding. It does not trust a money amount sent beside the rate. A percentage on income or an expense is rejected and does not write. Rows already saved, and JSON that omits the new keys, are a fixed commission equal to the piastres already stored.
+
+- `lib/shared/domain/entities/money_transaction.dart` — `commissionBasis` (`fixed` or `percentage`, default `fixed`) and `commissionRateMinor` (default 0). `100` means 1.00%. This is not piastres
+- `lib/shared/domain/services/percentage_commission.dart` — one pure function turns an amount and a rate into piastres. The transaction form calls that function for the preview. It does not keep a second rounding rule
+- `lib/shared/domain/finance_records.dart` — `saveMovement` applies the function for a percentage transfer, forces rate 0 on a fixed basis, and rejects a percentage on any other type
+- `lib/core/database/finance_database.dart` — schema version 4 adds `commission_basis` with default `fixed` and `commission_rate_minor` with default 0. The version 2 and version 3 upgrades stay in place
+- `lib/features/transactions/` — the existing save-transfer and update-transaction use cases, cubits, and the transfer form pass the basis and the rate. No new feature and no new cubit. The expense form still sends a fixed amount only
+- `lib/features/transactions/data/models/money_transaction_model.dart` — JSON writes `commission_basis` and `commission_rate_minor`. A copy that omits either key restores as `fixed` and 0
+- List and dashboard rows show the money fee when it is greater than zero. A percentage row also shows the rate. A result of 0.00 is not shown as a fee. The transfer form still shows a saved rate when its current result is 0.00
+
+The rate is parsed with the same two-decimal rule as money: a third decimal place is rejected, not rounded. Only the calculated commission is rounded, half up, to the nearest piastre. Receipt capture stays a fixed payment fee. It does not gain a percentage control.
+
+How a new transfer or payment starts from the account’s usual fee is updated in the next amendment.
+
+### Amendment 2026-10-20 — Fixed or percentage usual fee on each account
+
+Each account’s usual fee is fixed or a percentage, the same `CommissionBasis` choice as on a transfer. Storing it still does not change balances. Changing it still does not rewrite saved rows.
+
+A new transfer starts from the source account’s usual fee: a fixed usual fee starts a fixed commission of that amount, and a percentage usual fee starts that percentage of the moved amount. A new bank or e-wallet expense starts from the paying account’s usual fee: a fixed usual fee starts that money amount, and a percentage usual fee starts the money amount that rate produces from the payment amount. The saved expense stays a fixed `commissionMinor` only. Switching the source or paying account before save replaces the starting fee with the newly chosen account’s usual fee while the commission is still following that auto-filled start. A hand-set transfer rate is left alone.
+
+- `lib/shared/domain/entities/account.dart` — `defaultCommissionBasis` (`fixed` or `percentage`, default `fixed`) and `defaultCommissionRateMinor` (default 0, same scale as the transfer rate). `defaultCommissionMinor` stays the fixed usual fee in piastres and is 0 when the basis is `percentage`
+- `lib/shared/domain/finance_records.dart` — `saveAccount` rejects a negative usual fee or rate and forces rate 0 on a fixed basis. `saveMovement` still does not copy the usual fee; the form still owns the start value
+- `lib/core/database/finance_database.dart` — schema version 5 adds `default_commission_basis` with default `fixed` and `default_commission_rate_minor` with default 0 on `account_rows`. Versions 2 through 4 stay in place. Older accounts become `fixed` with rate 0 and keep `default_commission_minor`
+- `lib/features/accounts/` — the existing save-account path and account form pass the basis and the rate. No new feature and no new cubit. The form reuses the same fixed-or-percentage control pattern as the transfer form
+- `lib/features/accounts/data/models/account_model.dart` — JSON writes `default_commission_basis` and `default_commission_rate_minor`. A copy that omits either key restores as `fixed` and 0
+- `lib/features/transactions/presentation/pages/transaction_form_page.dart` — prefills from the account’s basis. For a percentage usual fee on a payment, it calls `percentageCommissionMinor` once and fills a fixed money fee. Receipt capture still copies a fixed money start only when the account’s usual fee is fixed; when it is a percentage, it starts from the computed money for the draft amount
+- Reuse `percentageCommissionMinor` from `percentage_commission.dart`. Do not add a second rounding function
+
 ## Technical Context
 
 **Language/Version**: Dart `^3.13.4` / Flutter stable (app already created)
@@ -58,9 +90,9 @@ The usual fee stays when the account type changes. Type change still clears only
 
 **Performance Goals**: A report over a personal history of up to 5,000 transactions appears within 2 seconds. Recording an expense takes the person under 30 seconds
 
-**Constraints**: Offline for every Phase 0 story. Arabic RTL only. EGP with at most two decimal places, never rounded. No bank secrets, no sign-in, no real payments. Balances are derived, not stored. Destructive delete and deactivate ask for confirmation. A transfer commission is optional piastres on the same row, never a looked-up tariff. A usual fee is optional piastres on the account and is not itself a balance change
+**Constraints**: Offline for every Phase 0 story. Arabic RTL only. EGP with at most two decimal places. Amounts the person types are never rounded. A commission calculated from a percentage (on a transfer, or when a payment starts from a percentage usual fee) is rounded half up to the nearest piastre. No bank secrets, no sign-in, no real payments. Balances are derived, not stored. Destructive delete and deactivate ask for confirmation. A transfer commission is optional piastres on the same row, from a fixed amount or a percentage the person enters, never a looked-up tariff. A usual fee on an account is optional fixed piastres or an optional percentage and is not itself a balance change
 
-**Scale/Scope**: One person, one device, dozens of accounts and categories, up to 5,000 transactions. Seven user stories. No backup, suggestions, or budgets in the original Phase 0 plan. The 2026-10-16 amendment adds one optional fee field to transfers and to bank or e-wallet expenses. The 2026-10-17 amendment adds one optional usual fee on the account and prefills the existing fee field. Neither amendment adds a screen
+**Scale/Scope**: One person, one device, dozens of accounts and categories, up to 5,000 transactions. Seven user stories. No backup, suggestions, or budgets in the original Phase 0 plan. The 2026-10-16 amendment adds one optional fee field to transfers and to bank or e-wallet expenses. The 2026-10-17 amendment adds one optional usual fee on the account and prefills the existing fee field. The 2026-10-20 amendments add a fixed-or-percentage choice on a transfer and the same choice on the account’s usual fee. None of these amendments adds a screen
 
 ## Constitution Check
 
@@ -154,6 +186,8 @@ Re-checked after [research.md](research.md), [data-model.md](data-model.md), and
 | Unresolved clarifications | None |
 | 2026-10-16 commission | Pass. The fee is a field on the existing transaction entity. `saveMovement` returns `ValidationFailure`. Existing save cubits keep calling their use cases. Reports stay derived in `report_calculator.dart`. No second repository, no Dio, no tariff service |
 | 2026-10-17 usual fee | Pass. The usual fee is a field on the existing account entity. `saveAccount` returns `ValidationFailure` for a negative amount. The existing save-account cubit keeps calling its use case. The transaction form only prefills `commissionMinor`. Balances stay derived and ignore the usual fee until a saved row carries it |
+| 2026-10-20 percentage transfer fee | Pass. The basis and the rate are fields on the existing transaction entity. `saveMovement` returns `ValidationFailure` for a percentage on a non-transfer and writes the rounded piastres itself. Existing save and update cubits keep calling their use cases. Reports still sum `commissionMinor`. No second calculator, no new cubit, no Dio, no tariff lookup |
+| 2026-10-20 percentage usual fee | Pass. The basis and the rate are fields on the existing account entity. `saveAccount` returns `ValidationFailure` for a negative rate. Prefill still lives in the transaction and account forms. Expenses stay fixed when saved. One shared `percentageCommissionMinor` function. No new cubit, no Dio, no tariff lookup |
 
 ## Complexity Tracking
 

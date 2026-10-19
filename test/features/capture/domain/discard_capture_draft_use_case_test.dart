@@ -8,6 +8,7 @@ import 'package:finzomanager/features/capture/domain/usecases/discard_capture_dr
 import 'package:finzomanager/features/transactions/domain/repositories/transactions_repository.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/entities/money_transaction.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -57,6 +58,8 @@ class _RecordingTransactions implements TransactionsRepository {
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   }) async {
     saves += 1;
     return Right(FinanceRecords.empty());

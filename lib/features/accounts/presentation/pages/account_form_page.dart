@@ -12,6 +12,7 @@ import '../../../../shared/domain/entities/calendar_date.dart';
 import '../../../../shared/domain/entities/money.dart';
 import '../../../../shared/domain/entities/money_transaction.dart';
 import '../../../../shared/domain/finance_records.dart';
+import '../../../../shared/domain/services/percentage_commission.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/finance_ledger.dart';
@@ -42,10 +43,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
     text: Money(widget.existing?.openingBalanceMinor ?? 0).format(),
   );
   late final TextEditingController _usualFee = TextEditingController(
-    text:
-        widget.existing == null || widget.existing!.defaultCommissionMinor == 0
-        ? ''
-        : Money(widget.existing!.defaultCommissionMinor).format(),
+    text: _openingUsualFeeText(),
   );
   late final TextEditingController _bankName = TextEditingController(
     text: widget.existing?.bankName ?? '',
@@ -57,11 +55,28 @@ class _AccountFormPageState extends State<AccountFormPage> {
     text: widget.existing?.phoneNumber ?? '',
   );
   late AccountType _type = widget.existing?.type ?? AccountType.cash;
+  late CommissionBasis _usualFeeBasis =
+      widget.existing?.defaultCommissionBasis ?? CommissionBasis.fixed;
   late CalendarDate _openingDate =
       widget.existing?.openingDate ?? CalendarDate.today();
   late bool _includeInTotal = widget.existing?.includeInTotal ?? true;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _message;
+
+  String _openingUsualFeeText() {
+    final Account? existing = widget.existing;
+    if (existing == null) {
+      return '';
+    }
+    if (existing.defaultCommissionBasis == CommissionBasis.percentage) {
+      return existing.defaultCommissionRateMinor == 0
+          ? ''
+          : Money(existing.defaultCommissionRateMinor).format();
+    }
+    return existing.defaultCommissionMinor == 0
+        ? ''
+        : Money(existing.defaultCommissionMinor).format();
+  }
 
   @override
   void dispose() {
@@ -183,9 +198,39 @@ class _AccountFormPageState extends State<AccountFormPage> {
                 ),
               ),
               SizedBox(height: 12.h),
+              FinanceMenuField<CommissionBasis>(
+                value: _usualFeeBasis,
+                label: Strings.fenzoUsualCommission,
+                items: CommissionBasis.values
+                    .map(
+                      (CommissionBasis item) =>
+                          DropdownMenuItem<CommissionBasis>(
+                            value: item,
+                            child: Text(
+                              item == CommissionBasis.fixed
+                                  ? Strings.fenzoCommissionFixed
+                                  : Strings.fenzoCommissionPercentage,
+                              style: TextStyles.of(size: 16),
+                            ),
+                          ),
+                    )
+                    .toList(),
+                onChanged: (CommissionBasis? value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    _usualFeeBasis = value;
+                    _usualFee.clear();
+                  });
+                },
+              ),
+              SizedBox(height: 12.h),
               AppTextFormField.numbersTextField(
                 controller: _usualFee,
-                labelText: Strings.fenzoUsualCommission,
+                labelText: _usualFeeBasis == CommissionBasis.percentage
+                    ? Strings.fenzoCommissionRate
+                    : Strings.fenzoUsualCommission,
                 validatorType: FieldValidator.numbers(
                   required: false,
                   allowZero: true,
@@ -323,6 +368,7 @@ class _AccountFormPageState extends State<AccountFormPage> {
     if (usualFee == null) {
       return;
     }
+    final bool isPercentage = _usualFeeBasis == CommissionBasis.percentage;
     context.read<SaveAccountCubit>().fSaveAccount(
       SaveAccountParams(
         id: widget.existing?.id,
@@ -334,7 +380,11 @@ class _AccountFormPageState extends State<AccountFormPage> {
         bankName: _blankToNull(_bankName.text),
         accountNumber: _blankToNull(_accountNumber.text),
         phoneNumber: _blankToNull(_phone.text),
-        defaultCommissionMinor: usualFee,
+        defaultCommissionMinor: isPercentage ? 0 : usualFee,
+        defaultCommissionBasis: isPercentage
+            ? CommissionBasis.percentage
+            : CommissionBasis.fixed,
+        defaultCommissionRateMinor: isPercentage ? usualFee : 0,
       ),
     );
   }

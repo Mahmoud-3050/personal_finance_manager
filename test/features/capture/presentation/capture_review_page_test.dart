@@ -34,6 +34,7 @@ import 'package:finzomanager/shared/domain/entities/account.dart';
 import 'package:finzomanager/shared/domain/entities/calendar_date.dart';
 import 'package:finzomanager/shared/domain/entities/category.dart';
 import 'package:finzomanager/shared/domain/entities/money_transaction.dart';
+import 'package:finzomanager/shared/domain/services/percentage_commission.dart';
 import 'package:finzomanager/shared/domain/entities/subcategory.dart';
 import 'package:finzomanager/shared/domain/finance_records.dart';
 import 'package:flutter/material.dart';
@@ -279,6 +280,8 @@ class _EmptyAccounts implements AccountsRepository {
     String? accountNumber,
     String? phoneNumber,
     int defaultCommissionMinor = 0,
+    CommissionBasis defaultCommissionBasis = CommissionBasis.fixed,
+    int defaultCommissionRateMinor = 0,
   }) => throw UnimplementedError();
 }
 
@@ -356,6 +359,8 @@ class _CountingBook implements TransactionsRepository {
     String? description,
     String? notes,
     int commissionMinor = 0,
+    CommissionBasis commissionBasis = CommissionBasis.fixed,
+    int commissionRateMinor = 0,
   }) async {
     saves += 1;
     return Right(FinanceRecords.empty());

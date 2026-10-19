@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../services/percentage_commission.dart';
 import 'calendar_date.dart';
 
 /// A recorded movement. This is the spec's Transaction.
@@ -21,6 +22,8 @@ class MoneyTransaction extends Equatable {
     this.description,
     this.notes,
     this.commissionMinor = 0,
+    this.commissionBasis = CommissionBasis.fixed,
+    this.commissionRateMinor = 0,
   });
 
   final String id;
@@ -35,6 +38,8 @@ class MoneyTransaction extends Equatable {
   final String? description;
   final String? notes;
   final int commissionMinor;
+  final CommissionBasis commissionBasis;
+  final int commissionRateMinor;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -52,6 +57,8 @@ class MoneyTransaction extends Equatable {
     description,
     notes,
     commissionMinor,
+    commissionBasis,
+    commissionRateMinor,
     createdAt,
     updatedAt,
   ];

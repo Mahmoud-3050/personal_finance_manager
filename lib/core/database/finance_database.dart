@@ -12,6 +12,10 @@ class AccountRows extends Table {
   IntColumn get openingBalanceMinor => integer()();
   IntColumn get defaultCommissionMinor =>
       integer().withDefault(const Constant(0))();
+  TextColumn get defaultCommissionBasis =>
+      text().withDefault(const Constant('fixed'))();
+  IntColumn get defaultCommissionRateMinor =>
+      integer().withDefault(const Constant(0))();
   TextColumn get openingDate => text()();
   BoolColumn get isActive => boolean()();
   BoolColumn get includeInTotal => boolean()();
@@ -56,6 +60,10 @@ class TransactionRows extends Table {
   TextColumn get notes => text().nullable()();
   IntColumn get commissionMinor =>
       integer().withDefault(const Constant(0))();
+  TextColumn get commissionBasis =>
+      text().withDefault(const Constant('fixed'))();
+  IntColumn get commissionRateMinor =>
+      integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -70,7 +78,7 @@ class FinanceDatabase extends _$FinanceDatabase {
   FinanceDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -86,6 +94,26 @@ class FinanceDatabase extends _$FinanceDatabase {
           await migrator.addColumn(
             accountRows,
             accountRows.defaultCommissionMinor,
+          );
+        }
+        if (from < 4) {
+          await migrator.addColumn(
+            transactionRows,
+            transactionRows.commissionBasis,
+          );
+          await migrator.addColumn(
+            transactionRows,
+            transactionRows.commissionRateMinor,
+          );
+        }
+        if (from < 5) {
+          await migrator.addColumn(
+            accountRows,
+            accountRows.defaultCommissionBasis,
+          );
+          await migrator.addColumn(
+            accountRows,
+            accountRows.defaultCommissionRateMinor,
           );
         }
       },
