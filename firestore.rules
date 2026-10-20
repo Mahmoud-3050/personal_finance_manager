@@ -1,0 +1,56 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Matches FirebaseCloudBackupDataSource.upload field shape.
+    function isValidBackupCopy(data) {
+      return data.keys().hasOnly(['createdAt', 'origin', 'outcome', 'payload'])
+        && data.createdAt is timestamp
+        && data.origin is string
+        && data.origin in ['manualCloud', 'automaticCloud', 'export']
+        && data.outcome is string
+        && data.outcome == 'succeeded'
+        && data.payload is map
+        && isValidPayload(data.payload);
+    }
+
+    function isValidPayload(payload) {
+      return payload.keys().hasAll([
+          'formatVersion',
+          'createdAt',
+          'source',
+          'accounts',
+          'categories',
+          'subcategories',
+          'transactions',
+        ])
+        && payload.formatVersion is int
+        && payload.formatVersion == 1
+        && payload.createdAt is string
+        && payload.source is string
+        && payload.source in ['manualCloud', 'automaticCloud', 'export']
+        && payload.accounts is list
+        && payload.categories is list
+        && payload.subcategories is list
+        && payload.transactions is list;
+    }
+
+    // Cloud backup copies for one signed-in person.
+    // Path: backups/{userId}/copies/{copyId}
+    // Client writes: create + delete only (no update).
+    match /backups/{userId}/copies/{copyId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidBackupCopy(request.resource.data);
+      allow update: if false;
+      allow delete: if isOwner(userId);
+    }
+  }
+}
